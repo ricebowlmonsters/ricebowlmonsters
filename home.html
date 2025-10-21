@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rice Bowl Monster - Beranda</title>
+  
+  <link rel="stylesheet" href="styles.css">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card: #ffffff;
+      --text: #374151;
+      --muted: #6b7280;
+      --primary: #4C2A85;
+      --primary-text: #ffffff;
+      --border: #00000000; /* Diubah menjadi abu-abu muda agar garis terlihat */
+    }
+    * { box-sizing: border-box; }
+    body {
+  margin: 0; /* <-- Menghilangkan garis putih di atas */
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+    
+    img { max-width: 100%; display: block; }
+    
+    /* [STYLE POPUP PROMO] */
+    .popup-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.7); z-index: 2000; display: none;
+      justify-content: center; align-items: center; padding: 16px; 
+      opacity: 0; transition: opacity 0.3s ease; /* Transisi halus */
+    }
+    .popup-overlay.show {
+      opacity: 1;
+    }
+    .popup-content {
+      background: transparent; box-shadow: none; max-width: 300px; /* Sedikit diperbesar */
+      width: 100%; position: relative; transform: scale(0.9); transition: transform 0.3s ease;
+    }
+    .popup-content img { width: 100%; }
+    .popup-close {
+      background: #f3f4f6; border: none;
+      width: 32px; height: 32px; border-radius: 50%; font-size: 18px; font-weight: bold;
+      color: var(--text); cursor: pointer; display: flex; justify-content: center;
+      align-items: center; transition: all 0.2s ease;
+      position: absolute; /* Posisi absolut */
+      top: -12px; /* Sedikit di atas */
+      right: -12px; /* Sedikit di kanan */
+      box-shadow: 0 2px 5px rgba(255, 255, 255, 0.2);
+    }
+    
+    /* [BARU] Efek transisi untuk popup */
+    .popup-overlay {
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      opacity: 0;
+      visibility: hidden;
+    }
+    .popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .popup-close:hover {
+      background: #e5e7eb;
+      transform: scale(1.1);
+    }
+    
+    .menu-detail-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+    
+    /* Menu Detail Popup Styles */
+    .menu-detail-popup {
+      background: var(--card);
+      border-radius: 16px;
+      max-width: 320px;
+      width: 85%;
+      height: auto;
+      max-height: 90vh;
+      overflow: visible;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .menu-detail-content {
+      padding: 12px;
+    }
+    
+    .menu-detail-image {
+      width: 100%;
+      height: 120px;
+      object-fit: contain; /* prevent cropping */
+      background: #ffffff; /* letterbox background */
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .menu-detail-info h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 4px 0;
+      line-height: 1.2;
+    }
+    
+    .menu-detail-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    
+    .menu-detail-category {
+      font-size: 11px;
+      color: var(--muted);
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    
+    .menu-detail-description {
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    
+    .menu-detail-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-order {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary), #5a2d9a);
+      color: var(--primary-text);
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-order:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(76, 42, 133, 0.4);
+    }
+    
+    .btn-favorite {
+      background: #f3f4f6;
+      color: var(--text);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-favorite:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+    
+    /* Favorites Popup Styles */
+    .favorites-popup {
+      background: var(--card);
+      border-radius: 16px;
+      max-width: 320px;
+      width: 85%;
+      max-height: 60vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .favorites-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 16px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    
+    .favorites-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+    
+    .favorites-content {
+      padding: 0 16px 16px 16px;
+    }
+    
+    .favorite-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .favorite-item:hover {
+      background: #f3f4f6;
+      transform: translateY(-1px);
+    }
+    
+    .favorite-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    
+    .favorite-item-info {
+      flex: 1;
+    }
+    
+    .favorite-item-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 4px 0;
+    }
+    
+    .favorite-item-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .favorite-item-remove {
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .favorite-item-remove:hover {
+      background: #fecaca;
+    }
+    
+    .empty-favorites {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+    
+    .empty-favorites-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 50px 16px; /* <-- Jarak atas-bawah diperkecil lagi agar lebih tipis */
+      gap: 16px; 
+      padding: 0 16px; /* Padding atas/bawah di-nol-kan agar lebih tipis */
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background-color: transparent;
+      box-shadow: none;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      /* Transisi untuk efek scroll */
+      transition: background-color 0.3s ease, box-shadow 0.3s ease; 
+    }
+    
+    /* MODIFIKASI CSS UNTUK EFEK BARU */
+    .app-header.scrolled .brand-name,
+    .app-header.scrolled .location-link,
+    .app-header.scrolled .notification-btn {
+      color: var(--text);
+      border-bottom: 1px solid rgba(0, 0, 0, 0);
+    }
+    
+    .brand-name, .location-link, .notification-btn {
+        transition: color 0.3s ease;
+    }
+    /* END MODIFIKASI CSS */
+    .app-header .logo { width: 85px; height: 56px; flex-shrink: 0; }
+    .app-header .logo { width: 80px; height: 56px; flex-shrink: 0; }
+    .app-header .logo img {
+      width: 100%; height: 100%; object-fit: contain;
+    }
+    .brand-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 4px; /* <-- Jarak antara nama brand dan lokasi */
+    }
+    .brand-name {
+      font-size: 18px; font-weight: 700; margin: 0;
+      color: var(--primary-text); line-height: 1.2;
+    }
+    .location-row {
+      display: flex; align-items: center; gap: 6px; font-size: 9px;
+    }
+    .location-icon { font-size: 16px; }
+    .location-link {
+      color: var(--primary-text); font-weight: 600; text-decoration: underline;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
+    }
+    .notification-btn {
+      background: none; border: none; font-size: 24px; cursor: pointer;
+      padding: 4px; color: var(--primary-text); margin-left: auto;
+    }
+
+    .content { padding: 0; }
+    .promo-section { margin-bottom: -20px; /* DIUBAH: Tarik section di bawahnya ke atas */ }
+    .promo-slider { 
+      display: flex; overflow-x: auto; scroll-snap-type: x mandatory; 
+      gap: 0; scrollbar-width: none; scroll-behavior: smooth; 
+    }
+    .promo-slider::-webkit-scrollbar { display: none; }
+    .promo-item { 
+      flex: 0 0 100%; scroll-snap-align: center;
+      position: relative;
+      /* [BARU] Menambahkan lengkungan di bagian bawah */
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 0px;
+      border-top-left-radius: 0px;
+      border-top-right-radius: 0px;
+      overflow: hidden; /* Memastikan gambar mengikuti lengkungan */
+    }
+    .promo-item::after {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%;
+      height: 150px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+      z-index: 1;
+    }
+    .promo-item img {
+      /* DIUBAH: Atur tinggi gambar promo di sini. */
+      width: 100%; height: 200px; object-fit: cover; 
+      display: block;
+    }
+    
+.menu-icons { 
+  display: flex;
+  overflow-x: auto;
+  gap: 20px; 
+  padding: 24px 16px 16px 16px; /* <-- Padding disesuaikan */
+  text-align: center;
+  background: #0a101c; /* <-- Warna background konten */
+  background: transparent; /* Contoh: diubah menjadi transparan */
+  scrollbar-width: none;
+  
+  /* Tidak perlu lagi menimpa gambar */
+}
+  
+    .menu-icon { 
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      text-decoration: none; cursor: pointer; 
+    }
+    .menu-emoji { 
+      width: 48px; height: 48px; border-radius: 16px; background-color: var(--card);
+      display: grid; place-items: center; font-size: 24px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .menu-icon span { font-size: 12px; font-weight: 600; color: var(--primary-text); max-width: 100%;display: block;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}
+    
+    .menu-icon .menu-emoji.active {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(76, 42, 133, 0.5);
+      background-color: #f0e9ff;
+    }
+
+    .all-menu-section { padding: 16px; padding-bottom: 80px; }
+    .all-menu-title { margin: 0 0 12px 0; color: var(--primary-text); font-size: 16px; font-weight: 700; }
+    .all-menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .menu-card { background: var(--card); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: visible; }
+    .menu-card img { border-radius: 12px 12px 0 0; border: 1px solid #f3f4f6; }
+    .menu-card img { width: 100%; height: 110px; object-fit: cover; display: block; }
+    .menu-card .body { padding: 10px; display: grid; gap: 6px; }
+    .menu-card h3 { font-size: 14px; margin: 0; color: var(--text); }
+    .menu-card .price { font-size: 13px; font-weight: 700; color: var(--primary); }
+
+    /* Grouped menu styles */
+    .grouped-menu-section { padding: 16px; padding-bottom: 80px; }
+    .group-block { margin-bottom: 12px; }
+    .group-title { 
+      margin: 0 0 10px 0; 
+      font-size: 18px; /* Sedikit diperbesar */
+      font-weight: 800; 
+      color: var(--primary); /* Diubah agar kontras dengan background */
+    }
+.h-scroll { 
+  display: flex; 
+  gap: 10px; 
+  overflow-x: auto; 
+  scroll-snap-type: x proximity; 
+  /* Menghapus margin negatif untuk membuat scroll dimulai dari padding container */
+  margin-left: -5px;
+  margin-right: -16px;
+  /* Menambahkan padding agar kartu tidak menempel di tepi dan bayangan terlihat */
+  padding: 15px 16px 10px 16px;
+
+  overflow-y: visible; /* <-- PENTING: Untuk memastikan konten vertikal tidak terpotong */
+}
+    .h-scroll::-webkit-scrollbar { display: none; }
+.h-card { 
+  flex: 0 0 160px; 
+  scroll-snap-align: start; 
+  border-radius: 12px; 
+  background: var(--card);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Bayangan dibuat lebih tebal */
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  display: flex; /* [DIUBAH] Menggunakan flexbox untuk struktur yang lebih baik */
+  flex-direction: column; /* [BARU] Arah tumpukan vertikal */
+  /* Pastikan tidak ada "overflow: hidden" di sini */
+}
+    .h-card img { width: 100%; height: 110px; object-fit: cover; border-radius: 12px 12px 0 0; display: block; }
+    .h-card .body { 
+      padding: 8px; 
+      flex-grow: 1; /* [BARU] Memastikan body mengisi sisa ruang */
+      display: flex; /* [BARU] Menggunakan flexbox untuk konten di dalamnya */
+      flex-direction: column; /* [BARU] Arah tumpukan vertikal */
+    }
+    .h-card .body h3 { font-size: 13px; margin: 0 0 4px 0; color: var(--text); flex-grow: 1; /* [BARU] Judul mengisi ruang agar harga tetap di bawah */ }
+    .h-card .body .price { font-size: 12px; font-weight: 700; color: var(--primary); margin-top: auto; /* [BARU] Mendorong harga ke bagian bawah */ }
+    
+    /* Sisa CSS Anda tetap sama... (user-profile, voucher, dll.) */
+    .user-profile-section { padding: 0 16px; margin-bottom: 20px; }
+    .user-profile-card { background: var(--card); border-radius: 16px; padding: 12px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: -10px; position: relative; z-index: 2; }
+    .profile-content { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .profile-left { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .profile-right { display: flex; align-items: center; flex-shrink: 0; }
+    .welcome-text { display: flex; align-items: center; gap: 4px; }
+    .hello-text { font-size: 16px; font-weight: 400; color: var(--text); }
+    .user-name { font-size: 16px; font-weight: 700; color: var(--primary); }
+    .points-display {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .points-icon {
+      width: 25px;  /* <-- Ubah lebar di sini */
+      height: 3cap; /* <-- Ubah tinggi di sini */
+      flex-shrink: 0;
+    }
+    .points-text-container {
+      display: flex;
+      flex-direction: column;
+    }
+    .points-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin: 0;
+    }
+    .points-value {
+      font-size: 18px; /* DIUBAH: Ukuran font diperkecil */
+      font-weight: 700;
+      color: var(--primary);
+      background: none;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      line-height: 1.2;
+    }
+    .pending-points-row { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+    .pending-label { font-size: 13px; color: var(--muted); }
+    .pending-value { font-size: 13px; font-weight: 700; color: #b45309; background: linear-gradient(135deg, #fff7ed, #ffedd5); padding: 4px 10px; border-radius: 16px; border: 1px solid #fed7aa; }
+    .exchange-btn { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), #5a2d9a); color: var(--primary-text); border: none; border-radius: 20px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(76, 42, 133, 0.25); position: relative; overflow: hidden; }
+    .exchange-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+    .exchange-btn:hover { background: linear-gradient(135deg, #3c216b, #4a1f6b); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(76, 42, 133, 0.4); }
+    .exchange-btn:hover::before { left: 100%; }
+    .exchange-btn:active { transform: translateY(-1px); }
+    .exchange-icon { font-size: 18px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); }
+    .exchange-text { font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
+    .voucher-section { padding: 0 16px; margin-bottom: 10px; }
+    .voucher-card { background: var(--card); border-radius: 10px; padding: 8px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; }
+    .voucher-content { display: flex; align-items: center; gap: 12px; }
+    .voucher-item { display: flex; align-items: center; gap: 8px; text-decoration: none; flex: 1; padding: 6px 8px; border-radius: 6px; transition: all 0.2s ease; }
+    .voucher-item:hover { background: #f8f9fa; transform: translateY(-1px); }
+    .voucher-icon { font-size: 16px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f3f4f6, #e5e7eb); border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .voucher-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .voucher-divider { width: 1px; height: 24px; background: #e5e7eb; flex-shrink: 0; }
+    /* Badge Favorit */
+/* == GAYA BADGE PITA - SUDUT LEBIH TAJAM == */
+.fav-badge {
+  position: absolute;
+  top: 8px; /* [DIUBAH] Atur posisi dari atas */
+  left: -4px; /* [DIUBAH] Atur posisi dari kiri */
+  transform: none; /* [DIUBAH] Hapus transformasi */
+  z-index: 3; /* [DIUBAH] Sesuaikan z-index */
+  
+  /* Tampilan Pita */
+  background: #6b7280;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px; /* [DIUBAH] Sesuaikan padding */
+  box-shadow: -2px 3px 8px rgba(0,0,0,0.3);
+  border-radius: 0 9px 9px 0; /* <-- DIUBAH MENJADI 2px AGAR LEBIH TAJAM */
+  pointer-events: none;
+}
+
+/* Lipatan 3D (tidak perlu diubah) */
+.fav-badge::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  z-index: -1;
+  border-top: 6px solid #4b5563;
+  border-left: 6px solid transparent; 
+}
+  </style>
+<style>
+  /* CSS BARU UNTUK PROFIL PENGGUNA (DESAIN LEBIH BAIK) */
+  .user-profile-section {
+    /* Nilai ketiga (24px) adalah padding-bottom, yang mengatur jarak ke bawah. */
+    /* Ubah angka ini untuk mengatur jarak ke section "Spesial Hari Ini". */
+    /* Contoh: 12px untuk jarak lebih dekat, 30px untuk jarak lebih jauh. */
+    padding: 16px 16px 0px 16px; /* Jarak bawah dikurangi dari 24px menjadi 12px */
+    position: relative;
+    z-index: 2;
+    background: var(--bg); /* Warna background utama */
+    border-radius: 24px 24px 0 0; /* <-- DIUBAH: Lengkungan sekarang di atas */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0); /* <-- DIUBAH: Warna bayangan menjadi abu-abu transparan */
+  }
+  .welcome-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 8px 20px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    border: 1px solid var(--border);
+  }
+  .user-profile-section .actions-grid {
+    display: flex; /* Menggunakan flexbox untuk tinggi yang sama */
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 7px; /* <-- ATUR JARAK DI SINI: Jarak antara 'Hello' dan kotak poin */
+  }
+  .action-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px; 
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border);
+  }
+  .action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  }
+  .action-card .points-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .action-card .exchange-text { font-weight: 600; }
+</style>
+</head>
+<style>
+  /* [BARU] CSS untuk tombol Tukar Poin yang baru */
+  .exchange-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    flex: 1;
+  }
+  .exchange-card .exchange-text {
+    font-weight: 700;
+  }
+</style>
+<style>
+  /* [BARU] CSS untuk Kartu Promo Spesial */
+  .special-offer-section {
+    padding: 0 16px; /* Menjaga padding kiri-kanan */
+    margin-bottom: 20px; /* Jarak ke bawah */
+  }
+  .special-offer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Membuat 3 kolom */
+    gap: 10px; /* Jarak antar kartu */
+  }
+  .special-offer-card {
+    display: flex; /* Mengubah ke flexbox */
+    flex-direction: column; /* Arah tumpukan vertikal */
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    color: var(--text);
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden; /* Agar gambar tidak keluar dari border-radius */
+    border: 0px solid var(--border);
+  }
+  .special-offer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+  /* [BARU] CSS untuk slider gambar di dalam kartu outlet */
+  .outlet-image-slider {
+    position: relative;
+    overflow: hidden;
+  }
+  .outlet-image-track {
+    display: flex;
+    scroll-snap-type: x mandatory;
+    overflow-x: auto;
+    scrollbar-width: none; /* Sembunyikan scrollbar Firefox */
+  }
+  .outlet-image-track::-webkit-scrollbar {
+    display: none; /* Sembunyikan scrollbar Chrome/Safari */
+  }
+  .outlet-image-track img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    flex-shrink: 0;
+    scroll-snap-align: center;
+  }
+  .outlet-image-dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.6);
+    transition: background-color 0.3s;
+  }
+  .dot.active {
+    background-color: white;
+  }
+  .offer-image {
+    width: 100%; /* Lebar penuh */
+    height: 100%; /* Tinggi gambar disesuaikan */
+  }
+  .offer-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .offer-details {
+    padding: 10px; /* Padding untuk teks */
+    text-align: center; /* Teks di tengah */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .offer-title { font-size: 13px; font-weight: 700; margin: 0; line-height: 1.3; }
+  .offer-description { display: none; } /* Deskripsi disembunyikan agar lebih ringkas */
+</style>
+<body>
+  <div class="popup-overlay" id="promoPopup">
+    <div class="popup-content">
+      <img src="promo.png" alt="Promo Spesial">
+      <button class="popup-close" id="promoCloseBtn" aria-label="Tutup">X</button>
+    </div>
+  </div>
+  <!-- [BARU] Popup Promo -->
+  <div class="popup-overlay" id="promoPopup">
+    <div class="popup-content" id="promoPopupContent">
+      <!-- Tombol tutup sekarang di luar <a> tapi di dalam .popup-content -->
+      <button class="popup-close" id="promoCloseBtn" aria-label="Tutup">×</button>
+      <a href="menu.html?cat=rice-bowl">
+        <img src="promo.png" alt="Promo Gratis Es Teh untuk pembelian Rice Bowl & Mie">
+      </a>
+    </div>
+  </div>
+
+  <header class="app-header" style="justify-content: space-between;">
+    <div class="logo">
+      <img src="logo-pajang.png" alt="Rice Bowl Monster Logo">
+    </div>
+    <!-- Bagian Lokasi dipindahkan ke sini -->
+    <div class="location-row">
+      <span class="location-icon">📍</span>
+      <a href="#" class="location-link" id="findNearestLocation">
+        Cari Lokasi Terdekat
+      </a>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="promo-section">
+      <div class="promo-slider" id="promoSlider">
+        <div class="promo-item"><img src="latar-utama.jpg" alt="Latar Utama 1"></div>
+        <div class="promo-item"><img src="latar-utama1.png" alt="Latar Utama 1"></div>
+        <div class="promo-item"><img src="latar-utama2.png" alt="Latar Utama 1"></div>
+    </section>
+
+    <div style="background-color: #f3f4f6;"> <!-- Wrapper untuk konten di bawah promo -->
+      <section class="user-profile-section">
+        <!-- KONTEN INI AKAN DIUBAH OLEH JAVASCRIPT -->
+        <div id="user-profile-content">
+          <!-- Tampilan Default (Guest/Tamu) -->
+          <div class="welcome-card">
+            <div class="welcome-text">
+              <span class="hello-text">Hello, </span>
+              <span class="user-name">Monsters Lovers</span>
+            </div>
+          </div>
+          <div class="actions-grid">
+            <a href="index.html" class="exchange-card welcome-card" style="cursor: pointer; text-decoration: none; justify-content: center;">
+              <span class="exchange-text">Login / Daftar</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+    <!-- [BARU] Bagian Promo Spesial -->
+<section class="special-offer-section">
+    <div class="special-offer-grid">
+        <a href="#" class="special-offer-card">
+            <div class="offer-image" style="height: 100%;">
+                <img src="monstersdidekatmu.png" alt="Monsters di dekatmu" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        </a>
+        <a href="#" class="special-offer-card">
+            <div class="offer-image" style="height: 100%;">
+                <img src="mosnterskoin.png" alt="Promo Beef Bowl" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            </a>
+        <a href="#" class="special-offer-card">
+            <div class="offer-image" style="height: 100%;">
+                <img src="diskon.png" alt="Promo Tukar Poin" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            </a>
+    </div>
+</section>
+
+<!-- [DIUBAH] Bagian Informasi Outlet dengan Slider -->
+<style>
+  .outlet-slider-section { padding: 0 16px 20px 16px; }
+  .outlet-slider-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    background: var(--card);
+  }
+  .outlet-slider-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+  .outlet-slide {
+    min-width: 100%;
+    box-sizing: border-box;
+  }
+  .outlet-slide img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+  }
+  .outlet-info {
+    padding: 12px 16px;
+  }
+  .outlet-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .outlet-info p {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .outlet-info a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .outlet-info .map-link {
+    display: inline-block;
+    background-color: #f3f4f6;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+  }
+  .outlet-info .map-link:hover { background-color: #e5e7eb; }
+</style>
+<section class="outlet-slider-section">
+    <!-- [BARU] CSS untuk indikator titik slider outlet utama -->
+    <style>
+      .main-outlet-dots {
+        text-align: center;
+        padding-top: 12px;
+      }
+      .main-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #d1d5db; /* Warna non-aktif */
+        margin: 0 4px;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+      .main-dot.active {
+        background-color: var(--primary); /* Warna aktif */
+        transform: scale(1.2);
+      }
+    </style>
+    <!-- [BARU] CSS untuk slider gambar outlet -->
+    <style>
+      .outlet-image-slider {
+        position: relative;
+      }
+      .outlet-image-track {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none; /* Sembunyikan scrollbar Firefox */
+        scroll-behavior: smooth;
+      }
+      .outlet-image-track::-webkit-scrollbar {
+        display: none; /* Sembunyikan scrollbar Chrome/Safari */
+      }
+      .outlet-image-track img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        flex-shrink: 0;
+        scroll-snap-align: center;
+      }
+      .outlet-image-dots {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 6px;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.6);
+        transition: background-color 0.3s;
+      }
+      .dot.active {
+        background-color: white;
+      }
+    </style>
+    <div class="outlet-slider-container" id="outletSlider">
+        <div class="outlet-slider-track">
+            <!-- Slide 1: Sidoarjo -->
+            <div class="outlet-slide" data-outlet-id="sidoarjo">
+                <div class="outlet-image-slider">
+                    <div class="outlet-image-track">
+                        <img src="outlet-sidoarjo-3.jpg" alt="Outlet Sidoarjo 3">
+                        <img src="outlet-sidoarjo-1.jpg" alt="Outlet Sidoarjo 2">
+                        <img src="outlet-sidoarjo.jpg" alt="Outlet Sidoarjo 1">
+                    </div>
+                    <div class="outlet-image-dots"></div>
+                </div>
+                <div class="outlet-info">
+                    <h3>Rice Bowl Monsters - Ponti, Sidoarjo</h3>
+                    <p>Reservasi: <a href="https://wa.me/6282246666651" target="_blank">0822-4666-6651</a></p>
+                    <a class="map-link" href="https://maps.app.goo.gl/8LUf6bR8EV7HY9Wx5" target="_blank">Lihat di Google Maps 📍</a>
+                </div>
+            </div>
+            <!-- Slide 2: Surabaya -->
+            <div class="outlet-slide" data-outlet-id="surabaya">
+                <div class="outlet-image-slider">
+                    <div class="outlet-image-track">
+                        <img src="outlet-surabaya-3.jpg" alt="Outlet Surabaya 3">
+                        <img src="outlet-surabaya-2.jpg" alt="Outlet Surabaya 2">
+                        <img src="outlet-surabaya.jpg" alt="Outlet Surabaya 1">
+                    </div>
+                    <div class="outlet-image-dots"></div>
+                </div>
+                <div class="outlet-info">
+                    <h3>Rice Bowl Monsters - Darmokali, Surabaya</h3>
+                    <p>Reservasi: <a href="https://wa.me/6281997600777" target="_blank">0819-9760-0777/a></p>
+                    <a class="map-link" href="https://maps.app.goo.gl/xQAoxDSVJxtn2yc96" target="_blank">Lihat di Google Maps 📍</a>
+                </div>
+            </div>
+            <!-- Anda bisa menambahkan slide ke-3 di sini jika ada -->
+        </div>
+        <div class="main-outlet-dots" id="mainOutletDots"></div> <!-- [BARU] Kontainer untuk titik indikator -->
+    </div>
+</section>
+
+    
+    
+    <section class="grouped-menu-section">
+      <div id="groupedMenuContainer"></div>
+    </section>
+    </div> <!-- Penutup wrapper -->
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bottom-link active" href="home.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar</span> </a>
+    <a class="bottom-link" href="klaim.html"> <span class="icon">🎫</span> <span>Vcr Klaim</span> </a>
+    <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+    <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
+  </nav>
+
+  <!-- [BARU] Popup untuk Detail Menu -->
+  <div class="popup-overlay" id="menuDetailPopup">
+    <div class="menu-detail-popup">
+      <div class="menu-detail-header">
+        <button class="popup-close" id="menuDetailCloseBtn" aria-label="Tutup">×</button>
+      </div>
+      <div class="menu-detail-content">
+        <img id="menuDetailImage" src="" alt="Detail Menu" class="menu-detail-image">
+        <div id="menuDetailInfo" class="menu-detail-info">
+          <!-- Konten detail menu akan dimasukkan di sini oleh JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxlPGEih-uNcZ1AJmVDgLbAk1k9M0ctDX-j_hgRob5aMEoXFH-qjf7FcSis7xSKQ_G3/exec';
+    
+    function handlePromoPopup() {
+      const popup = document.getElementById('promoPopup');
+      const popupContent = document.querySelector('#promoPopup .popup-content');
+      const closeBtn = document.getElementById('promoCloseBtn');
+      if (!popup || !closeBtn) return;
+
+      // Tampilkan popup dengan efek
+      popup.style.display = 'flex';
+      setTimeout(() => {
+        popup.classList.add('show');
+        if (popupContent) popupContent.style.transform = 'scale(1)';
+      }, 10);
+
+      closeBtn.addEventListener('click', () => {
+        popup.style.display = 'none';
+        popup.classList.remove('show');
+      });
+    }
+
+    function saveFavorites(favorites) {
+      localStorage.setItem('rbm_favorites', JSON.stringify(favorites));
+    }
+
+    function toggleFavorite(menuData) {
+      const favorites = getFavorites();
+      const existingIndex = favorites.findIndex(fav => fav.name === menuData.name);
+      
+      if (existingIndex > -1) {
+        // Remove from favorites
+        favorites.splice(existingIndex, 1);
+      } else {
+        // Add to favorites
+        favorites.push(menuData);
+      }
+      
+      saveFavorites(favorites);
+    }
+
+    function showMenuDetail(menuData) {
+      const popup = document.getElementById('menuDetailPopup');
+      const closeBtn = document.getElementById('menuDetailCloseBtn');
+      const imgEl = document.getElementById('menuDetailImage');
+      const infoEl = document.getElementById('menuDetailInfo');
+
+      if (!popup || !imgEl || !infoEl) return;
+
+      imgEl.src = menuData.img;
+      imgEl.alt = menuData.name;
+
+      infoEl.innerHTML = `
+        <span class="menu-detail-category">${menuData.category}</span>
+        <h2>${menuData.name}</h2>
+        <div class="menu-detail-price">${menuData.price}</div>
+        <p class="menu-detail-description">${menuData.description}</p>
+        <div class="menu-detail-actions">
+          <button class="btn-order">Pesan Sekarang</button>
+        </div>
+      `;
+
+      popup.style.display = 'flex';
+      setTimeout(() => {
+        popup.classList.add('show');
+        popup.querySelector('.menu-detail-popup').style.transform = 'scale(1)';
+      }, 10);
+
+      const closePopup = () => {
+        popup.classList.remove('show');
+        popup.querySelector('.menu-detail-popup').style.transform = 'scale(0.9)';
+        setTimeout(() => popup.style.display = 'none', 300);
+      };
+
+      closeBtn.onclick = closePopup;
+      popup.onclick = (e) => { if (e.target === popup) closePopup(); };
+    }
+
+    function isFavorite(menuData) {
+      const favorites = getFavorites();
+      return favorites.some(fav => fav.name === menuData.name);
+    }
+
+    function updateFavoriteButton(button, menuData) {
+      const isFav = isFavorite(menuData);
+      if (isFav) {
+        button.classList.add('favorited');
+        button.textContent = '❤️ Favorit';
+        button.style.background = '#fee2e2';
+        button.style.color = '#dc2626';
+      } else {
+        button.classList.remove('favorited');
+        button.textContent = '❤️ Favorit';
+        button.style.background = '#f3f4f6';
+        button.style.color = 'var(--text)';
+      }
+    }
+
+    function showFavorites() {
+      const popup = document.getElementById('favoritesPopup');
+      const closeBtn = document.getElementById('favoritesCloseBtn');
+      const favoritesList = document.getElementById('favoritesList');
+      
+      if (!popup) return;
+
+      const favorites = getFavorites();
+      
+      if (favorites.length === 0) {
+        favoritesList.innerHTML = `
+          <div class="empty-favorites">
+            <div class="empty-favorites-icon">❤️</div>
+            <p>Belum ada menu favorit</p>
+            <p style="font-size: 14px; margin-top: 8px;">Klik tombol ❤️ pada menu untuk menambahkannya ke favorit</p>
+          </div>
+        `;
+      } else {
+        favoritesList.innerHTML = favorites.map(fav => `
+          <div class="favorite-item" onclick="showMenuDetail(${JSON.stringify(fav).replace(/"/g, '&quot;')})">
+            <img src="${fav.img}" alt="${fav.name}">
+            <div class="favorite-item-info">
+              <div class="favorite-item-name">${fav.name}</div>
+              <div class="favorite-item-price">${fav.price}</div>
+            </div>
+            <button class="favorite-item-remove" onclick="event.stopPropagation(); removeFavorite('${fav.name}')">Hapus</button>
+          </div>
+        `).join('');
+      }
+
+      popup.style.display = 'flex';
+
+      closeBtn.onclick = () => {
+        popup.style.display = 'none';
+      };
+
+      popup.onclick = (e) => {
+        if (e.target === popup) {
+          popup.style.display = 'none';
+        }
+      };
+    }
+
+    function removeFavorite(menuName) {
+      const favorites = getFavorites();
+      const updatedFavorites = favorites.filter(fav => fav.name !== menuName);
+      saveFavorites(updatedFavorites);
+      showFavorites(); // Refresh the favorites list
+    }
+
+    function findNearestStore() {
+      const locationLink = document.getElementById('findNearestLocation');
+      if (!locationLink) return;
+
+      // Daftar lokasi outlet Rice Bowl Monster
+      const stores = [
+        { name: 'Jl. Raya Ponti, Sidoarjo', lat: -7.44698, lon: 112.70157 },
+        { name: 'Jl. Darmokali, Surabaya', lat: -7.28969, lon: 112.74283 }
+      ];
+
+      // Fungsi untuk menghitung jarak (Haversine formula)
+      function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius bumi dalam km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Jarak dalam km
+      }
+
+      if (!navigator.geolocation) {
+        locationLink.textContent = 'Geolokasi tidak didukung';
+        return;
+      }
+
+      locationLink.textContent = 'Mencari lokasi...';
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLat = position.coords.latitude;
+          const userLon = position.coords.longitude;
+
+          let nearestStore = null;
+          let minDistance = Infinity;
+
+          stores.forEach(store => {
+            const distance = getDistance(userLat, userLon, store.lat, store.lon);
+            if (distance < minDistance) {
+              minDistance = distance;
+              nearestStore = store;
+            }
+          });
+
+          if (nearestStore) {
+            locationLink.textContent = nearestStore.name;
+            locationLink.href = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLon}&destination=${nearestStore.lat},${nearestStore.lon}`;
+            locationLink.target = '_blank'; // Buka di tab baru
+            locationLink.onclick = null; // Hapus event click sebelumnya jika ada
+          } else {
+            locationLink.textContent = 'Lokasi tidak ditemukan';
+          }
+        },
+        (error) => {
+          console.error("Error mendapatkan lokasi: ", error.message);
+          locationLink.textContent = 'Izinkan akses lokasi';
+          // Jika user menolak, arahkan ke halaman lokasi manual
+          locationLink.href = 'lokasi.html';
+          locationLink.onclick = null;
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+
+      // Hapus event listener default untuk mencegah perilaku yang tidak diinginkan
+      locationLink.addEventListener('click', (event) => {
+        if (locationLink.href === '#' || locationLink.href.endsWith('/#')) {
+          event.preventDefault();
+        }
+      });
+    }
+    function initPromoSlider() {
+      const slider = document.getElementById('promoSlider');
+      if (!slider) return;
+      let currentSlide = 0;
+      const slides = slider.children;
+      const totalSlides = slides.length;
+      setInterval(() => {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        slider.scrollTo({ left: currentSlide * slider.offsetWidth, behavior: 'smooth' });
+      }, 3000);
+    }
+
+    function getAllItems() {
+      const items = [
+        { name: 'Hot Monsters Beef (Free Ice Tea)', price: 'Rp 39.900', img: 'Hotmonstersbeef.png', category: 'rice-bowl', description: 'Nasi dengan daging sapi pedas khas Monster, dilengkapi dengan es teh gratis.' },
+        { name: 'Special Monsters Beef (Free Ice Tea)', price: 'Rp 39.900', img: 'Specialmonstersbeef.png', category: 'rice-bowl', favorite: true, description: 'Nasi dengan daging sapi spesial Monster dengan bumbu rahasia, dilengkapi dengan es teh gratis.' },
+        { name: 'Honey Sauce Beef (Free Ice Tea)', price: 'Rp 39.900', img: 'Honeysaucebeef.png', category: 'rice-bowl', description: 'Nasi dengan daging sapi saus madu yang manis dan gurih, dilengkapi dengan es teh gratis.' },
+        { name: 'Smoked Pepper Beef (Free Ice Tea)', price: 'Rp 39.900', img: 'Smokedpepparbeef.png', category: 'rice-bowl', description: 'Nasi dengan daging sapi merica asap yang aromatik, dilengkapi dengan es teh gratis.' },
+        { name: 'Hot Monsters Chicken (Free Ice Tea)', price: 'Rp 26.900', img: 'Hotmonsterschicken.png', category: 'rice-bowl', description: 'Nasi dengan ayam pedas khas Monster, dilengkapi dengan es teh gratis.' },
+        { name: 'Chicken Teriyaki (Free Ice Tea)', price: 'Rp 26.900', img: 'Chickenteriyaki.png', category: 'rice-bowl', favorite: true, description: 'Nasi dengan ayam teriyaki yang manis dan lezat, dilengkapi dengan es teh gratis.' },
+        { name: 'Sweet & Sour Chicken (Free Ice Tea)', price: 'Rp 26.900', img: 'Sweet&sourchiken.png', category: 'rice-bowl', description: 'Nasi dengan ayam asam manis yang segar, dilengkapi dengan es teh gratis.' },
+        { name: 'Javanesse Honey Spicy (Free Ice Tea)', price: 'Rp 26.900', img: 'Javanessehoneyspicychicken.png', category: 'rice-bowl', description: 'Nasi dengan ayam pedas madu Jawa yang khas, dilengkapi dengan es teh gratis.' },
+        { name: 'Chicken Katsu (Free Ice Tea)', price: 'Rp 28.900', img: 'Chikenkatsu.png', category: 'rice-bowl', description: 'Nasi dengan ayam katsu crispy yang renyah, dilengkapi dengan es teh gratis.' },
+        { name: 'Mie Hot Monsters', price: 'Rp 20.900', img: 'miehotmonsters.png', category: 'mie', favorite: true, description: 'Mie dengan kuah pedas khas Monster yang menggugah selera.' },
+        { name: 'Mie Ayam Monsters', price: 'Rp 20.900', img: 'mieayammonsters.png', category: 'mie', description: 'Mie dengan topping ayam khas Monster yang lezat.' },
+        { name: 'Mie Ayam Jamur', price: 'Rp 20.900', img: 'mieayamjamur.png', category: 'mie', description: 'Mie dengan topping ayam dan jamur yang segar.' },
+        { name: 'Mie Ayam Katsu', price: 'Rp 22.900', img: 'mieayamkatsu.png', category: 'mie', description: 'Mie dengan topping ayam katsu yang crispy dan lezat.' },
+        { name: 'Mie Beef Monsters', price: 'Rp 28.900', img: 'miebeefmonsters.png', category: 'mie', description: 'Mie dengan topping daging sapi khas Monster yang gurih.' },
+        { name: 'Mie Polos', price: 'Rp 9.900', img: 'miepolos.png', category: 'mie', description: 'Mie sederhana dengan kuah bening yang segar.' },
+      ];
+      items.push({ name: 'Ice Tea', price: 'Rp 8.900', img: 'teh.png', category: 'minuman', description: 'Perpaduan teh segar dengan perasan lemon asli yang menyegarkan dahaga.' });
+      items.push({ name: 'Mineral Water', price: 'Rp 8.900', img: 'mineralwater.png', category: 'minuman', description: 'Perpaduan teh segar dengan perasan lemon asli yang menyegarkan dahaga.' });
+      items.push({ name: 'Ice Tea Susu', price: 'Rp 11.700', img: 'tehsusu.png', category: 'minuman', description: 'Perpaduan teh segar dengan perasan lemon asli yang menyegarkan dahaga.' });
+      items.push({ name: 'Ice Lemon Tea', price: 'Rp 11.700', img: 'teh.png', category: 'minuman', description: 'Perpaduan teh segar dengan perasan lemon asli yang menyegarkan dahaga.' });
+      items.push({ name: 'Ice Chocolate', price: 'Rp 11.700', img: 'coklat.png', category: 'minuman', description: 'Perpaduan teh segar dengan perasan lemon asli yang menyegarkan dahaga.' });
+      items.push({ name: 'Coffe', price: 'Rp 11.700', img: 'kopi.png', category: 'minuman', description: 'Perpaduan teh segar dengan perasan lemon asli yang menyegarkan dahaga.' });
+      items.push({ name: 'Coffe Cream', price: 'Rp 14.000', img: 'kopisusu.png', category: 'minuman', description: 'Perpaduan teh segar dengan perasan lemon asli yang menyegarkan dahaga.' });
+      items.push({ name: 'Es Campur 1 Porsi', price: 'Rp 17.900', img: '1.png', category: 'es-campur',favorite: true, description: 'Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.' });
+      items.push({ name: 'Es Campur 2 Porsi', price: 'Rp 33.000', img: '2.png', category: 'es-campur', description: 'Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.' });
+      items.push({ name: 'Es Campur 4 Porsi', price: 'Rp 63.900', img: '4.png', category: 'es-campur', description: 'Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.' });
+      items.push({ name: 'Es Campur 8 Porsi', price: 'Rp 117.900', img: '8.png', category: 'es-campur', description: 'Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.' });
+      items.push({ name: 'Es Campur 10 Porsi', price: 'Rp 145.800', img: '10.png', category: 'es-campur', description: 'Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.' });
+      items.push({ name: 'Es Campur 30 Porsi', price: 'Rp 418.500', img: '30.png', category: 'es-campur', description: 'Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.' });
+      items.push({ name: 'Ayam Gulung (6pcs)', price: 'Rp 9.900', img: 'ayamgulung.png', category: 'gorengan',favorite: true, description: 'Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.' });
+      items.push({ name: 'Bakso Ayam (6pcs)', price: 'Rp 9.900', img: 'baksoayam.png', category: 'gorengan', description: 'Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.' });
+      items.push({ name: 'Tofu (6pcs)', price: 'Rp 9.900', img: 'tofu.png', category: 'gorengan', description: 'Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.' });
+      items.push({ name: 'Otak - Otak (6pcs)', price: 'Rp 9.900', img: 'otakotak.png', category: 'gorengan', description: 'Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.' });
+      items.push({ name: 'Scallop (6pcs)', price: 'Rp 9.900', img: 'scalop.png', category: 'gorengan', description: 'Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.' });
+      items.push({ name: 'Ikan Olahan Bintang (6pcs)', price: 'Rp 9.900', img: 'bintang.png', category: 'gorengan', description: 'Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.' });
+      return items; // return harus di akhir
+    }
+
+    function renderGroupedMenus() {
+      const container = document.getElementById('groupedMenuContainer');
+      if (!container) return;
+      const items = getAllItems();
+
+      const groupOrder = [
+        { key: 'rice-bowl', title: 'Rice Bowl', icon: '🍚' },
+        { key: 'mie', title: 'Mie', icon: '🍜' },
+        { key: 'gorengan', title: 'Gorengan', icon: '🍤' },
+        { key: 'es-campur', title: 'Es Campur', icon: '🍧' },
+        { key: 'minuman', title: 'Minuman', icon: '🍹' },
+      ];
+
+      const html = groupOrder.map(group => {
+        const groupItems = items.filter(it => it.category === group.key);
+        if (groupItems.length === 0) return '';
+        const cards = groupItems.map(it => (
+          `<div class="h-card" data-menu='${JSON.stringify(it)}'>` +
+            `${it.favorite ? '<div class="fav-badge">★ Best Seller</div>' : ''}` +
+            `<img src="${it.img}" alt="${it.name}">` +
+            `<div class="body"><h3>${it.name}</h3><div class="price">${it.price}</div></div>` +
+          `</div>`
+        )).join('');
+        return `
+          <div class="group-block" id="group-${group.key}">
+            <h3 class="group-title">${group.icon} ${group.title}</h3>
+            <div class="h-scroll">${cards}</div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+    }
+
+    function loadPendingPoints() {
+      const el = document.getElementById('pendingPoints');
+      if (!el) return;
+      const pending = parseInt(localStorage.getItem('rbm_pending_points') || '0', 10);
+      el.textContent = isNaN(pending) ? '0' : String(pending);
+    }
+
+    function displayUserData(user) {
+      const profileContainer = document.getElementById('user-profile-content');
+      if (user && user.phone) {
+        // Tampilan jika user sudah login
+        profileContainer.innerHTML = `
+          <div class="welcome-card">
+            <div class="welcome-text">
+              <span class="hello-text">Hello, </span>
+              <span class="user-name" id="userName">${user.nama}</span>
+            </div>
+          </div>
+          <div class="actions-grid">
+            <div class="points-display welcome-card">
+              <div class="points-text-container">
+                <span class="points-label">Poin Anda:</span>
+                <span class="points-value" id="userPoints">${user.points || '0'}</span>
+              </div>
+              <img src="koin.png" alt="Poin" class="points-icon">
+            </div>
+            <a href="tukarpoint.html" class="exchange-card welcome-card" style="cursor: pointer;">
+              <span class="exchange-text">Tukar Poin</span>
+              <img src="tukarpoint.png" alt="Tukar Poin" class="points-icon">
+            </a>
+          </div>
+        `;
+      } else {
+        // Tampilan default (guest) sudah ada di HTML, jadi tidak perlu melakukan apa-apa
+        // atau bisa dipastikan lagi di sini jika perlu.
+      }
+    }
+    
+    async function syncUserDataFromSheets(phoneNumber) {
+      try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 8000);
+        
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST', cache: 'no-cache',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getUserData', phone: phoneNumber }),
+          signal: controller.signal
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.user) {
+          localStorage.setItem('rbm_user', JSON.stringify(result.user));
+          displayUserData(result.user);
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.log('Sinkronisasi gagal, koneksi bermasalah.', error.message);
+        return false;
+      }
+    }
+
+    // FUNGSI BARU UNTUK HEADER SCROLL
+// GANTI FUNGSI LAMA DENGAN YANG INI
+// KODE YANG SUDAH DIPERBAIKI
+function handleHeaderScroll() {
+  const header = document.querySelector('.app-header');
+  const promoSection = document.querySelector('.promo-section');
+  if (!header || !promoSection) return;
+
+  const promoHeight = promoSection.offsetHeight;
+
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    const opacity = Math.min(scrollY / promoHeight, 1);
+    header.style.backgroundColor = `rgba(255, 255, 255, ${opacity})`;
+
+    // Bagian ini tetap ada untuk mengubah warna teks
+    if (scrollY > promoHeight / 2) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
+}
+
+
+    
+    // --- FUNGSI BARU UNTUK MENGELOLA SEMUA INTERAKSI ---
+    function setupEventListeners() {
+      const mainContent = document.querySelector('.content');
+
+      // 1. Event Listener untuk mengarahkan ke halaman menu saat kartu diklik
+      document.body.addEventListener('click', (e) => {
+        const card = e.target.closest('.h-card, .special-offer-card');
+        if (card && card.dataset.menu) {
+          e.preventDefault();
+          const menuData = JSON.parse(card.dataset.menu);
+          showMenuDetail(menuData);
+        }
+      });
+
+      // Listener untuk tombol favorit di header
+      const favoritesHeaderBtn = document.getElementById('favoritesBtn');
+      if (favoritesHeaderBtn) favoritesHeaderBtn.addEventListener('click', showFavorites);
+    }
+
+    // --- FUNGSI BARU UNTUK SLIDER OUTLET UTAMA ---
+    function initOutletSlider() {
+      const container = document.getElementById('outletSlider');
+      if (!container) return;
+
+      const track = container.querySelector('.outlet-slider-track');
+      const slides = track.querySelectorAll('.outlet-slide');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      // [BARU] Variabel untuk dots
+      const dotsContainer = document.getElementById('mainOutletDots');
+      let dots = [];
+      let autoSlideInterval;
+        let userScrollTimeout;
+
+      if (totalSlides <= 1) return; // Tidak perlu slider jika hanya 1 outlet
+
+      // [BARU] Buat dots
+      for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.classList.add('main-dot');
+        dotsContainer.appendChild(dot);
+        dots.push(dot);
+      }
+
+      // [BARU] Fungsi untuk update dot aktif
+      function updateDots() {
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === currentIndex);
+        });
+      }
+
+      // Fungsi untuk menggeser ke slide tertentu
+      function goToSlide(index) {
+        track.style.transform = `translateX(-${index * 100}%)`;
+        currentIndex = index;
+        updateDots(); // [BARU] Panggil update dots saat slide berubah
+        prevTranslate = -index * container.offsetWidth; // Update posisi untuk swipe selanjutnya
+      }
+
+      // Fungsi untuk memulai auto-slide
+      function startAutoSlide() {
+        // [PERBAIKAN] Mengaktifkan kembali pergeseran otomatis
+        stopAutoSlide(); // Hentikan dulu jika sudah ada
+        autoSlideInterval = setInterval(() => {
+          const nextIndex = (currentIndex + 1) % totalSlides;
+          goToSlide(nextIndex);
+        }, 10000); // Geser setiap 10 detik
+      }
+
+      // Fungsi untuk menghentikan auto-slide
+      function stopAutoSlide() {
+        clearInterval(autoSlideInterval);
+      }
+      // [PERBAIKAN] Mulai pergeseran otomatis saat halaman dimuat
+      startAutoSlide();
+
+      // Opsional: Hentikan auto-slide saat mouse hover, dan mulai lagi saat mouse leave
+      container.addEventListener('mouseenter', stopAutoSlide);
+      container.addEventListener('mouseleave', startAutoSlide);
+
+      // [BARU] Event listener untuk swipe manual
+      container.addEventListener('touchstart', touchStart, { passive: true });
+      container.addEventListener('touchmove', touchMove, { passive: true });
+      container.addEventListener('touchend', touchEnd);
+
+      function touchStart(event) {
+        isDragging = true;
+        startX = event.touches[0].clientX;
+        animationID = requestAnimationFrame(animation);
+        track.style.transition = 'none'; // Hapus transisi saat digeser manual
+      }
+
+      function touchMove(event) {
+        if (isDragging) {
+          const currentX = event.touches[0].clientX;
+          currentTranslate = prevTranslate + currentX - startX;
+        }
+      }
+
+      function touchEnd() {
+        isDragging = false;
+        cancelAnimationFrame(animationID);
+
+        const movedBy = currentTranslate - prevTranslate;
+
+        // Tentukan apakah akan pindah slide atau kembali
+        if (movedBy < -50 && currentIndex < totalSlides - 1) {
+          // Geser ke slide berikutnya
+          currentIndex++;
+        }
+
+        if (movedBy > 50 && currentIndex > 0) {
+          // Geser ke slide sebelumnya
+          currentIndex--;
+        }
+
+        // Posisikan ulang slider dengan transisi
+        track.style.transition = 'transform 0.5s ease-in-out';
+        goToSlide(currentIndex);
+      }
+
+      // Inisialisasi dot pertama
+      updateDots();
+
+      function animation() {
+        setSliderPosition();
+        if (isDragging) requestAnimationFrame(animation);
+      }
+
+      function setSliderPosition() {
+        // Batasi pergeseran agar tidak melebihi batas awal dan akhir
+        const maxTranslate = 0;
+        const minTranslate = -(totalSlides - 1) * container.offsetWidth;
+        if (currentTranslate > maxTranslate) {
+            currentTranslate = maxTranslate;
+        }
+        if (currentTranslate < minTranslate) {
+            currentTranslate = minTranslate;
+        }
+        track.style.transform = `translateX(${currentTranslate}px)`;
+      }
+    }
+
+    // --- FUNGSI BARU UNTUK SLIDER GAMBAR OUTLET ---
+    function initOutletImageSliders() {
+      // [PERBAIKAN] Logika untuk slider gambar di dalam kartu outlet
+      const sliders = document.querySelectorAll('.outlet-image-slider');
+
+      sliders.forEach(slider => {
+        const track = slider.querySelector('.outlet-image-track');
+        const dotsContainer = slider.querySelector('.outlet-image-dots');
+        const images = track.querySelectorAll('img');
+        const totalImages = images.length;
+        let currentIndex = 0;
+        let autoSlideInterval;
+        let userInteractionTimeout;
+
+        // Jangan jalankan slider jika hanya ada 1 gambar atau kurang
+        if (totalImages <= 1) {
+          dotsContainer?.remove();
+          return;
+        }
+
+        // 1. Buat titik-titik (dots) penanda
+        dotsContainer.innerHTML = ''; // Kosongkan dulu
+        for (let i = 0; i < totalImages; i++) {
+          const dot = document.createElement('div');
+          dot.classList.add('dot');
+          dotsContainer.appendChild(dot);
+        }
+        const dots = dotsContainer.querySelectorAll('.dot');
+
+        // 2. Fungsi untuk update dot yang aktif
+        function updateDots(index) {
+          dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+          });
+        }
+
+        // 3. Fungsi untuk menggeser ke gambar tertentu
+        function goToImage(index) {
+          track.scrollTo({
+            left: track.clientWidth * index,
+            behavior: 'smooth'
+          });
+          currentIndex = index;
+          updateDots(currentIndex);
+        }
+
+        // 4. Fungsi untuk memulai pergeseran otomatis
+        function startAutoSlide() {
+          stopAutoSlide(); // Hentikan dulu jika sudah ada
+          autoSlideInterval = setInterval(() => {
+            const nextIndex = (currentIndex + 1) % totalImages;
+            goToImage(nextIndex);
+          }, 3000); // Geser setiap 3 detik
+        }
+
+        // 5. Fungsi untuk menghentikan pergeseran otomatis
+        function stopAutoSlide() {
+          clearInterval(autoSlideInterval);
+        }
+
+        // 6. Reset timer saat ada interaksi (klik panah atau swipe)
+        function resetTimerOnInteraction() {
+          stopAutoSlide();
+          clearTimeout(userInteractionTimeout);
+          userInteractionTimeout = setTimeout(startAutoSlide, 5000); // Mulai lagi setelah 5 detik tidak ada interaksi
+        }
+
+        // 8. Event listener untuk swipe manual
+        track.addEventListener('scroll', () => {
+          // Hitung index saat di-scroll manual
+          const newIndex = Math.round(track.scrollLeft / track.clientWidth);
+          if (newIndex !== currentIndex) {
+            currentIndex = newIndex;
+            updateDots(currentIndex);
+            resetTimerOnInteraction();
+          }
+        });
+
+        // Inisialisasi awal
+        updateDots(0);
+        startAutoSlide();
+      });
+    }
+
+    async function init() {
+      handlePromoPopup();
+      // Pastikan user sudah login; jika belum, arahkan ke login
+      initPromoSlider();
+      renderGroupedMenus();
+      loadPendingPoints();
+      handleHeaderScroll(); // <-- Panggil fungsi header scroll
+      findNearestStore(); // <-- TAMBAHKAN PANGGILAN FUNGSI INI
+      setupEventListeners(); // <-- PANGGIL FUNGSI BARU DI SINI
+      initOutletSlider(); // <-- PANGGIL FUNGSI SLIDER OUTLET
+      initOutletImageSliders(); // <-- PANGGIL FUNGSI BARU UNTUK SLIDER GAMBAR
+
+      const cachedUserData = JSON.parse(localStorage.getItem('rbm_user') || 'null');
+      
+      if (!cachedUserData || !cachedUserData.phone) {
+        console.log('User belum login. Menampilkan halaman sebagai tamu.');
+        displayUserData(null); // Tampilkan UI untuk tamu
+      } else {
+        console.log('User ditemukan di cache. Menampilkan data user.');
+        displayUserData(cachedUserData); // Tampilkan UI untuk user yang login
+        // Lakukan sinkronisasi data dengan server di latar belakang
+        await syncUserDataFromSheets(cachedUserData.phone);
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

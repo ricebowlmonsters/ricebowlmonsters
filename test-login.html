@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - Rice Bowl Monster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #4C2A85, #6B46C1);
+            color: white;
+        }
+        .card {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #4C2A85;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #3c216b;
+            transform: translateY(-2px);
+        }
+        .success {
+            background: #16a34a;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .error {
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .info {
+            background: #3b82f6;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        h1 {
+            color: #4C2A85;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .user-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #4C2A85;
+        }
+        .phone-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .phone-input:focus {
+            border-color: #4C2A85;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔐 Test Login - Rice Bowl Monster</h1>
+        
+        <div id="status"></div>
+        
+        <h3>Demo Users yang Tersedia:</h3>
+        
+        <div class="user-card">
+            <strong>Puji Shohibul Burhan</strong><br>
+            Phone: 85173350016<br>
+            Points: 3000<br>
+            <button onclick="loginUser('85173350016')">Login as Puji</button>
+        </div>
+        
+        <div class="user-card">
+            <strong>John Doe</strong><br>
+            Phone: 81234567890<br>
+            Points: 1000<br>
+            <button onclick="loginUser('81234567890')">Login as John</button>
+        </div>
+        
+        <div class="user-card">
+            <strong>Jane Smith</strong><br>
+            Phone: 81234567891<br>
+            Points: 500<br>
+            <button onclick="loginUser('81234567891')">Login as Jane</button>
+        </div>
+        
+        <h3>Manual Login:</h3>
+        <input type="tel" id="phoneInput" class="phone-input" placeholder="Masukkan nomor telepon" value="85173350016">
+        <button onclick="loginManual()">Login Manual</button>
+        
+        <h3>Actions:</h3>
+        <button onclick="checkCurrentUser()">Check Current User</button>
+        <button onclick="clearData()">Clear Data</button>
+        <button onclick="goToApp()">Go to App</button>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const demoUsers = {
+          '85173350016': {
+            nama: 'Puji Shohibul Burhan',
+            phone: '85173350016',
+            username: 'Burhan',
+            points: 3000
+          },
+          '81234567890': {
+            nama: 'John Doe',
+            phone: '81234567890',
+            username: '81234567890',
+            points: 1000
+          },
+          '81234567891': {
+            nama: 'Jane Smith',
+            phone: '81234567891',
+            username: '81234567891',
+            points: 500
+          }
+        };
+        
+        function loginUser(phoneNumber) {
+            const userData = demoUsers[phoneNumber];
+            if (userData) {
+                localStorage.setItem('rbm_user', JSON.stringify(userData));
+                showStatus(`✅ Login berhasil sebagai ${userData.nama}!`, 'success');
+                showOutput(userData);
+                
+                // Auto redirect setelah 2 detik
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 2000);
+            } else {
+                showStatus('❌ User tidak ditemukan', 'error');
+            }
+        }
+        
+        function loginManual() {
+            const phoneNumber = document.getElementById('phoneInput').value;
+            if (demoUsers[phoneNumber]) {
+                loginUser(phoneNumber);
+            } else {
+                showStatus('❌ Nomor telepon tidak terdaftar. Gunakan: 85173350016, 81234567890, atau 81234567891', 'error');
+            }
+        }
+        
+        function checkCurrentUser() {
+            const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            if (userData.nama) {
+                showStatus(`✅ Current user: ${userData.nama} (${userData.phone}) - Points: ${userData.points}`, 'success');
+                showOutput(userData);
+            } else {
+                showStatus('❌ Tidak ada user yang login', 'error');
+                showOutput({});
+            }
+        }
+        
+        function clearData() {
+            localStorage.removeItem('rbm_user');
+            showStatus('🗑️ Data berhasil dihapus!', 'info');
+        }
+        
+        function goToApp() {
+            window.location.href = 'home.html';
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        function showOutput(data) {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = `<pre style="background: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        
+        // Auto-check saat halaman dimuat
+        window.onload = function() {
+            checkCurrentUser();
+        };
+    </script>
+</body>
+</html>

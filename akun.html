@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akun - Rice Bowl Monster</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* === PENGATURAN DASAR & FONT === */
+    body {
+      margin: 0;
+      padding-bottom: 80px;
+      font-family: 'Inter', sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+
+    /* === HEADER === */
+    .app-header {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background-color: transparent;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .back-btn {
+      font-size: 24px;
+      font-weight: bold;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .page-title {
+      flex-grow: 1;
+      text-align: center;
+      margin: 0;
+      padding-right: 24px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    /* === KONTEN UTAMA === */
+    .content {
+      padding: 16px;
+    }
+
+    .section-title {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      color: #555;
+    }
+
+    /* === KARTU PROFIL PENGGUNA (DIUBAH) === */
+    .user-profile-card {
+      /* Background, shadow, dan padding telah dihapus agar tidak terlihat seperti kartu */
+      text-align: center;
+      margin-bottom: 24px; /* Menambahkan sedikit jarak ke bawah */
+    }
+
+    .profile-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* === DAFTAR AKSI (RATA TENGAH) === */
+    .action-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background-color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-icon {
+      font-size: 20px;
+    }
+
+    /* === NAVIGASI BAWAH (BOTTOM NAV) === */
+    .bottom-nav {
+      position: fixed;
+      bottom: 16px; /* Memberi jarak dari bawah layar */
+      left: 16px; /* Memberi jarak dari kiri layar */
+      right: 16px; /* Memberi jarak dari kanan layar */
+      background: var(--card, white);
+      border-top: none; /* Menghapus garis di bagian atas */
+      border-radius: 50px; /* Membuat ujungnya melengkung seperti pil */
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 6px 8px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Menambah bayangan agar terlihat melayang */
+    }
+
+    .bottom-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #888;
+      padding: 6px 4px;
+      font-size: 11px;
+      gap: 4px;
+    }
+
+    .bottom-link .icon {
+      font-size: 18px;
+    }
+
+    .bottom-link.active {
+      color: var(--primary, #d32f2f);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (function(){
+      try{
+        var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
+        if(isReload){ window.location.replace('home.html'); }
+      }catch(e){}
+    })();
+  </script>
+  <header class="app-header simple">
+    <a href="home.html" class="back-btn" aria-label="Kembali">❮</a>
+    <h1 class="page-title">Akun</h1>
+  </header>
+
+  <main class="content with-bottom-nav">
+    <section class="user-profile-section">
+      <div class="user-profile-card">
+        <div class="profile-content">
+          <div class="profile-left">
+            <div class="logo-container">
+              <img src="logo-rbm.png" alt="Rice Bowl Monster Logo" style="width:56px; height:56px;">
+            </div>
+            <div>
+              <p class="form-title" style="margin:0; font-size:23px; color: var(--primary, #d32f2f);">Rice Bowl Monsters</p>
+              <div class="welcome-text" style="margin-top:4px">
+                <span class="hello-text" style="font-size:14px;">Hallo, </span>
+                <span class="user-name" id="userName" style="font-size:14px;">Monsters Lovers</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3 class="section-title">Aksi Akun</h3>
+      <div class="action-list">
+        <a class="action-row" href="https://wa.me/6285173350016" target="_blank" rel="noopener" aria-label="WhatsApp">
+          <div class="action-icon">💬</div>
+          <div class="action-label">Chat WhatsApp</div>
+        </a>
+        <a class="action-row" href="faq.html" aria-label="Pertanyaan Umum">
+            <div class="action-icon">❓</div>
+            <div class="action-label">Pertanyaan Umum</div>
+        </a>
+        <a class="action-row" href="ketentuan.html" aria-label="Ketentuan Layanan">
+            <div class="action-icon">📜</div>
+            <div class="action-label">Ketentuan Layanan</div>
+        </a>
+        <a class="action-row" href="#" id="btnDeleteAccount" aria-label="Hapus Akun">
+          <div class="action-icon">🗑️</div>
+          <div class="action-label">Hapus Akun</div>
+        </a>
+        <a class="action-row" href="#" id="btnLogout" aria-label="Logout">
+          <div class="action-icon">🚪</div>
+          <div class="action-label">Logout</div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bottom-link" href="home.html">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a class="bottom-link" href="tukarpoint.html">
+      <span class="icon">🎁</span>
+      <span>Tukar</span>
+    </a>
+    <a class="bottom-link" href="klaim.html">
+      <span class="icon">🎫</span>
+      <span>Vcr Klaim</span>
+    </a>
+    <a class="bottom-link" href="lokasi.html">
+      <span class="icon">📍</span>
+      <span>Lokasi</span>
+    </a>
+    <a class="bottom-link active" href="akun.html">
+      <span class="icon">👤</span>
+      <span>Akun</span>
+    </a>
+  </nav>
+
+  <script>
+    // Toggle Login/Logout di halaman Akun
+    const nameEl = document.getElementById('userName');
+    const logoutBtn = document.getElementById('btnLogout');
+    const deleteBtn = document.getElementById('btnDeleteAccount');
+
+    function getUser() {
+      try { return JSON.parse(localStorage.getItem('rbm_user') || 'null'); } catch(_) { return null; }
+    }
+
+    function setLoggedOutView() {
+      if (nameEl) nameEl.textContent = 'Monsters Lovers';
+      if (logoutBtn) logoutBtn.querySelector('.action-label').textContent = 'Login';
+    }
+
+    function setLoggedInView(user) {
+      if (user && user.nama && nameEl) nameEl.textContent = user.nama;
+      if (logoutBtn) logoutBtn.querySelector('.action-label').textContent = 'Logout';
+    }
+
+    (function initAccountPage(){
+      const user = getUser();
+      if (!user || !user.phone) {
+        setLoggedOutView();
+      } else {
+        setLoggedInView(user);
+      }
+    })();
+
+    // Hapus Akun: bersihkan semua data lokal termasuk sesi, lalu ke login
+    deleteBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Apakah Anda yakin ingin menghapus akun dan semua data lokal? Tindakan ini tidak dapat diurungkan.')) {
+        localStorage.removeItem('rbm_pending_points');
+        localStorage.removeItem('rbm_claimed_points');
+        localStorage.removeItem('rbm_user_name');
+        localStorage.removeItem('rbm_user');
+        alert('Akun lokal berhasil dihapus.');
+        window.location.href = 'index.html';
+      }
+    });
+
+    // Toggle Login/Logout: jika belum login → ke halaman login, jika sudah → logout dan kembali ke beranda
+    logoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const user = getUser();
+      if (!user || !user.phone) {
+        // Belum login → masuk
+        window.location.href = 'index.html';
+        return;
+      }
+      // Sudah login → logout
+      localStorage.removeItem('rbm_user');
+      // Tidak menghapus data lain di sini; gunakan "Hapus Akun" untuk bersih total
+      setLoggedOutView();
+      window.location.href = 'home.html';
+    });
+  </script>
+</body>
+</html>

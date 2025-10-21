@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validasi Klaim - Kasir</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .app-container { width: 100%; max-width: 480px; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+    .app-header { display: flex; align-items: center; padding: 16px; background-color: #075E54; color: white; }
+    .page-title { font-size: 20px; font-weight: 600; margin: 0; }
+    .content { padding: 24px; }
+    .scanner-container { text-align: center; }
+    .scanner-title { font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 8px; }
+    .scanner-subtitle { font-size: 14px; color: #666; margin-top: 0; margin-bottom: 24px; }
+    #reader { border: 2px dashed #ccc; border-radius: 8px; overflow: hidden; width: 100%; max-width: 300px; aspect-ratio: 1 / 1; margin: 0 auto; }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; background-color: #128C7E; color: white; }
+    .btn-secondary { background-color: #ECE5DD; color: #075E54; margin-top: 12px; }
+    .validation-result { text-align: center; padding: 30px; border-radius: 8px; }
+    .validation-result h3 { margin-top: 0; }
+    .validation-result p { margin-bottom: 8px; font-size: 16px; }
+    .validation-result strong { color: #333; }
+    .success { border: 2px solid #25D366; background-color: #e8f5e9; }
+    .success h3 { color: #075E54; }
+    .error { border: 2px solid #D32F2F; background-color: #ffebee; }
+    .error h3 { color: #B71C1C; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1 class="page-title">Validasi Voucher Pelanggan</h1>
+    </header>
+
+    <main class="content" id="main-content">
+      <section class="scanner-container" id="scanner-container">
+        <h3 class="scanner-title">Pindai QR Code Pelanggan</h3>
+        <p class="scanner-subtitle">Arahkan kamera ke QR code.</p>
+        <div id="reader"></div>
+        <button id="start-scan-btn" class="btn">📷 Pindai dengan Kamera</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const mainContent = document.getElementById('main-content');
+      const startButton = document.getElementById('start-scan-btn');
+      let html5QrCode = new Html5Qrcode("reader");
+
+      function onScanSuccess(decodedText) {
+        console.log(`Data QR diterima = ${decodedText}`);
+        
+        if (html5QrCode && html5QrCode.isScanning) {
+          html5QrCode.stop().catch(err => console.error("Gagal stop scanner:", err));
+        }
+
+        try {
+          const claimData = JSON.parse(decodedText);
+          
+          if (!claimData.claimId || !claimData.itemName) {
+            handleScanError('Format QR Code tidak valid.');
+            return;
+          }
+
+          // --- LOGIKA UTAMA KONTROL KASIR ---
+          const claimedIds = JSON.parse(localStorage.getItem('rbm_claimed_ids') || '[]');
+
+          if (claimedIds.includes(claimData.claimId)) {
+            // JIKA ID SUDAH ADA, TAMPILKAN PESAN ERROR
+            mainContent.innerHTML = `
+              <div class="validation-result error">
+                <h3>❌ Gagal Validasi</h3>
+                <p><strong>QR Code ini sudah pernah digunakan sebelumnya.</strong></p>
+                <p>Hadiah: ${claimData.itemName}</p>
+                <p>Waktu Klaim Pertama: ${claimData.claimTime}</p>
+                <button onclick="window.location.reload()" class="btn">Coba Scan Lagi</button>
+              </div>
+            `;
+          } else {
+            // JIKA ID BELUM ADA, PROSES KLAIM
+            claimedIds.push(claimData.claimId);
+            localStorage.setItem('rbm_claimed_ids', JSON.stringify(claimedIds));
+
+            mainContent.innerHTML = `
+              <div class="validation-result success">
+                <h3>✅ Validasi Berhasil</h3>
+                <p>Nama Hadiah: <strong>${claimData.itemName}</strong></p>
+                <p>Nomor Pelanggan: <strong>${claimData.userPhone || '-'}</strong></p>
+                <p>Waktu Klaim: <strong>${claimData.claimTime}</strong></p>
+                <button onclick="window.location.reload()" class="btn">✅ Selesai & Scan Berikutnya</button>
+              </div>
+            `;
+          }
+          // ------------------------------------
+
+        } catch (error) {
+          handleScanError('Gagal membaca data QR Code.');
+        }
+      }
+
+      function onScanFailure(error) { /* Biarkan kosong */ }
+      
+      function handleScanError(message) {
+        alert(message);
+        window.location.reload();
+      }
+
+      startButton.addEventListener('click', () => {
+        document.getElementById('scanner-container').innerHTML = '<div id="reader"></div><p>Arahkan kamera ke QR Code...</p>';
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+          .catch(err => {
+            alert("Gagal memulai kamera. Pastikan Anda memberikan izin akses kamera.");
+            window.location.reload();
+          });
+      });
+    });
+  </script>
+</body>
+</html>

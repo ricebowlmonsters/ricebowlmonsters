@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tukar Poin - Rice Bowl Monster</title>
+  
+  <link rel="stylesheet" href="styles.css">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    .popup-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.6); display: flex;
+      justify-content: center; align-items: center; z-index: 1000;
+      opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .popup-overlay.show { opacity: 1; visibility: visible; }
+    .popup-box {
+      background: white; padding: 24px; border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 85%;
+      max-width: 350px; text-align: center; transform: scale(0.9);
+      transition: transform 0.2s ease;
+    }
+    .popup-overlay.show .popup-box { transform: scale(1); }
+    .popup-box h3 { margin-top: 0; margin-bottom: 12px; font-size: 1.2rem; color: #333; }
+    .popup-box p { margin-bottom: 24px; color: #666; white-space: pre-wrap; }
+    .popup-buttons { display: flex; justify-content: center; gap: 10px; }
+    .popup-buttons button { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; flex-grow: 1; }
+    .popup-buttons .btn-primary { background-color: #E32827; color: white; }
+    .popup-buttons .btn-secondary { background-color: #e0e0e0; color: #333; }
+  </style>
+
+</head>
+<body>
+<script>
+  (function(){
+    try{
+      var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
+      if(isReload){ window.location.replace('home.html'); }
+    }catch(e){}
+  })();
+</script>
+<div class="app-container">
+  <header class="app-header simple">
+    <a href="home.html" class="back-btn" aria-label="Kembali">❮</a>
+    <h1 class="page-title">Tukar Poin</h1>
+  </header>
+  <main class="content with-bottom-nav">
+    <section class="points-summary">
+      <div class="points-label">Poin Anda Saat Ini</div>
+      <div class="points-value" id="userPoints">...</div>
+    </section>
+    <nav class="tabs">
+      <button class="tab-btn active" data-target="merchandise">Merchandise</button>
+      <button class="tab-btn" data-target="voucher">Voucher</button>
+    </nav>
+    <div id="merchandise" class="reward-content active">
+      <div class="reward-grid"></div>
+    </div>
+    <div id="voucher" class="reward-content">
+      <div class="reward-grid"></div>
+    </div>
+  </main>
+  <nav class="bottom-nav">
+    <a class="bottom-link" href="home.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link active" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar</span> </a>
+    <a class="bottom-link" href="klaim.html"> <span class="icon">🎫</span> <span>Vcr Klaim</span> </a>
+    <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+    <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
+  </nav>
+</div>
+
+<div id="customPopup" class="popup-overlay">
+  <div class="popup-box">
+    <h3 id="popupTitle">Judul Popup</h3>
+    <p id="popupMessage">Isi pesan di sini.</p>
+    <div class="popup-buttons">
+      <button id="popupBtnBatal" class="btn-secondary">Batal</button>
+      <button id="popupBtnOke" class="btn-primary">Oke</button>
+    </div>
+  </div>
+</div>
+
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5xRkvhJSsgGvq6tYeKc4VBwzTyw6bpZgexRYtIYCTgXiGtN1wahPhSijnH5h3VHez/exec';
+
+    const merchandise = [
+      { nama: 'Kaos Monsters', point: 150, foto: 'kaos.png', type: 'merchandise' },
+      { nama: 'Topi Monsters', point: 400, foto: 'topi.png', type: 'merchandise' },
+      { nama: 'Tote Bag Monsters', point: 400, foto: 'totebag.png', type: 'merchandise' },
+    ];
+    const vouchers = [
+      { nama: 'Voucher Diskon 10%', point: 100, foto: '10%.png', type: 'voucher' },
+      { nama: 'Gratis Es Teh', point: 50, foto: 'esteh.png', type: 'voucher' },
+      { nama: 'Potongan Rp 5.000', point: 250, foto: '5k.png', type: 'voucher' },
+    ];
+    const allRewards = [...merchandise, ...vouchers];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserPoints();
+      renderRewards(merchandise, 'merchandise');
+      renderRewards(vouchers, 'voucher');
+      setupTabs();
+      activateTabFromUrl();
+      setupTukarListener();
+    });
+
+    function showCustomPopup({ title, message, type = 'alert' }) {
+        const popup = document.getElementById('customPopup');
+        const titleEl = document.getElementById('popupTitle');
+        const messageEl = document.getElementById('popupMessage');
+        const okeBtn = document.getElementById('popupBtnOke');
+        const batalBtn = document.getElementById('popupBtnBatal');
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        batalBtn.style.display = (type === 'confirm') ? 'inline-block' : 'none';
+        popup.classList.add('show');
+        return new Promise(resolve => {
+            okeBtn.onclick = () => { popup.classList.remove('show'); resolve(true); };
+            batalBtn.onclick = () => { popup.classList.remove('show'); resolve(false); };
+        });
+    }
+
+    function renderRewards(dataArray, containerId) {
+      const grid = document.querySelector(`#${containerId} .reward-grid`);
+      if (grid) {
+        grid.innerHTML = dataArray.map(item => `
+          <div class="reward-card">
+            <img src="${item.foto}" alt="${item.nama}">
+            <div class="card-body">
+              <h3>${item.nama}</h3>
+              <div class="points-cost">${item.point} Poin</div>
+              <button class="btn-tukar">Tukar</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    
+    function loadUserPoints() {
+      const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+      document.getElementById('userPoints').textContent = userData.points || '0';
+    }
+    
+    function setupTukarListener() {
+      const mainContent = document.querySelector('.content');
+      mainContent.addEventListener('click', async (event) => {
+        if (event.target.classList.contains('btn-tukar')) {
+          const button = event.target;
+          if (button.disabled) return;
+
+          const card = button.closest('.reward-card');
+          const itemName = card.querySelector('h3').textContent;
+          const costText = card.querySelector('.points-cost').textContent;
+          const cost = parseInt(costText, 10);
+          
+          let userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+          if (!userData.phone) {
+            await showCustomPopup({ title: 'Gagal', message: 'Data user tidak ditemukan. Silakan login ulang.' });
+            return;
+          }
+          const currentPoints = parseInt(userData.points || '0', 10);
+          
+          if (currentPoints < cost) {
+            await showCustomPopup({ title: 'Poin Tidak Cukup', message: `Poin Anda ${currentPoints}, butuh ${cost} poin untuk menukar ini.` });
+            return;
+          }
+          
+          const confirmed = await showCustomPopup({
+            title: 'Konfirmasi Penukaran',
+            message: `Tukar ${itemName} dengan ${cost} poin?\nSisa poin Anda akan menjadi: ${currentPoints - cost}`,
+            type: 'confirm'
+          });
+
+          if (!confirmed) return;
+          
+          button.textContent = 'Memproses...';
+          button.disabled = true;
+
+          try {
+            const response = await fetch(SCRIPT_URL, {
+              method: 'POST',
+              body: JSON.stringify({ action: 'redeemReward', phone: userData.phone, reward: itemName, cost: cost })
+            });
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+              // Update poin di local storage & tampilan
+              userData.points = result.newPoints;
+              localStorage.setItem('rbm_user', JSON.stringify(userData));
+              document.getElementById('userPoints').textContent = result.newPoints;
+              
+              // --- PERUBAHAN DIMULAI DI SINI ---
+              // 1. Cari detail lengkap item yang ditukar
+              const redeemedItem = allRewards.find(item => item.nama === itemName);
+              if (redeemedItem) {
+                // 2. Tambahkan ID unik dan status
+                const itemToClaim = { ...redeemedItem, id: Date.now(), status: 'unclaimed' };
+
+                // 3. Ambil data klaim yang sudah ada, atau buat array baru
+                const unclaimed = JSON.parse(localStorage.getItem('rbm_unclaimed_rewards') || '[]');
+                
+                // 4. Tambahkan item baru ke dalamnya
+                unclaimed.push(itemToClaim);
+                
+                // 5. Simpan kembali ke localStorage
+                localStorage.setItem('rbm_unclaimed_rewards', JSON.stringify(unclaimed));
+              }
+              // --- PERUBAHAN SELESAI ---
+              
+              await showCustomPopup({ title: 'Berhasil!', message: `Penukaran berhasil!\nSilakan cek halaman 'Vcr Klaim' untuk mengambil hadiah Anda di resto.` });
+            
+            } else {
+              await showCustomPopup({ title: 'Gagal', message: `Gagal menukar poin: ${result.message || 'Silakan coba lagi.'}` });
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            await showCustomPopup({ title: 'Error', message: 'Gagal menukar poin. Terjadi kesalahan koneksi.' });
+          } finally {
+            button.textContent = 'Tukar';
+            button.disabled = false;
+          }
+        }
+      });
+    }
+
+    function setupTabs() {
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.reward-content').forEach(content => content.classList.remove('active'));
+          button.classList.add('active');
+          document.getElementById(button.getAttribute('data-target')).classList.add('active');
+        });
+      });
+    }
+
+    function activateTabFromUrl() {
+      const activeTab = new URLSearchParams(window.location.search).get('tab');
+      if (activeTab) {
+        document.querySelector(`.tab-btn[data-target="${activeTab}"]`)?.click();
+      }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu - Rice Bowl Monster</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <script>
+    (function(){
+      try{
+        var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
+        if(isReload){ window.location.replace('home.html'); }
+      }catch(e){}
+    })();
+  </script>
+
+  <header class="app-header simple">
+    <a href="home.html" class="back-btn" aria-label="Kembali">❮</a>
+    <h1 class="page-title">Menu</h1>
+  </header>
+
+  <main class="content with-bottom-nav">
+    <nav class="tabs">
+      <button class="tab-btn active" data-target="rice-bowl">Rice Bowl</button>
+      <button class="tab-btn" data-target="mie">Mie</button>
+      <button class="tab-btn" data-target="minuman">Minuman</button>
+      <button class="tab-btn" data-target="es-campur">Es Campur</button>
+      <button class="tab-btn" data-target="gorengan">Gorengan</button>
+    </nav>
+
+<section id="rice-bowl" class="reward-content active">
+  <div class="reward-grid">
+
+    <div class="reward-card">
+      <img src="Hotmonstersbeef.png" alt="Hot Monsters Beef">
+      <div class="card-body">
+        <h3>Hot Monsters Beef (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 39.900</div>
+        <p class="card-description">Irisan daging sapi premium dengan saus monster spesial yang pedas dan gurih.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="Specialmonstersbeef.png" alt="Special Monsters Beef">
+      <div class="card-body">
+        <h3>Special Monsters Beef (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 39.900</div>
+        <p class="card-description">Irisan daging sapi premium dengan saus monster spesial yang pedas dan gurih.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="Honeysaucebeef.png" alt="Honey Sauce Beef">
+      <div class="card-body">
+        <h3>Honey Sauce Beef (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 39.900</div>
+        <p class="card-description">Potongan daging sapi empuk berpadu dengan manisnya saus madu spesial.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="Smokedpepparbeef.png" alt="Smoked Pepper Beef">
+      <div class="card-body">
+        <h3>Smoked Pepper Beef (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 39.900</div>
+        <p class="card-description">Daging sapi asap yang ditumis dengan saus lada hitam yang khas.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="Hotmonsterschicken.png" alt="Hot Monsters Chicken">
+      <div class="card-body">
+        <h3>Hot Monsters Chicken (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 26.900</div>
+        <p class="card-description">Potongan ayam renyah dengan saus monster spesial yang pedas dan gurih.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="Chickenteriyaki.png" alt="Chicken Teriyaki">
+      <div class="card-body">
+        <h3>Chicken Teriyaki (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 26.900</div>
+        <p class="card-description">Ayam fillet lembut dimasak dengan saus teriyaki manis khas Jepang.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="Sweet&sourchiken.png" alt="Sweet & Sour Chicken">
+      <div class="card-body">
+        <h3>Sweet & Sour Chicken (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 26.900</div>
+        <p class="card-description">Ayam goreng tepung renyah disiram saus asam manis yang menyegarkan.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="Javanessehoneyspicychicken.png" alt="Javanesse Honey Spicy Chicken">
+      <div class="card-body">
+        <h3>Javanesse Honey Spicy (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 26.900</div>
+        <p class="card-description">Ayam bumbu khas Jawa dengan perpaduan madu dan rasa pedas yang unik.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="Chikenkatsu.png" alt="Chicken Katsu">
+      <div class="card-body">
+        <h3>Chicken Katsu (Free Ice Tea)</h3>
+        <div class="points-cost">Rp 28.900</div>
+        <p class="card-description">Dada ayam fillet renyah dibalut tepung roti, disajikan dengan saus spesial.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="mie" class="reward-content">
+  <div class="reward-grid">
+
+    <div class="reward-card">
+      <img src="Hotmonstersbeef.png" alt="Mie Hot Monsters">
+      <div class="card-body">
+        <h3>Mie Hot Monsters</h3>
+        <div class="points-cost">Rp 20.900</div>
+        <p class="card-description">Mie kenyal dengan topping spesial dan bumbu monster pedas level 1-5.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="mieayammonsters.png" alt="Mie Ayam Monsters">
+      <div class="card-body">
+        <h3>Mie Ayam Monsters</h3>
+        <div class="points-cost">Rp 20.900</div>
+        <p class="card-description">Mie klasik dengan topping ayam cincang gurih dan pangsit renyah.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="mieayamjamur.png" alt="Mie Ayam Jamur">
+      <div class="card-body">
+        <h3>Mie Ayam Jamur</h3>
+        <div class="points-cost">Rp 20.900</div>
+        <p class="card-description">Perpaduan mie lezat dengan topping ayam dan jamur yang dimasak sempurna.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="mieayamkatsu.png" alt="Mie Ayam Katsu">
+      <div class="card-body">
+        <h3>Mie Ayam Katsu</h3>
+        <div class="points-cost">Rp 22.900</div>
+        <p class="card-description">Mie disajikan dengan topping ayam katsu renyah di bagian atas.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="miebeefmonsters.png" alt="Mie Beef Monsters">
+      <div class="card-body">
+        <h3>Mie Beef Monsters</h3>
+        <div class="points-cost">Rp 28.900</div>
+        <p class="card-description">Mie dengan topping irisan daging sapi premium saus monster spesial.</p>
+      </div>
+    </div>
+
+    <div class="reward-card">
+      <img src="miepolos.png" alt="Mie Polos">
+      <div class="card-body">
+        <h3>Mie Polos</h3>
+        <div class="points-cost">Rp 15.000</div> <p class="card-description">Mie original dengan bumbu khas tanpa topping, cocok untuk dikreasikan.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+    <section id="minuman" class="reward-content">
+      <div class="reward-grid">
+        <div class="reward-card">
+          <img src="https://images.unsplash.com/photo-1566843972141-b151e7cb0d48?q=80&w=800" alt="Lemon Tea">
+          <div class="card-body">
+            <h3>Lemon Tea</h3>
+            <div class="points-cost">Rp 8.000</div>
+            <p class="card-description">Perpaduan teh segar dengan perasan lemon asli yang menyegarkan dahaga.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="es-campur" class="reward-content">
+      <div class="reward-grid">
+        <div class="reward-card">
+          <img src="1.png" alt="Es Campur 1 Porsi">
+          <div class="card-body">
+            <h3>Es Campur 1 Porsi</h3>
+            <div class="points-cost">Rp 17.900</div>
+            <p class="card-description">Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="2.png" alt="Es Campur 2 Porsi">
+          <div class="card-body">
+            <h3>Es Campur 2 Porsi</h3>
+            <div class="points-cost">Rp 33.000</div>
+            <p class="card-description">Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="4.png" alt="Es Campur 4 Porsi">
+          <div class="card-body">
+            <h3>Es Campur 4 Porsi</h3>
+            <div class="points-cost">Rp 63.900</div>
+            <p class="card-description">Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="8.png" alt="Es Campur 8 Porsi">
+          <div class="card-body">
+            <h3>Es Campur 8 Porsi</h3>
+            <div class="points-cost">Rp 117.900</div>
+            <p class="card-description">Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="10.png" alt="Es Campur 10 Porsi">
+          <div class="card-body">
+            <h3>Es Campur 10 Porsi</h3>
+            <div class="points-cost">Rp 145.800</div>
+            <p class="card-description">Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="30.png" alt="Es Campur 30 Porsi">
+          <div class="card-body">
+            <h3>Es Campur 30 Porsi</h3>
+            <div class="points-cost">Rp 418.500</div>
+            <p class="card-description">Es serut dengan aneka topping buah, jelly, sirup, dan susu kental manis.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gorengan" class="reward-content">
+      <div class="reward-grid">
+        <div class="reward-card">
+          <img src="ayamgulung.png" alt="Ayam Gulung (6pcs)">
+          <div class="card-body">
+            <h3>Ayam Gulung (6pcs)</h3>
+            <div class="points-cost">Rp 9.900</div>
+            <p class="card-description">Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="baksoayam.png" alt="Bakso Ayam (6pcs)">
+          <div class="card-body">
+            <h3>Bakso Ayam (6pcs)</h3>
+            <div class="points-cost">Rp 9.900</div>
+            <p class="card-description">Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="tofu.png" alt="Tofu (6pcs)">
+          <div class="card-body">
+            <h3>Tofu (6pcs)</h3>
+            <div class="points-cost">Rp 9.900</div>
+            <p class="card-description">Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="otakotak.png" alt="Otak - Otak (6pcs)">
+          <div class="card-body">
+            <h3>Otak - Otak (6pcs)</h3>
+            <div class="points-cost">Rp 9.900</div>
+            <p class="card-description">Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="scalop.png" alt="Scallop (6pcs)">
+          <div class="card-body">
+            <h3>Scallop (6pcs)</h3>
+            <div class="points-cost">Rp 9.900</div>
+            <p class="card-description">Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.</p>
+          </div>
+        </div>
+        <div class="reward-card">
+          <img src="bintang.png" alt="Ikan Olahan Bintang (6pcs)">
+          <div class="card-body">
+            <h3>Ikan Olahan Bintang (6pcs)</h3>
+            <div class="points-cost">Rp 9.900</div>
+            <p class="card-description">Potongan tahu renyah di luar dan lembut di dalam dengan bumbu tabur.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bottom-link" href="home.html">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a class="bottom-link" href="tukarpoint.html">
+      <span class="icon">🎁</span>
+      <span>Tukar</span>
+    </a>
+    <a class="bottom-link" href="klaim.html">
+      <span class="icon">🎫</span>
+      <span>Vcr Klaim</span>
+    </a>
+    <a class="bottom-link" href="lokasi.html">
+      <span class="icon">📍</span>
+      <span>Lokasi</span>
+    </a>
+    <a class="bottom-link" href="akun.html">
+      <span class="icon">👤</span>
+      <span>Akun</span>
+    </a>
+  </nav>
+
+  <script>
+  // Badge Favorit style injection (scoped)
+  (function addFavStyle(){
+    var css = '.fav-badge{position:absolute;top:-12px;left:-12px;z-index:3;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;font-size:12px;font-weight:800;letter-spacing:.3px;padding:5px 10px;border-radius:14px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 10px rgba(0,0,0,.2);border:2px solid #fff;pointer-events:none}.reward-card{overflow:visible} .reward-card img{border-top-left-radius:12px;border-top-right-radius:12px}';
+    var style = document.createElement('style');
+    style.appendChild(document.createTextNode(css));
+    document.head.appendChild(style);
+  })();
+    // Fungsi untuk mengambil data menu dari Google Sheets
+    async function loadMenuData() {
+      try {
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxlPGEih-uNcZ1AJmVDgLbAk1k9M0ctDX-j_hgRob5aMEoXFH-qjf7FcSis7xSKQ_G3/exec';
+        const favoriteNames = new Set([
+          'Special Monsters Beef (Free Ice Tea)',
+          'Chicken Teriyaki (Free Ice Tea)',
+          'Mie Hot Monsters'
+        ]);
+        
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'getMenuData' })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.data) {
+          // Update Rice Bowl section
+          if (result.data.riceBowl && result.data.riceBowl.length > 0) {
+            const riceBowlSection = document.getElementById('rice-bowl');
+            if (riceBowlSection) {
+              const riceBowlGrid = riceBowlSection.querySelector('.reward-grid');
+              if (riceBowlGrid) {
+                let rbFav = result.data.riceBowl.filter(i=>favoriteNames.has(i.nama));
+                let rbNonFav = result.data.riceBowl.filter(i=>!favoriteNames.has(i.nama));
+                if (rbFav.length === 0 && result.data.riceBowl.length > 0) {
+                  rbFav = [result.data.riceBowl[0]];
+                  rbNonFav = result.data.riceBowl.slice(1);
+                }
+                riceBowlGrid.innerHTML = [...rbFav, ...rbNonFav].map(item => `
+                  <div class="reward-card" style="position:relative;">
+                    ${favoriteNames.has(item.nama) ? '<div class="fav-badge">★ Favorit</div>' : ''}
+                    <img src="${item.foto}" alt="${item.nama}">
+                    <div class="card-body">
+                      <h3>${item.nama}</h3>
+                      <div class="points-cost">${item.harga}</div>
+                      <p class="card-description">${item.deskripsi}</p>
+                    </div>
+                  </div>
+                `).join('');
+              }
+            }
+          }
+          
+          // Update Mie section
+          if (result.data.mie && result.data.mie.length > 0) {
+            const mieSection = document.getElementById('mie');
+            if (mieSection) {
+              const mieGrid = mieSection.querySelector('.reward-grid');
+              if (mieGrid) {
+                let mieFav = result.data.mie.filter(i=>favoriteNames.has(i.nama));
+                let mieNonFav = result.data.mie.filter(i=>!favoriteNames.has(i.nama));
+                if (mieFav.length === 0 && result.data.mie.length > 0) {
+                  mieFav = [result.data.mie[0]];
+                  mieNonFav = result.data.mie.slice(1);
+                }
+                mieGrid.innerHTML = [...mieFav, ...mieNonFav].map(item => `
+                  <div class="reward-card" style="position:relative;">
+                    ${favoriteNames.has(item.nama) ? '<div class="fav-badge">★ Favorit</div>' : ''}
+                    <img src="${item.foto}" alt="${item.nama}">
+                    <div class="card-body">
+                      <h3>${item.nama}</h3>
+                      <div class="points-cost">${item.harga}</div>
+                      <p class="card-description">${item.deskripsi}</p>
+                    </div>
+                  </div>
+                `).join('');
+              }
+            }
+          }
+          
+          // Update Minuman section
+          if (result.data.minuman && result.data.minuman.length > 0) {
+            const minumanSection = document.getElementById('minuman');
+            if (minumanSection) {
+              const minumanGrid = minumanSection.querySelector('.reward-grid');
+              if (minumanGrid) {
+                let minFav = result.data.minuman.filter(i=>favoriteNames.has(i.nama));
+                let minNonFav = result.data.minuman.filter(i=>!favoriteNames.has(i.nama));
+                if (minFav.length === 0 && result.data.minuman.length > 0) {
+                  minFav = [result.data.minuman[0]];
+                  minNonFav = result.data.minuman.slice(1);
+                }
+                minumanGrid.innerHTML = [...minFav, ...minNonFav].map(item => `
+                  <div class="reward-card" style="position:relative;">
+                    ${favoriteNames.has(item.nama) ? '<div class="fav-badge">★ Favorit</div>' : ''}
+                    <img src="${item.foto}" alt="${item.nama}">
+                    <div class="card-body">
+                      <h3>${item.nama}</h3>
+                      <div class="points-cost">${item.harga}</div>
+                      <p class="card-description">${item.deskripsi}</p>
+                    </div>
+                  </div>
+                `).join('');
+              }
+            }
+          }
+          
+          // Update Es Campur section
+          if (result.data.esCampur && result.data.esCampur.length > 0) {
+            const esCampurSection = document.getElementById('es-campur');
+            if (esCampurSection) {
+              const esCampurGrid = esCampurSection.querySelector('.reward-grid');
+              if (esCampurGrid) {
+                let esFav = result.data.esCampur.filter(i=>favoriteNames.has(i.nama));
+                let esNonFav = result.data.esCampur.filter(i=>!favoriteNames.has(i.nama));
+                if (esFav.length === 0 && result.data.esCampur.length > 0) {
+                  esFav = [result.data.esCampur[0]];
+                  esNonFav = result.data.esCampur.slice(1);
+                }
+                esCampurGrid.innerHTML = [...esFav, ...esNonFav].map(item => `
+                  <div class="reward-card" style="position:relative;">
+                    ${favoriteNames.has(item.nama) ? '<div class="fav-badge">★ Favorit</div>' : ''}
+                    <img src="${item.foto}" alt="${item.nama}">
+                    <div class="card-body">
+                      <h3>${item.nama}</h3>
+                      <div class="points-cost">${item.harga}</div>
+                      <p class="card-description">${item.deskripsi}</p>
+                    </div>
+                  </div>
+                `).join('');
+              }
+            }
+          }
+          
+          // Update Gorengan section
+          if (result.data.gorengan && result.data.gorengan.length > 0) {
+            const gorenganSection = document.getElementById('gorengan');
+            if (gorenganSection) {
+              const gorenganGrid = gorenganSection.querySelector('.reward-grid');
+              if (gorenganGrid) {
+                let gorFav = result.data.gorengan.filter(i=>favoriteNames.has(i.nama));
+                let gorNonFav = result.data.gorengan.filter(i=>!favoriteNames.has(i.nama));
+                if (gorFav.length === 0 && result.data.gorengan.length > 0) {
+                  gorFav = [result.data.gorengan[0]];
+                  gorNonFav = result.data.gorengan.slice(1);
+                }
+                gorenganGrid.innerHTML = [...gorFav, ...gorNonFav].map(item => `
+                  <div class="reward-card" style="position:relative;">
+                    ${favoriteNames.has(item.nama) ? '<div class="fav-badge">★ Favorit</div>' : ''}
+                    <img src="${item.foto}" alt="${item.nama}">
+                    <div class="card-body">
+                      <h3>${item.nama}</h3>
+                      <div class="points-cost">${item.harga}</div>
+                      <p class="card-description">${item.deskripsi}</p>
+                    </div>
+                  </div>
+                `).join('');
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Error loading menu data:', error);
+      }
+    }
+
+    // Deep-link: aktifkan tab dari ?cat=
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load menu data dari Google Sheets
+      loadMenuData();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const activeCat = urlParams.get('cat');
+      if (activeCat) {
+        const btn = document.querySelector(`.tab-btn[data-target="${activeCat}"]`);
+        const content = document.getElementById(activeCat);
+        if (btn && content) {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.reward-content').forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+          content.classList.add('active');
+        }
+      }
+    });
+
+    // Switching tab click
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const sections = document.querySelectorAll('.reward-content');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        sections.forEach(s => s.classList.remove('active'));
+        button.classList.add('active');
+        const target = button.getAttribute('data-target');
+        document.getElementById(target).classList.add('active');
+        const url = new URL(window.location);
+        url.searchParams.set('cat', target);
+        history.replaceState({}, '', url);
+      });
+    });
+    
+    // Kode untuk tombol "Tambah" telah dihapus dari sini.
+  </script>
+</body>
+</html>

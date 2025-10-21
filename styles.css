@@ -1,0 +1,529 @@
+/* Base */
+:root {
+  --bg: #4C2A85;            /* New Purple Background from Screenshot */
+  --card: #ffffff;            /* White for cards and content areas */
+  --text: #374151;            /* Dark Gray for primary text */
+  --muted: #6b7280;         /* Lighter Gray for muted text */
+  --primary: #4C2A85;        /* Purple is now the primary action color */
+  --primary-text: #ffffff;    /* White text for use on primary-colored elements */
+  --border: #e5e7eb;         /* Light gray for borders */
+  --accent: #d9466f;         /* Pink accent color for the quote text */
+  --ring: rgba(76, 42, 133, 0.4);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+img { max-width: 100%; display: block; }
+button { font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* New Top Navigation */
+.top-nav {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 24px;
+  flex-wrap: wrap; /* Allows buttons to wrap on smaller screens */
+}
+
+.nav-btn {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 2px solid var(--card);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  background: var(--card); /* Inactive: white background */
+  color: var(--primary); /* Inactive: purple text */
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-btn.active, .nav-btn:hover {
+  background: transparent; /* Active/Hover: transparent background */
+  color: var(--card);   /* Active/Hover: white text */
+}
+
+/* Main content containers */
+.auth-body { display: grid; place-items: center; padding: 0 24px 48px; }
+.auth-container {
+  width: 100%; max-width: 800px;
+  background: var(--card);
+  border: none;
+  border-radius: 24px;
+  padding: 24px 32px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+
+/* Logo Styles */
+.logo-container {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.logo-container img {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px; /* square-ish, no circle */
+  object-fit: contain;
+  border: none;
+}
+
+/* Quote Text Style */
+.text-accent {
+  color: var(--accent);
+  text-align: center;
+  margin: 16px 0 32px;
+  font-size: 14px;
+}
+.form-title {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 16px;
+    color: var(--primary);
+}
+
+/* Form Styles */
+.auth-form { display: grid; gap: 18px; }
+.form-field { display: grid; gap: 8px; }
+.form-field label { font-size: 14px; font-weight: 500; color: var(--muted); }
+.form-field input, .form-field select {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 16px;
+  outline: none;
+  box-shadow: 0 0 0 0 var(--ring);
+}
+.form-field input:focus, .form-field select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 120px; /* Column for Name and Quantity */
+    gap: 16px;
+}
+
+
+/* Action Buttons */
+.auth-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.btn { padding: 12px 24px; border-radius: 10px; border: 1px solid transparent; cursor: pointer; font-size: 16px;}
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-text);
+  font-weight: 700;
+  width: 100%; /* Make button full width */
+}
+.btn-primary:hover {
+    background: #3c216b;
+}
+/* ======================================================= */
+/* == HALAMAN UTAMA / BERANDA == */
+/* ======================================================= */
+
+/* -- Latar Belakang & Layout Utama -- */
+body {
+  background-color: #f3f4f6; /* Warna abu-abu muda untuk background konten */
+}
+
+.content {
+  padding: 16px;
+  padding-top: 100px; /* Beri ruang untuk header yang fixed */
+}
+
+/* -- Header Aplikasi -- */
+.app-header {
+  display: flex;
+  align-items: flex-start; /* Logo sejajar dengan baris atas */
+  padding: 16px;
+  background-color: var(--card); /* Putih */
+  border-bottom: 1px solid var(--border);
+  position: fixed; /* Header tetap di atas saat scroll */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.app-header .logo {
+  font-size: 32px;
+  margin-top: -4px;
+}
+
+.brand-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.brand-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.location-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.location-label {
+  white-space: nowrap;
+}
+
+.locations {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto; /* Agar bisa scroll jika lokasi banyak */
+  scrollbar-width: none; /* Sembunyikan scrollbar */
+}
+.locations::-webkit-scrollbar {
+  display: none; /* Sembunyikan scrollbar untuk Chrome/Safari */
+}
+
+.locations li {
+  background-color: #eef2ff;
+  color: var(--primary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.add-location-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px;
+  white-space: nowrap;
+}
+
+/* -- Slider Promo -- */
+.promo-section {
+  margin-bottom: 24px;
+}
+
+.promo-slider {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 12px;
+  scrollbar-width: none;
+}
+.promo-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.promo-item {
+  flex: 0 0 90%; /* Lebar setiap item promo */
+  scroll-snap-align: center;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.promo-item img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+/* [BARU] Wrapper untuk konten di bawah promo agar bisa melengkung */
+
+/* -- Ikon Menu -- */
+.menu-icons {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 kolom */
+  gap: 16px;
+  text-align: center;
+}
+
+.menu-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.menu-emoji {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: var(--card);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.menu-icon span {
+  font-size: 12px;
+  font-weight: 600;
+}
+/* Tambahkan ini di akhir file styles.css Anda */
+.card-description {
+  font-size: 0.85em;    /* Ukuran font sedikit lebih kecil dari judul */
+  color: #555;         /* Warna abu-abu agar tidak terlalu menonjol */
+  margin-top: 8px;      /* Memberi jarak dari harga di atasnya */
+  margin-bottom: 0;     /* Menghapus margin bawah default dari paragraf */
+  line-height: 1.4;     /* Mengatur jarak antar baris agar mudah dibaca */
+}
+/* -- Notifikasi (Dialog/Modal) -- */
+.notif-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notif-item {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.notif-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.notif-item p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+/* === STYLE UNTUK HALAMAN TUKAR POIN === */
+
+/* === STYLE UNTUK HALAMAN TUKAR POIN === */
+
+/* Header Halaman yang lebih simpel */
+.app-header.simple {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  background-color: var(--card);
+}
+.back-btn {
+  font-size: 24px;
+  font-weight: bold;
+  text-decoration: none;
+  color: var(--text);
+}
+.page-title {
+  font-size: 20px;
+  margin: 0;
+  color: var(--text);
+}
+
+/* Kotak untuk menampilkan total poin */
+.points-summary {
+  background: linear-gradient(135deg, var(--primary), #5a2d9a);
+  color: var(--primary-text);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 20px rgba(76, 42, 133, 0.3);
+}
+.points-summary .points-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+.points-summary .points-value {
+  font-size: 36px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* Styling untuk tombol Tab */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background-color: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab-btn.active {
+  background-color: var(--primary);
+  color: var(--primary-text);
+  border-color: var(--primary);
+}
+
+/* Konten penukaran (grid) */
+.reward-content {
+  display: none;
+}
+.reward-content.active {
+  display: block;
+}
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Styling untuk kartu hadiah */
+.reward-card {
+  background-color: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.reward-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+.reward-card .card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.reward-card h3 {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  flex-grow: 1;
+}
+.reward-card .points-cost {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+.btn-tukar {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  background-color: #eef2ff;
+  color: var(--primary);
+  cursor: pointer;
+}
+.btn-tukar:hover {
+  background-color: #e0e7ff;
+}
+
+/* === Bottom Navigation === */
+.bottom-nav {
+  position: fixed;
+  bottom: 16px; /* Memberi jarak dari bawah layar */
+  left: 16px; /* Memberi jarak dari kiri layar */
+  right: 16px; /* Memberi jarak dari kanan layar */
+  background: var(--card);
+  border-top: none; /* Menghapus garis di bagian atas */
+  border-radius: 50px; /* Membuat ujungnya melengkung seperti pil */
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 6px 8px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Menambah bayangan agar terlihat melayang */
+}
+.bottom-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration: none;
+}
+.bottom-link .icon { font-size: 18px; }
+.bottom-link.active { color: var(--primary); font-weight: 700; }
+
+/* Reserve space so content not hidden by nav */
+.with-bottom-nav { padding-bottom: 72px; }
+
+/* === Account Info Rows === */
+.info-list { display: grid; gap: 8px; margin-top: 8px; }
+.info-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: #fafafa; }
+.info-label { font-size: 13px; color: var(--muted); }
+.info-value { font-size: 14px; font-weight: 700; color: var(--text); }
+
+/* Section spacing helpers */
+.section { padding: 0 16px; margin-top: 12px; }
+.section-title { margin: 0 0 8px 0; font-size: 14px; color: var(--muted); }
+
+/* === Action Rows (Akun) === */
+.action-list { display: grid; gap: 8px; }
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.action-row .action-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 6px; background: #f3f4f6; }
+.action-row .action-label { font-weight: 600; font-size: 14px; }
+
+/* === Lokasi Page === */
+.location-header { text-align: center; margin-bottom: 12px; }
+.location-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 420px) { .location-grid { grid-template-columns: repeat(2, 1fr); } }
+.location-card { background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid var(--border); }
+.location-card .loc-body { padding: 12px; display: grid; gap: 6px; }
+.location-card .loc-title { margin: 0; font-size: 14px; font-weight: 700; }
+.location-card .loc-link { color: var(--primary); font-weight: 600; font-size: 13px; text-decoration: underline; }
+.location-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
+.add-location { display: flex; justify-content: center; margin-top: 8px; }

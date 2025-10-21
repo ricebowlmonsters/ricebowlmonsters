@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voucher Klaim - Rice Bowl Monster</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .reward-card .btn-claim {
+        width: 100%;
+        margin-top: 12px;
+    }
+    .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease; }
+    .popup-overlay.show { opacity: 1; visibility: visible; }
+    .popup-box { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 85%; max-width: 350px; text-align: center; transform: scale(0.9); transition: transform .2s ease; }
+    .popup-overlay.show .popup-box { transform: scale(1); }
+    .popup-box h3 { margin-top: 0; margin-bottom: 12px; font-size: 1.2rem; color: #333; }
+    .empty-state { padding: 40px 20px; text-align: center; color: #888; }
+    #qrCodeContainer { margin: 16px 0; display: flex; justify-content: center; }
+    #qrCodeContainer img { border: 5px solid #eee; border-radius: 8px; }
+    .popup-buttons { display: flex; gap: 12px; margin-top: 16px; }
+    .popup-buttons button { flex: 1; padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    #closePopupButton { background-color: #e0e0e0; color: #333; }
+    .btn-delete { background-color: #ffebee !important; color: #c62828 !important; }
+    .popup-caption {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 12px;
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (function(){
+      try{
+        var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
+        if(isReload){ window.location.replace('home.html'); }
+      }catch(e){}
+    })();
+  </script>
+  <header class="app-header simple">
+    <a href="home.html" class="back-btn" aria-label="Kembali">❮</a>
+    <h1 class="page-title">Voucher Klaim</h1>
+  </header>
+
+  <main class="content with-bottom-nav">
+    <div id="rewardContainer" class="reward-grid"></div>
+  </main>
+
+  <div id="qrPopup" class="popup-overlay">
+    <div class="popup-box">
+      <h3 id="qrPopupTitle">Tunjukkan ke Kasir</h3>
+      <div id="qrCodeContainer"></div>
+      <div class="popup-buttons">
+        <button id="closePopupButton">Tutup</button>
+        <button id="deletePopupButton" class="btn-delete">Hapus</button>
+      </div>
+      <p class="popup-caption">Klik "Hapus" jika hadiah sudah Anda terima di resto.</p>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="bottom-link" href="home.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar</span> </a>
+    <a class="bottom-link active" href="klaim.html"> <span class="icon">🎫</span> <span>Vcr Klaim</span> </a>
+    <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+    <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
+  </nav>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderUnclaimedRewards();
+      setupListeners();
+    });
+
+    function getActiveClaims() { return JSON.parse(localStorage.getItem('rbm_active_claims') || '{}'); }
+    function setActiveClaim(itemId, qrData) {
+      const claims = getActiveClaims();
+      claims[itemId] = qrData;
+      localStorage.setItem('rbm_active_claims', JSON.stringify(claims));
+    }
+    function removeActiveClaim(itemId) {
+      const claims = getActiveClaims();
+      delete claims[itemId];
+      localStorage.setItem('rbm_active_claims', JSON.stringify(claims));
+    }
+
+    function renderUnclaimedRewards() {
+      const unclaimed = JSON.parse(localStorage.getItem('rbm_unclaimed_rewards') || '[]');
+      const container = document.getElementById('rewardContainer');
+      container.innerHTML = '';
+
+      if (unclaimed.length > 0) {
+        container.innerHTML = unclaimed.map(item => createRewardCard(item)).join('');
+      } else {
+        container.innerHTML = '<div class="empty-state">Tidak ada item yang perlu diklaim.</div>';
+      }
+    }
+
+    function createRewardCard(item) {
+      return `
+        <div class="reward-card">
+          <img src="${item.foto}" alt="${item.nama}">
+          <div class="card-body">
+            <h3>${item.nama}</h3>
+            <div class="points-cost">Ditukar dengan ${item.point} Poin</div>
+            <button class="btn-tukar btn-claim" data-id="${item.id}" data-name="${item.nama}">Klaim</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function setupListeners() {
+      const mainContent = document.querySelector('.content');
+      mainContent.addEventListener('click', (event) => {
+        const button = event.target;
+
+        if (button.classList.contains('btn-claim')) {
+          const itemId = button.dataset.id;
+          const itemName = button.dataset.name;
+          const activeClaims = getActiveClaims();
+          let qrData;
+
+          if (activeClaims[itemId]) {
+            qrData = activeClaims[itemId];
+          } else {
+            const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            qrData = {
+              claimId: `${itemId}-${new Date().getTime()}`,
+              itemName: itemName,
+              userPhone: userData.phone || 'Tidak diketahui',
+              claimTime: new Date().toLocaleString('id-ID')
+            };
+            setActiveClaim(itemId, qrData);
+          }
+          
+          const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
+          const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
+          
+          showQrPopup(qrImageUrl, itemName, itemId); 
+        }
+      });
+    }
+
+    function showQrPopup(qrImageUrl, itemName, itemId) {
+      const popup = document.getElementById('qrPopup');
+      const titleEl = document.getElementById('qrPopupTitle');
+      const qrContainer = document.getElementById('qrCodeContainer');
+      const closeButton = document.getElementById('closePopupButton');
+      const deleteButton = document.getElementById('deletePopupButton');
+
+      titleEl.textContent = `Klaim "${itemName}"`;
+      qrContainer.innerHTML = `<img src="${qrImageUrl}" alt="QR Code Klaim">`;
+      popup.classList.add('show');
+
+      closeButton.onclick = () => {
+        popup.classList.remove('show');
+      };
+
+      deleteButton.onclick = () => {
+        if (confirm(`Apakah Anda yakin ingin menghapus "${itemName}" dari daftar? Tindakan ini disarankan setelah Anda menerima hadiah.`)) {
+          processAndFinishClaim(itemId);
+          popup.classList.remove('show');
+        }
+      };
+    }
+
+    function processAndFinishClaim(itemId) {
+      let unclaimed = JSON.parse(localStorage.getItem('rbm_unclaimed_rewards') || '[]');
+      const updatedUnclaimed = unclaimed.filter(item => item.id != itemId);
+      localStorage.setItem('rbm_unclaimed_rewards', JSON.stringify(updatedUnclaimed));
+
+      removeActiveClaim(itemId);
+      renderUnclaimedRewards();
+    }
+  </script>
+</body>
+</html>

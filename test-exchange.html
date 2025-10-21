@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Exchange Points - Rice Bowl Monster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #4C2A85, #6B46C1);
+            color: white;
+        }
+        .card {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #4C2A85;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #3c216b;
+            transform: translateY(-2px);
+        }
+        .success {
+            background: #16a34a;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .error {
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .info {
+            background: #3b82f6;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        h1 {
+            color: #4C2A85;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #4C2A85;
+        }
+        .item-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        .item-card:hover {
+            border-color: #4C2A85;
+            transform: translateY(-2px);
+        }
+        .item-card h3 {
+            margin: 0 0 10px 0;
+            color: #4C2A85;
+        }
+        .item-card .cost {
+            font-weight: bold;
+            color: #dc2626;
+            margin: 5px 0;
+        }
+        .item-card .type {
+            font-size: 12px;
+            color: #6b7280;
+            background: #e5e7eb;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎁 Test Exchange Points - Rice Bowl Monster</h1>
+        
+        <div id="status"></div>
+        
+        <div class="step">
+            <h3>📊 Current User Data</h3>
+            <button onclick="checkCurrentUser()">Check Current User</button>
+            <button onclick="addTestUser()">Add Test User</button>
+            <button onclick="clearData()">Clear Data</button>
+        </div>
+        
+        <div class="step">
+            <h3>🎁 Test Exchange Items</h3>
+            <p>Klik item di bawah untuk test tukar poin:</p>
+            
+            <div class="item-card">
+                <h3>Gantungan Kunci RBM</h3>
+                <div class="cost">150 Poin</div>
+                <div class="type">merchandise</div>
+                <button onclick="testExchange('Gantungan Kunci RBM', 150, 'merchandise')">Test Exchange</button>
+            </div>
+            
+            <div class="item-card">
+                <h3>Tote Bag Monster</h3>
+                <div class="cost">400 Poin</div>
+                <div class="type">merchandise</div>
+                <button onclick="testExchange('Tote Bag Monster', 400, 'merchandise')">Test Exchange</button>
+            </div>
+            
+            <div class="item-card">
+                <h3>Voucher Diskon 10%</h3>
+                <div class="cost">100 Poin</div>
+                <div class="type">voucher</div>
+                <button onclick="testExchange('Voucher Diskon 10%', 100, 'voucher')">Test Exchange</button>
+            </div>
+            
+            <div class="item-card">
+                <h3>Gratis Es Teh</h3>
+                <div class="cost">50 Poin</div>
+                <div class="type">voucher</div>
+                <button onclick="testExchange('Gratis Es Teh', 50, 'voucher')">Test Exchange</button>
+            </div>
+            
+            <div class="item-card">
+                <h3>Potongan Rp 5.000</h3>
+                <div class="cost">250 Poin</div>
+                <div class="type">voucher</div>
+                <button onclick="testExchange('Potongan Rp 5.000', 250, 'voucher')">Test Exchange</button>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>🔧 Actions</h3>
+            <button onclick="goToTukarPoint()">Go to Tukar Point</button>
+            <button onclick="goToHome()">Go to Home</button>
+        </div>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5R5WxuGGcGk-i9vLqHNlKOQiGSZFBwHMjfh0w8lCe6hphoMhhu1gW5GIeTrMyxK2vsA/exec';
+        
+        function addTestUser() {
+            const testUser = {
+                nama: 'Puji Shohibul Burhan',
+                phone: '85173350016',
+                username: 'Burhan',
+                points: 3000
+            };
+            localStorage.setItem('rbm_user', JSON.stringify(testUser));
+            showStatus('✅ Test user berhasil ditambahkan!', 'success');
+            showOutput(testUser);
+        }
+        
+        function checkCurrentUser() {
+            const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            if (userData.nama) {
+                showStatus(`✅ Current user: ${userData.nama} (${userData.phone}) - Points: ${userData.points}`, 'success');
+                showOutput(userData);
+            } else {
+                showStatus('❌ Tidak ada user yang login', 'error');
+                showOutput({});
+            }
+        }
+        
+        async function testExchange(itemName, cost, itemType) {
+            const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            
+            if (!userData.nama) {
+                showStatus('❌ Tidak ada user yang login. Klik "Add Test User" terlebih dahulu.', 'error');
+                return;
+            }
+            
+            if (userData.points < cost) {
+                showStatus(`❌ Poin tidak cukup! Anda memiliki ${userData.points} poin, butuh ${cost} poin.`, 'error');
+                return;
+            }
+            
+            showStatus(`🔄 Menukar ${itemName} dengan ${cost} poin...`, 'info');
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'exchangePoints', 
+                        phone: userData.phone,
+                        points: cost,
+                        itemName: itemName,
+                        itemType: itemType
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Update localStorage
+                    userData.points = result.newPoints;
+                    localStorage.setItem('rbm_user', JSON.stringify(userData));
+                    
+                    showStatus(`✅ Berhasil menukar ${itemName}!\nPoin tersisa: ${result.newPoints}\nItem ditambahkan ke kolom F`, 'success');
+                    showOutput(result);
+                } else {
+                    showStatus(`❌ Gagal menukar: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearData() {
+            localStorage.removeItem('rbm_user');
+            showStatus('🗑️ Data berhasil dihapus!', 'info');
+        }
+        
+        function goToTukarPoint() {
+            window.location.href = 'tukarpoint.html';
+        }
+        
+        function goToHome() {
+            window.location.href = 'home.html';
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        function showOutput(data) {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = `<pre style="background: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        
+        // Auto-check saat halaman dimuat
+        window.onload = function() {
+            checkCurrentUser();
+        };
+    </script>
+</body>
+</html>

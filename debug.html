@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Rice Bowl Monster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #4C2A85;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3c216b;
+        }
+        .success { background: #16a34a; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .error { background: #dc2626; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .info { background: #3b82f6; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        pre { background: #f3f4f6; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔧 Debug Rice Bowl Monster App</h1>
+        
+        <div id="status"></div>
+        
+        <h3>1. Check Local Storage</h3>
+        <button onclick="checkLocalStorage()">Check Data</button>
+        <button onclick="clearLocalStorage()">Clear Data</button>
+        
+        <h3>2. Test Google Apps Script</h3>
+        <button onclick="testGoogleScript()">Test Connection</button>
+        
+        <h3>3. Add Test Data</h3>
+        <button onclick="addTestData()">Add Test User</button>
+        
+        <h3>4. Navigation</h3>
+        <button onclick="goToLogin()">Go to Login</button>
+        <button onclick="goToHome()">Go to Home</button>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5xRkvhJSsgGvq6tYeKc4VBwzTyw6bpZgexRYtIYCTgXiGtN1wahPhSijnH5h3VHez/exec';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        function showOutput(data) {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        
+        function checkLocalStorage() {
+            const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            if (userData.nama) {
+                showStatus(`✅ User found: ${userData.nama} (${userData.phone}) - Points: ${userData.points}`, 'success');
+                showOutput(userData);
+            } else {
+                showStatus('❌ No user data found', 'error');
+                showOutput({});
+            }
+        }
+        
+        function clearLocalStorage() {
+            localStorage.removeItem('rbm_user');
+            showStatus('🗑️ Local storage cleared', 'info');
+        }
+        
+        async function testGoogleScript() {
+            showStatus('🔄 Testing Google Apps Script connection...', 'info');
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'test' })
+                });
+                
+                const result = await response.json();
+                showStatus('✅ Google Apps Script connection successful!', 'success');
+                showOutput(result);
+            } catch (error) {
+                showStatus(`❌ Google Apps Script connection failed: ${error.message}`, 'error');
+                showOutput({ error: error.message });
+            }
+        }
+        
+        function addTestData() {
+            const testData = {
+                nama: 'Puji Shohibul Burhan',
+                phone: '85173350016',
+                username: 'Burhan',
+                points: 3000
+            };
+            
+            localStorage.setItem('rbm_user', JSON.stringify(testData));
+            showStatus('✅ Test data added successfully!', 'success');
+            showOutput(testData);
+        }
+        
+        function goToLogin() {
+            window.location.href = 'index.html';
+        }
+        
+        function goToHome() {
+            window.location.href = 'home.html';
+        }
+        
+        // Auto-check saat halaman dimuat
+        window.onload = function() {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>

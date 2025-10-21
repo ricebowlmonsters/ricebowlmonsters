@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertanyaan Umum - Rice Bowl Monster</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Gaya khusus untuk halaman FAQ */
+        .faq-section {
+            padding: 16px;
+        }
+        .accordion {
+            background-color: #f9f9f9;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+            transition: 0.4s;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .accordion:after {
+            content: '\\002B'; /* Unicode untuk tanda plus */
+            color: #777;
+            font-weight: bold;
+            float: right;
+            margin-left: 5px;
+        }
+        .accordion.active:after {
+            content: "\\2212"; /* Unicode untuk tanda minus */
+        }
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 8px;
+        }
+        .panel p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        (function(){
+            try{
+                var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+                var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
+                if(isReload){ window.location.replace('home.html'); }
+            }catch(e){}
+        })();
+    </script>
+    <header class="app-header simple">
+        <a href="akun.html" class="back-btn" aria-label="Kembali">❮</a>
+        <h1 class="page-title">Pertanyaan Umum</h1>
+    </header>
+
+    <main class="content">
+        <section class="faq-section">
+            
+            <button class="accordion">Bagaimana cara mendapatkan poin?</button>
+            <div class="panel">
+                <p>Setiap pembelian produk Rice Bowl Monster akan mendapatkan poin. Pastikan Anda menunjukkan QR Code akun Anda kepada kasir saat melakukan pembayaran.</p>
+            </div>
+
+            <button class="accordion">Apa fungsi poin yang saya kumpulkan?</button>
+            <div class="panel">
+                <p>Poin yang Anda kumpulkan dapat ditukarkan dengan berbagai macam hadiah menarik, seperti diskon, produk gratis, atau merchandise eksklusif. Cek halaman "Tukar Poin" untuk melihat hadiah yang tersedia.</p>
+            </div>
+
+            <button class="accordion">Apakah poin memiliki masa berlaku?</button>
+            <div class="panel">
+                <p>Ya, poin akan hangus dalam waktu 1 tahun setelah didapatkan. Pastikan Anda menukarkannya sebelum masa berlaku habis.</p>
+            </div>
+            
+            <button class="accordion">Bagaimana jika saya lupa password?</button>
+            <div class="panel">
+                <p>Saat ini, aplikasi kami menggunakan sistem login sederhana berbasis perangkat. Jika Anda berganti perangkat, Anda dapat mendaftar kembali. Data poin Anda tersimpan secara lokal di perangkat Anda.</p>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        const acc = document.getElementsByClassName("accordion");
+        for (let i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                // Tutup semua panel lain yang mungkin terbuka
+                for (let j = 0; j < acc.length; j++) {
+                    if (this !== acc[j]) {
+                        acc[j].classList.remove("active");
+                        acc[j].nextElementSibling.style.maxHeight = null;
+                    }
+                }
+                
+                // Buka atau tutup panel yang di-klik
+                this.classList.toggle("active");
+                const panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Data - Rice Bowl Monster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #4C2A85;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3c216b;
+        }
+        .success {
+            background: #16a34a;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #dc2626;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Test Data Setup</h1>
+        <p>Gunakan halaman ini untuk menambahkan data user untuk testing aplikasi.</p>
+        
+        <div id="status"></div>
+        
+        <h3>Data User yang Tersedia:</h3>
+        <button onclick="addUser('Puji Shohibul Burhan', '85173350016', 'Burhan', 3000)">Puji Shohibul Burhan (85173350016)</button>
+        <button onclick="addUser('John Doe', '81234567890', '81234567890', 1000)">John Doe (81234567890)</button>
+        <button onclick="addUser('Jane Smith', '81234567891', '81234567891', 500)">Jane Smith (81234567891)</button>
+        
+        <h3>Actions:</h3>
+        <button onclick="clearData()">Clear All Data</button>
+        <button onclick="checkData()">Check Current Data</button>
+        <button onclick="goToApp()">Go to App</button>
+    </div>
+
+    <script>
+        function addUser(nama, phone, username, points) {
+            const userData = {
+                nama: nama,
+                phone: phone,
+                username: username,
+                points: points
+            };
+            
+            localStorage.setItem('rbm_user', JSON.stringify(userData));
+            showStatus(`Data user "${nama}" berhasil ditambahkan!`, 'success');
+        }
+        
+        function clearData() {
+            localStorage.removeItem('rbm_user');
+            showStatus('Data berhasil dihapus!', 'success');
+        }
+        
+        function checkData() {
+            const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            if (userData.nama) {
+                showStatus(`Current user: ${userData.nama} (${userData.phone}) - Points: ${userData.points}`, 'success');
+            } else {
+                showStatus('Tidak ada data user', 'error');
+            }
+        }
+        
+        function goToApp() {
+            window.location.href = 'home.html';
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        // Check data saat halaman dimuat
+        window.onload = function() {
+            checkData();
+        };
+    </script>
+</body>
+</html>

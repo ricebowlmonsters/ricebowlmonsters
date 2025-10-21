@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Fix Loading - Rice Bowl Monster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4C2A85, #6B46C1);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #4C2A85;
+            margin-bottom: 30px;
+        }
+        .success {
+            background: #16a34a;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .loading {
+            background: #3b82f6;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4C2A85;
+            margin: 20px 0;
+        }
+        button {
+            background: #4C2A85;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #3c216b;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Auto Fix Loading Issue</h1>
+        
+        <div id="status" class="loading">
+            🔄 Memperbaiki masalah loading...
+        </div>
+        
+        <div id="countdown" class="countdown"></div>
+        
+        <div id="result"></div>
+        
+        <button onclick="goToApp()" id="goButton" style="display: none; background: #16a34a; font-size: 18px; padding: 20px;">
+            🚀 Go to Rice Bowl Monster App
+        </button>
+    </div>
+
+    <script>
+        let countdown = 3;
+        
+        function updateStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = type;
+        }
+        
+        function updateCountdown() {
+            const countdownDiv = document.getElementById('countdown');
+            countdownDiv.textContent = `Redirecting in ${countdown} seconds...`;
+        }
+        
+        function addUserData() {
+            // Tambahkan data user ke localStorage
+            const userData = {
+                nama: 'Puji Shohibul Burhan',
+                phone: '85173350016',
+                username: 'Burhan',
+                points: 3000
+            };
+            
+            localStorage.setItem('rbm_user', JSON.stringify(userData));
+            return userData;
+        }
+        
+        function startAutoFix() {
+            updateStatus('🔧 Menambahkan data user...', 'loading');
+            
+            setTimeout(() => {
+                const userData = addUserData();
+                updateStatus('✅ Data user berhasil ditambahkan!', 'success');
+                
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: left;">
+                        <strong>User Data:</strong><br>
+                        Nama: ${userData.nama}<br>
+                        Phone: ${userData.phone}<br>
+                        Points: ${userData.points}
+                    </div>
+                `;
+                
+                // Start countdown
+                const countdownInterval = setInterval(() => {
+                    updateCountdown();
+                    countdown--;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        goToApp();
+                    }
+                }, 1000);
+                
+                // Show go button
+                document.getElementById('goButton').style.display = 'inline-block';
+                
+            }, 1000);
+        }
+        
+        function goToApp() {
+            window.location.href = 'home.html';
+        }
+        
+        // Start auto fix when page loads
+        window.onload = function() {
+            startAutoFix();
+        };
+    </script>
+</body>
+</html>
