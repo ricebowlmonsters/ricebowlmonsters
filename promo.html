@@ -1,0 +1,120 @@
+p'<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promo Spesial - Rice Bowl Monster</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #ffffff; --card: #ffffff; --text: #374151; --muted: #6b7280; --primary: #4C2A85; --primary-text: #ffffff; }
+    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+    .app-header { position: sticky; top: 0; background: white; padding: 16px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 100; }
+    .back-btn { text-decoration: none; font-size: 24px; color: var(--text); border: none; background: none; cursor: pointer; }
+    .page-title { font-size: 18px; font-weight: 700; margin: 0; }
+    
+    .promo-container { padding: 16px; display: grid; gap: 20px; }
+    .promo-card { background: var(--card); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f3f4f6; }
+    .promo-img { width: 100%; height: 180px; object-fit: cover; display: block; }
+    .promo-content { padding: 16px; }
+    .promo-title { font-size: 18px; font-weight: 700; margin: 0 0 8px 0; color: var(--primary); }
+    .promo-desc { font-size: 14px; color: var(--text); margin-bottom: 16px; line-height: 1.5; }
+    .promo-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f3f4f6; padding-top: 12px; }
+    .promo-code-box { background: #f3f4f6; padding: 8px 12px; border-radius: 8px; font-family: monospace; font-weight: 700; color: var(--text); border: 1px dashed #cbd5e1; display: flex; align-items: center; gap: 8px; }
+    .copy-btn { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 12px; cursor: pointer; }
+    .valid-date { font-size: 12px; color: var(--muted); }
+    
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+    .bottom-link {
+      font-family: serif;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <a href="index.html" class="back-btn">❮</a>
+    <h1 class="page-title">Promo & Diskon</h1>
+  </header>
+
+  <main class="promo-container" id="promoList">
+    <div class="empty-state">Memuat promo...</div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bottom-link" href="index.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar Poin</span> </a>
+    <a class="bottom-link" href="riwayat.html"> <span class="icon">🧾</span> <span>Riwayat</span> </a>
+    <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+    <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
+  </nav>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+        authDomain: "ricebowlmonst.firebaseapp.com",
+        databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+        projectId: "ricebowlmonst",
+        storageBucket: "ricebowlmonst.firebasestorage.app",
+        messagingSenderId: "723669558962",
+        appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    db.ref('promos').on('value', (snapshot) => {
+        const container = document.getElementById('promoList');
+        container.innerHTML = '';
+        const data = snapshot.val();
+        
+        if (data) {
+            const promos = Object.values(data).reverse();
+            promos.forEach(item => {
+                // [BARU] Filter: Hanya tampilkan jika aktif di Web
+                if (item.active_web === false) return;
+
+                const el = document.createElement('div');
+                el.className = 'promo-card';
+                
+                let codeHtml = '';
+                if (item.code) {
+                    codeHtml = `
+                        <div class="promo-code-box">
+                            <span>${item.code}</span>
+                            <button class="copy-btn" onclick="copyCode('${item.code}')">SALIN</button>
+                        </div>
+                    `;
+                }
+
+                let dateHtml = '';
+                if (item.validUntil) {
+                    const date = new Date(item.validUntil);
+                    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                    dateHtml = `<div class="valid-date">Berlaku s/d ${date.toLocaleDateString('id-ID', options)}</div>`;
+                }
+
+                el.innerHTML = `
+                    <img src="${item.image}" class="promo-img" alt="${item.title}">
+                    <div class="promo-content">
+                        <h3 class="promo-title">${item.title}</h3>
+                        <div class="promo-desc">${item.description}</div>
+                        <div class="promo-footer">
+                            ${codeHtml}
+                            ${dateHtml}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        } else {
+            container.innerHTML = `<div class="empty-state"><div style="font-size: 48px; margin-bottom: 16px;">🏷️</div><p>Belum ada promo yang tersedia saat ini.</p></div>`;
+        }
+    });
+
+    function copyCode(code) {
+        navigator.clipboard.writeText(code).then(() => alert('Kode promo berhasil disalin!'));
+    }
+  </script>
+</body>
+</html>

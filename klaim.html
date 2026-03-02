@@ -20,8 +20,34 @@
     .popup-overlay.show .popup-box { transform: scale(1); }
     .popup-box h3 { margin-top: 0; margin-bottom: 12px; font-size: 1.2rem; color: #333; }
     .empty-state { padding: 40px 20px; text-align: center; color: #888; }
-    #qrCodeContainer { margin: 16px 0; display: flex; justify-content: center; }
+    #qrCodeContainer { margin: 16px 0; display: flex; justify-content: center; flex-direction: column; align-items: center; }
     #qrCodeContainer img { border: 5px solid #eee; border-radius: 8px; }
+    .claim-code { 
+      font-size: 48px; 
+      font-weight: 700; 
+      letter-spacing: 8px; 
+      color: #075E54; 
+      background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+      padding: 20px 40px;
+      border-radius: 12px;
+      border: 3px solid #075E54;
+      font-family: 'Courier New', monospace;
+      margin: 16px 0;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .claim-code-label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .code-info {
+      font-size: 12px;
+      color: #888;
+      margin-top: 12px;
+      text-align: center;
+    }
     .popup-buttons { display: flex; gap: 12px; margin-top: 16px; }
     .popup-buttons button { flex: 1; padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
     #closePopupButton { background-color: #e0e0e0; color: #333; }
@@ -32,6 +58,9 @@
       margin-top: 12px;
       margin-bottom: 0;
     }
+    .bottom-link {
+      font-family: serif;
+    }
   </style>
 </head>
 <body>
@@ -39,7 +68,7 @@
     (function(){
       try{
         var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-        var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
+        var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);_
         if(isReload){ window.location.replace('home.html'); }
       }catch(e){}
     })();
@@ -53,10 +82,14 @@
     <div id="rewardContainer" class="reward-grid"></div>
   </main>
 
-  <div id="qrPopup" class="popup-overlay">
+    <div id="qrPopup" class="popup-overlay">
     <div class="popup-box">
-      <h3 id="qrPopupTitle">Tunjukkan ke Kasir</h3>
-      <div id="qrCodeContainer"></div>
+      <h3 id="qrPopupTitle">Kode Klaim Hadiah</h3>
+      <div id="qrCodeContainer">
+        <div class="claim-code-label">Tunjukkan kode ini ke kasir:</div>
+        <div id="claimCodeDisplay" class="claim-code">---</div>
+        <div class="code-info">Kode valid selama 30 hari</div>
+      </div>
       <div class="popup-buttons">
         <button id="closePopupButton">Tutup</button>
         <button id="deletePopupButton" class="btn-delete">Hapus</button>
@@ -66,7 +99,7 @@
   </div>
 
   <nav class="bottom-nav">
-    <a class="bottom-link" href="home.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link" href="index.html"> <span class="icon">🏠</span> <span>Home</span> </a>
     <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar</span> </a>
     <a class="bottom-link active" href="klaim.html"> <span class="icon">🎫</span> <span>Vcr Klaim</span> </a>
     <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
@@ -110,7 +143,7 @@
           <div class="card-body">
             <h3>${item.nama}</h3>
             <div class="points-cost">Ditukar dengan ${item.point} Poin</div>
-            <button class="btn-tukar btn-claim" data-id="${item.id}" data-name="${item.nama}">Klaim</button>
+            <button class="btn-tukar btn-claim" data-id="${item.id}" data-name="${item.nama}" data-point="${item.point}">Klaim</button>
           </div>
         </div>
       `;
@@ -124,39 +157,129 @@
         if (button.classList.contains('btn-claim')) {
           const itemId = button.dataset.id;
           const itemName = button.dataset.name;
+          const itemPoint = button.dataset.point; // Ambil data poin
           const activeClaims = getActiveClaims();
-          let qrData;
-
-          if (activeClaims[itemId]) {
-            qrData = activeClaims[itemId];
-          } else {
-            const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
-            qrData = {
-              claimId: `${itemId}-${new Date().getTime()}`,
-              itemName: itemName,
-              userPhone: userData.phone || 'Tidak diketahui',
-              claimTime: new Date().toLocaleString('id-ID')
-            };
-            setActiveClaim(itemId, qrData);
+          
+          // Jika sudah ada kode, tampilkan kode yang sama
+          if (activeClaims[itemId] && activeClaims[itemId].code) {
+            showCodePopup(activeClaims[itemId].code, itemName, itemId);
+            return;
           }
           
-          const encodedQrData = encodeURIComponent(JSON.stringify(qrData));
-          const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedQrData}`;
-          
-          showQrPopup(qrImageUrl, itemName, itemId); 
+          // Generate kode baru
+          generateClaimCode(itemId, itemName, itemPoint);
         }
       });
     }
 
-    function showQrPopup(qrImageUrl, itemName, itemId) {
+    const CONFIG = {
+      SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzhhEssVNQBCRip4OVNh2rIOB9ToRiTad7tmZgjUTsmxgN4gT9x2LCINvvD2YD4tK5K/exec'
+    };
+
+    async function generateClaimCode(itemId, itemName, itemPoint) {
+      const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+      const userPhone = userData.phone;
+      // FIX: Cek properti 'name' DAN 'nama' untuk memastikan nama terambil
+      const userName = userData.name || userData.nama || userData.username || '';
+      
+      if (!userPhone) {
+        alert('Nomor telepon tidak ditemukan. Silakan login ulang.');
+        return;
+      }
+      
+      if (!userName) {
+        alert('Nama user tidak terdeteksi. Silakan Logout dan Login kembali agar nama tercatat.');
+        return;
+      }
+      
+      try {
+        console.log('Generating claim code for:', { phone: userPhone, name: userName, itemId, itemName, cost: itemPoint });
+        console.log('API URL:', CONFIG.SCRIPT_URL);
+        
+        const payload = {
+          action: 'generateClaimCode',
+          phone: userPhone,
+          name: userName,
+          nama: userName,            // Kirim sebagai 'nama' untuk backend
+          username: userName,        // Tambahan parameter untuk kompatibilitas
+          reward: itemName,          // Kirim sebagai 'reward' untuk backend
+          cost: itemPoint,           // Kirim 'cost' (poin)
+          itemId: itemId,
+          itemName: itemName
+        };
+        
+        console.log('Request payload:', payload);
+        
+        const response = await fetch(CONFIG.SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        console.log('Response status:', response.status, response.statusText);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('Response not OK. Status:', response.status, 'Body:', text);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Response result:', result);
+        
+        if (result.status === 'success' && result.data) {
+          const code = result.data.code;
+          // Simpan kode ke activeClaims
+          const claimData = {
+            code: code,
+            itemId: itemId,
+            itemName: itemName,
+            claimTime: result.data.claimTime
+          };
+          setActiveClaim(itemId, claimData);
+          
+          // Tampilkan popup dengan kode
+          showCodePopup(code, itemName, itemId);
+        } else {
+          const errorMsg = result.message || 'Terjadi kesalahan';
+          console.error('API returned error:', result);
+          alert('Gagal generate kode: ' + errorMsg);
+        }
+      } catch (error) {
+        console.error('Error generating code:', error);
+        console.error('Error details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+        
+        let errorMessage = 'Gagal generate kode. ';
+        if (error.message && error.message.includes('Failed to fetch')) {
+          errorMessage += 'Tidak dapat terhubung ke server. ';
+          errorMessage += 'Pastikan koneksi internet aktif dan Google Apps Script URL benar.';
+        } else if (error.message && error.message.includes('CORS')) {
+          errorMessage += 'Masalah CORS. Silakan gunakan server lokal atau deploy aplikasi.';
+        } else {
+          errorMessage += error.message || 'Pastikan koneksi internet aktif.';
+        }
+        
+        alert(errorMessage);
+      }
+    }
+
+    function showCodePopup(code, itemName, itemId) {
       const popup = document.getElementById('qrPopup');
       const titleEl = document.getElementById('qrPopupTitle');
-      const qrContainer = document.getElementById('qrCodeContainer');
+      const codeDisplay = document.getElementById('claimCodeDisplay');
       const closeButton = document.getElementById('closePopupButton');
       const deleteButton = document.getElementById('deletePopupButton');
 
       titleEl.textContent = `Klaim "${itemName}"`;
-      qrContainer.innerHTML = `<img src="${qrImageUrl}" alt="QR Code Klaim">`;
+      codeDisplay.textContent = code;
       popup.classList.add('show');
 
       closeButton.onclick = () => {

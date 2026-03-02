@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Rice Bowl Monster</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #374151;
+            --muted: #6b7280;
+            --primary: #4C2A85;
+            --primary-text: #ffffff;
+            --border: #e5e7eb;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .checkout-header {
+            background: var(--card);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .checkout-header .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .checkout-header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+        main {
+            padding: 16px;
+        }
+        .summary-card {
+            background: var(--card);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .summary-card-header {
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .summary-card-content {
+            padding: 16px;
+        }
+        .checkout-item { display: flex; gap: 12px; margin-bottom: 16px; }
+        .checkout-item:last-child { margin-bottom: 0; }
+        .checkout-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .checkout-item-info { flex-grow: 1; }
+        .checkout-item-info h4 { margin: 0 0 4px; font-size: 14px; }
+        .checkout-item-info .price { font-size: 13px; color: var(--muted); }
+        .checkout-item-note {
+            font-size: 12px;
+            color: #888;
+            background-color: #f9f9f9;
+            border-left: 3px solid var(--primary);
+            padding: 6px 8px;
+            margin-top: 6px;
+            border-radius: 0 4px 4px 0;
+        }
+        .checkout-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .checkout-item-actions .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2px;
+        }
+        .checkout-item-actions .quantity-btn { background: #f3f4f6; border: none; width: 26px; height: 26px; border-radius: 50%; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .checkout-item-actions .quantity { font-weight: bold; min-width: 15px; text-align: center; }
+        .checkout-item-controls { display: flex; align-items: center; gap: 8px; }
+        .checkout-item-controls .quantity { font-weight: bold; }
+        .delete-btn {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            border-radius: 6px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .total-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .payment-details {
+            display: grid;
+            gap: 8px;
+            padding-bottom: 16px;
+            font-size: 14px;
+        }
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .payment-row .label { color: var(--muted); }
+        .order-note-section textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            min-height: 40px;
+        }
+        .order-type-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            font-weight: 600;
+        }
+        .empty-cart { text-align: center; padding: 40px 20px; color: var(--muted); }
+        .btn-order {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), #5a2d9a);
+            color: var(--primary-text);
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        /* [BARU] Style untuk input nomor meja yang terintegrasi */
+        #table-number-section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: -8px; /* Sedikit tumpang tindih dengan kartu di atasnya */
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: none; /* Sembunyi secara default */
+        }
+        #table-number-section input {
+            width: 100%; border: 1px solid var(--border); border-radius: 8px;
+            padding: 12px; font-size: 16px; margin-top: 8px;
+        }
+
+        .popup-box {
+            background: white; padding: 24px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%;
+            max-width: 380px; text-align: left; transform: scale(0.9);
+            transition: transform 0.2s ease;
+        }
+
+        /* [DIUBAH] Membuat kartu tipe pesanan terlihat bisa diklik */
+        .order-type-card {
+            cursor: default; /* Tidak bisa diklik lagi */
+            display: block; /* Mengubah dari flex ke block */
+        }
+        /* [BARU] Style untuk baris nomor meja */
+        #table-number-display {
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .order-type-card::after {
+            content: ''; /* Menghapus panah '›' */
+        }
+        /* [BARU] Style untuk Modal Promo */
+        .promo-list {
+            max-height: 300px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .promo-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .promo-item:last-child { border-bottom: none; }
+        .promo-item:hover { background-color: #f9f9f9; }
+        .promo-item-title { font-weight: bold; color: var(--primary); }
+        .promo-item-desc { font-size: 12px; color: #666; }
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .popup-overlay.show { display: flex; }
+
+    </style>
+</head>
+<body>
+
+    <header class="checkout-header">
+        <button class="back-btn" onclick="history.back()">‹</button>
+        <h1>Detail Pesanan</h1>
+    </header>
+
+    <main>
+        <div class="order-type-card" id="orderTypeCard">
+            <span id="order-type-text">Tipe Pesanan: Makan di Tempat</span>
+            <div id="table-number-display">(Meja #)</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <span>Ringkasan Pesanan</span>
+                <span style="font-size: 14px; color: var(--muted); font-weight: 500;" id="item-count-info"></span></div>
+            <div class="summary-card-content" id="checkout-items-container">
+                <!-- Item akan dirender di sini -->
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-card-header">Catatan Pesanan</div>
+            <div class="summary-card-content order-note-section">
+                <textarea id="overall-note" placeholder="Misal: Tolong sendoknya dibanyakin ya..."></textarea>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-card-header">Kode Promo / Voucher</div>
+            <div class="summary-card-content">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="promo-code" placeholder="Klik untuk pilih promo..." readonly style="flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 14px; cursor: pointer;">
+                    <button id="apply-promo-btn" style="background: var(--primary); color: white; border: none; border-radius: 8px; padding: 0 16px; font-weight: 600; cursor: pointer;">Pakai</button>
+                    <button id="remove-promo-btn" style="background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; padding: 0 16px; font-weight: 600; cursor: pointer; display: none;">Hapus</button>
+                </div>
+                <div id="promo-message" style="margin-top: 8px; font-size: 12px; display: none;"></div>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-card-header">Rincian Pembayaran</div>
+            <div class="summary-card-content">
+                <div class="payment-details">
+                    <div class="payment-row">
+                        <span class="label">Subtotal</span>
+                        <span id="checkout-subtotal">Rp 0</span>
+                    </div>
+                    <div class="payment-row" id="discount-row">
+                        <span class="label">Diskon</span>
+                        <span id="checkout-diskon" style="color: #16a34a;">- Rp 0</span>
+                    </div>
+                    <div class="payment-row">
+                        <span class="label">PPN (10%)</span>
+                        <span id="checkout-ppn">Rp 0</span>
+                    </div>
+                </div>
+                <div class="total-section">
+                    <span>Total Pembayaran</span>
+                    <span id="checkout-total">Rp 0</span>
+                </div>
+                <button class="btn-order" id="processOrderBtn">Lanjutkan ke Pembayaran</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- [BARU] Modal Pilih Promo -->
+    <div id="promoModal" class="popup-overlay">
+        <div class="popup-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin:0; font-size:16px;">Pilih Promo</h3>
+                <button id="closePromoModal" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <div id="promoListContainer" class="promo-list">
+                <p style="text-align:center; color:#888;">Memuat promo...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- [BARU] Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        let cart = [];
+        const PPN_RATE = 0.10;
+        let appliedDiscount = 0; // [BARU] Variabel untuk menyimpan diskon yang diterapkan
+
+        // [DIUBAH] Detail pesanan sekarang diambil dari localStorage
+        let orderDetails = JSON.parse(localStorage.getItem('rbm_order_details')) || { type: 'Dine-in', tableNumber: '' };
+        let userInfo = JSON.parse(localStorage.getItem('rbm_user')) || {};
+        
+        // [BARU] Inisialisasi Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+            authDomain: "ricebowlmonst.firebaseapp.com",
+            databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+            projectId: "ricebowlmonst",
+            storageBucket: "ricebowlmonst.firebasestorage.app",
+            messagingSenderId: "723669558962",
+            appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function parsePrice(priceString) {
+            if (priceString === undefined || priceString === null) return 0;
+            if (typeof priceString === 'number') return priceString;
+            return parseFloat(priceString.toString().replace(/[^0-9]/g, ''));
+        }
+
+        function formatPrice(price) {
+            return `Rp ${Math.round(price).toLocaleString('id-ID')}`;
+        }
+
+        function saveCart() {
+            localStorage.setItem('rbm_cart', JSON.stringify(cart));
+        }
+
+        function renderCheckout() {
+            const container = document.getElementById('checkout-items-container');
+            const subtotalEl = document.getElementById('checkout-subtotal');
+            const ppnEl = document.getElementById('checkout-ppn');
+            const totalEl = document.getElementById('checkout-total');
+            const diskonEl = document.getElementById('checkout-diskon');
+            const diskonRow = document.getElementById('discount-row');
+            const itemCountInfoEl = document.getElementById('item-count-info');
+            const processOrderBtn = document.getElementById('processOrderBtn');
+
+            if (!cart || cart.length === 0) {
+                document.querySelector('main').innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-card-content" id="checkout-items-container">
+                            <div class="empty-cart">🛒<p>Keranjang Anda kosong.</p><a href="index.html">Kembali ke menu</a></div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let subtotal = 0;
+            let totalItems = 0;
+
+            container.innerHTML = cart.map(item => {
+                const itemTotal = parsePrice(item.price) * item.quantity;
+                subtotal += itemTotal;
+                totalItems += item.quantity;
+
+                return `
+                    <div class="checkout-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <div class="checkout-item-info">
+                            <h4>${item.name}</h4>
+                            <span class="price">${item.price}</span>
+                            <div class="checkout-item-actions">
+                                <div class="quantity-controls">
+                                    <button class="quantity-btn" onclick="updateQuantity('${item.name}', -1)">-</button>
+                                    <span class="quantity">${item.quantity}</span>
+                                    <button class="quantity-btn" onclick="updateQuantity('${item.name}', 1)">+</button>
+                                </div>
+                                <button class="delete-btn" onclick="removeItem('${item.name}')">🗑️</button>
+                            </div>
+                            <div class="checkout-item-note" style="margin-top: 10px;">
+                                <input type="text" placeholder="Tambah catatan..." value="${item.note || ''}" onchange="updateNote('${item.name}', this.value)" style="border:none; background:transparent; width:100%; font-size:12px;">
+                            </div>
+                        </div>
+                        <div class="checkout-item-controls">
+                            <span class="quantity">${formatPrice(itemTotal)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Diskon dikosongkan untuk sementara
+            let discountAmount = appliedDiscount;
+            
+            const ppn = (subtotal - discountAmount) * PPN_RATE;
+            const total = subtotal - discountAmount + ppn;
+
+            subtotalEl.textContent = formatPrice(subtotal);
+            diskonEl.textContent = `- ${formatPrice(discountAmount)}`;
+            ppnEl.textContent = formatPrice(ppn);
+            totalEl.textContent = formatPrice(total);
+            itemCountInfoEl.textContent = `${totalItems} item`;
+        }
+
+        function updateQuantity(itemName, change) {
+            const item = cart.find(i => i.name === itemName);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.name !== itemName);
+                }
+            }
+            saveCart();
+            renderCheckout();
+        }
+
+        function removeItem(itemName) {
+            if (confirm('Hapus item ini dari keranjang?')) {
+                cart = cart.filter(i => i.name !== itemName);
+                saveCart();
+                renderCheckout();
+            }
+        }
+
+        function updateNote(itemName, note) {
+            const item = cart.find(i => i.name === itemName);
+            if (item) {
+                item.note = note;
+            }
+            saveCart();
+        }
+
+        // [DIUBAH] Fungsi ini sekarang hanya menyimpan data dan mengarahkan ke halaman pembayaran
+        function proceedToPayment() {
+            const overallNote = document.getElementById('overall-note').value;
+            const subtotal = cart.reduce((sum, item) => sum + parsePrice(item.price) * item.quantity, 0);
+            let discountAmount = appliedDiscount;
+            const ppn = (subtotal - discountAmount) * PPN_RATE;
+            const total = subtotal - discountAmount + ppn;
+
+            // Simpan semua informasi yang relevan ke localStorage untuk digunakan di halaman pembayaran
+            const paymentInfo = {
+                subtotal,
+                discountAmount,
+                ppn, 
+                total,
+                overallNote,
+                usedPromo: selectedPromoData // [BARU] Simpan data promo yang dipakai
+            };
+            localStorage.setItem('rbm_payment_info', JSON.stringify(paymentInfo));
+
+            // Arahkan ke halaman pembayaran
+            window.location.href = 'payment.html';
+        }
+
+        function saveOrderDetails() {
+            localStorage.setItem('rbm_order_details', JSON.stringify(orderDetails));
+        }
+
+        // [DIUBAH] Fungsi untuk menampilkan detail pesanan (tidak bisa diubah)
+        function displayOrderDetails() {
+            const orderTypeText = document.getElementById('order-type-text');
+            const tableNumberDisplay = document.getElementById('table-number-display');
+
+            // Paksa tipe pesanan menjadi Dine-in
+            orderDetails.type = 'Dine-in';
+            saveOrderDetails();
+
+            orderTypeText.textContent = 'Tipe Pesanan: Makan di Tempat';
+
+            if (orderDetails.tableNumber) {
+                tableNumberDisplay.textContent = `(Meja #${orderDetails.tableNumber})`;
+                tableNumberDisplay.style.display = 'block';
+            }
+        }
+
+        // [BARU] Fungsi untuk handle promo (Placeholder logic)
+        function handleApplyPromo() {
+            const code = document.getElementById('promo-code').value;
+            if(!code) return;
+            
+            // Terapkan logika promo jika data sudah dipilih
+            if (selectedPromoData) {
+                applyPromoLogic(selectedPromoData);
+            }
+        }
+
+        let selectedPromoData = null;
+
+        function applyPromoLogic(promo) {
+            const messageEl = document.getElementById('promo-message');
+            const removeBtn = document.getElementById('remove-promo-btn');
+            const applyBtn = document.getElementById('apply-promo-btn');
+            
+            // Hitung diskon
+            let discount = 0;
+            const subtotal = cart.reduce((sum, item) => sum + parsePrice(item.price) * item.quantity, 0);
+
+            // Cek Min Purchase
+            if (promo.minPurchase && subtotal < promo.minPurchase) {
+                messageEl.textContent = `Min. belanja Rp ${promo.minPurchase.toLocaleString('id-ID')}`;
+                messageEl.style.color = '#ef4444';
+                messageEl.style.display = 'block';
+                appliedDiscount = 0;
+                
+                if (removeBtn) removeBtn.style.display = 'block';
+                if (applyBtn) applyBtn.style.display = 'none';
+                
+                renderCheckout();
+                return;
+            }
+
+            if (promo.type === 'percent') {
+                discount = subtotal * (promo.value / 100);
+            } else {
+                discount = promo.value;
+            }
+
+            // Batasi diskon tidak melebihi subtotal
+            if (discount > subtotal) discount = subtotal;
+
+            appliedDiscount = discount;
+            messageEl.textContent = `Promo "${promo.name}" diterapkan!`;
+            messageEl.style.color = '#16a34a';
+            messageEl.style.display = 'block';
+            
+            if (removeBtn) removeBtn.style.display = 'block';
+            if (applyBtn) applyBtn.style.display = 'none';
+            
+            renderCheckout();
+        }
+
+        // [BARU] Fungsi Hapus Promo
+        function removePromo() {
+            appliedDiscount = 0;
+            selectedPromoData = null;
+            document.getElementById('promo-code').value = '';
+            document.getElementById('promo-message').style.display = 'none';
+            
+            const removeBtn = document.getElementById('remove-promo-btn');
+            const applyBtn = document.getElementById('apply-promo-btn');
+            if (removeBtn) removeBtn.style.display = 'none';
+            if (applyBtn) applyBtn.style.display = 'block';
+
+            renderCheckout();
+        }
+
+        // [BARU] Fungsi Modal Promo
+        function initPromoModal() {
+            const modal = document.getElementById('promoModal');
+            const input = document.getElementById('promo-code');
+            const closeBtn = document.getElementById('closePromoModal');
+            const listContainer = document.getElementById('promoListContainer');
+
+            input.addEventListener('click', () => {
+                modal.classList.add('show');
+                loadPromos();
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('show');
+            });
+
+            function loadPromos() {
+                const listContainer = document.getElementById('promoListContainer');
+                listContainer.innerHTML = '<p style="text-align:center; color:#888;">Memuat promo...</p>';
+
+                const outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
+                const outletId = outletInfo.id || 'sidoarjo'; // Default fallback
+
+                // 1. Ambil Promo Umum dari Firebase
+                const publicPromosPromise = db.ref(`pos_promos/${outletId}`).once('value').then(snapshot => {
+                    const data = snapshot.val();
+                    const promos = [];
+                    
+                    if (data) {
+                        Object.values(data).forEach(p => {
+                            if (p.active !== false && p.showInApp !== false) {
+                                promos.push({ ...p, source: 'public' });
+                            }
+                        });
+                    }
+                    return promos;
+                });
+
+                // 2. Ambil Voucher Pribadi dari LocalStorage (hasil klaim poin)
+                const userPhone = userInfo.phone;
+                let personalVouchers = [];
+                if (userPhone) {
+                    const storageKey = `rbm_unclaimed_rewards_${userPhone}`;
+                    const claimedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                    
+                    personalVouchers = claimedItems.filter(item => 
+                        item.type === 'voucher' && item.status === 'unclaimed'
+                    ).map(item => {
+                        // Coba parsing nilai jika tidak ada properti value eksplisit
+                        let val = item.value || item.amount || 0;
+                        let type = item.discount_type || 'fixed';
+
+                        if (!val) {
+                            const name = (item.nama || '').toLowerCase();
+                            // Cek persen
+                            if (name.includes('%')) {
+                                const match = name.match(/(\d+)%/);
+                                if (match) {
+                                    val = parseInt(match[1]);
+                                    type = 'percent';
+                                }
+                            } 
+                            // Cek nominal rupiah (misal: "Potongan 10rb" atau "Voucher 5000")
+                            else {
+                                const numStr = name.replace(/[^0-9]/g, '');
+                                if (numStr && numStr.length > 2) { // Minimal 3 digit agar valid
+                                    val = parseInt(numStr);
+                                    type = 'fixed';
+                                }
+                            }
+                        }
+
+                        return {
+                            ...item,
+                            name: item.nama, // Mapping nama ke name
+                            value: val,
+                            type: type,
+                            source: 'personal'
+                        };
+                    });
+                }
+
+                // 3. Gabungkan dan Render
+                publicPromosPromise.then(publicPromos => {
+                    listContainer.innerHTML = '';
+                    const allPromos = [...personalVouchers, ...publicPromos];
+
+                    if (allPromos.length === 0) {
+                        listContainer.innerHTML = '<p style="text-align:center; color:#888;">Tidak ada promo atau voucher tersedia.</p>';
+                        return;
+                    }
+
+                    allPromos.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'promo-item';
+                        
+                        // Badge untuk voucher pribadi
+                        const badge = p.source === 'personal' 
+                            ? '<span style="background:#e0f2fe; color:#0284c7; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:6px; font-weight:bold;">Voucher Saya</span>' 
+                            : '';
+
+                        // Deskripsi
+                        let desc = p.description;
+                        if (!desc) {
+                            if (p.type === 'percent') desc = `Diskon ${p.value}%`;
+                            else if (p.value) desc = `Potongan Rp ${parseInt(p.value).toLocaleString('id-ID')}`;
+                            else desc = 'Potongan harga spesial';
+                        }
+
+                        div.innerHTML = `
+                            <div class="promo-item-title">${p.name} ${badge}</div>
+                            <div class="promo-item-desc">${desc}</div>
+                        `;
+                        div.onclick = () => {
+                            document.getElementById('promo-code').value = p.name;
+                            selectedPromoData = p;
+                            handleApplyPromo(); // Langsung terapkan
+                            modal.classList.remove('show');
+                        };
+                        listContainer.appendChild(div);
+                    });
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const cartData = localStorage.getItem('rbm_cart');
+                cart = cartData ? JSON.parse(cartData) : [];
+                if (!Array.isArray(cart)) cart = [];
+            } catch (e) {
+                console.error("Gagal memuat keranjang:", e);
+                cart = [];
+            }
+            renderCheckout();
+            
+            // [DIUBAH] Event listener untuk tombol pembayaran
+            const processBtn = document.getElementById('processOrderBtn');
+            if (processBtn) {
+                processBtn.addEventListener('click', proceedToPayment);
+            }
+            displayOrderDetails(); // Panggil fungsi untuk menampilkan detail pesanan
+
+            // [BARU] Listener tombol promo
+            const promoBtn = document.getElementById('apply-promo-btn');
+            if (promoBtn) {
+                promoBtn.addEventListener('click', handleApplyPromo);
+            }
+            
+            const removePromoBtn = document.getElementById('remove-promo-btn');
+            if (removePromoBtn) {
+                removePromoBtn.addEventListener('click', removePromo);
+            }
+            
+            // [BARU] Init Modal
+            initPromoModal();
+        });
+    </script>
+
+</body>
+</html>

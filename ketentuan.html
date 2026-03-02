@@ -56,5 +56,27 @@
 
             </section>
     </main>
+
+    <!-- [BARU] Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+            authDomain: "ricebowlmonst.firebaseapp.com",
+            databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+            projectId: "ricebowlmonst",
+            storageBucket: "ricebowlmonst.firebasestorage.app",
+            messagingSenderId: "723669558962",
+            appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('customer_app_settings/account_page/terms_content').on('value', snap => {
+            const content = snap.val();
+            if (content) document.querySelector('.content-section').innerHTML = content;
+        });
+    </script>
 </body>
 </html>

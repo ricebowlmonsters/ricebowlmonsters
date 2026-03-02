@@ -64,7 +64,7 @@
                 var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
                 var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
                 if(isReload){ window.location.replace('home.html'); }
-            }catch(e){}
+            }catch(e){}_
         })();
     </script>
     <header class="app-header simple">
@@ -98,28 +98,49 @@
         </section>
     </main>
 
+    <!-- [BARU] Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <script>
-        const acc = document.getElementsByClassName("accordion");
-        for (let i = 0; i < acc.length; i++) {
-            acc[i].addEventListener("click", function() {
-                // Tutup semua panel lain yang mungkin terbuka
-                for (let j = 0; j < acc.length; j++) {
-                    if (this !== acc[j]) {
-                        acc[j].classList.remove("active");
-                        acc[j].nextElementSibling.style.maxHeight = null;
-                    }
-                }
+        function initAccordion() {
+            const acc = document.getElementsByClassName("accordion");
+            for (let i = 0; i < acc.length; i++) {
+                // Remove old listeners to avoid duplicates if re-init
+                const newEl = acc[i].cloneNode(true);
+                acc[i].parentNode.replaceChild(newEl, acc[i]);
                 
-                // Buka atau tutup panel yang di-klik
-                this.classList.toggle("active");
-                const panel = this.nextElementSibling;
-                if (panel.style.maxHeight) {
-                    panel.style.maxHeight = null;
-                } else {
-                    panel.style.maxHeight = panel.scrollHeight + "px";
-                }
-            });
+                newEl.addEventListener("click", function() {
+                    const allAcc = document.getElementsByClassName("accordion");
+                    for (let j = 0; j < allAcc.length; j++) {
+                        if (this !== allAcc[j]) {
+                            allAcc[j].classList.remove("active");
+                            allAcc[j].nextElementSibling.style.maxHeight = null;
+                        }
+                    }
+                    this.classList.toggle("active");
+                    const panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                    }
+                });
+            }
         }
+        initAccordion();
+
+        const firebaseConfig = { apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw", authDomain: "ricebowlmonst.firebaseapp.com", databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com", projectId: "ricebowlmonst", storageBucket: "ricebowlmonst.firebasestorage.app", messagingSenderId: "723669558962", appId: "1:723669558962:web:c17a1a4683a86cc5a88bab" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('customer_app_settings/account_page/faq_content').on('value', snap => {
+            const faqs = snap.val();
+            if (faqs && Array.isArray(faqs) && faqs.length > 0) {
+                document.querySelector('.faq-section').innerHTML = faqs.map(item => `<button class="accordion">${item.q}</button><div class="panel"><p>${item.a}</p></div>`).join('');
+                initAccordion();
+            }
+        });
     </script>
 </body>
 </html>

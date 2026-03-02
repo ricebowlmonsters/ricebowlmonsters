@@ -3,191 +3,4262 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rice Bowl Monster - Masuk</title>
+  <script>
+    // [ANTI-FLASH] Sembunyikan link riwayat jika fitur pesan mati
+    try {
+      var _s = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+      var css = '';
+      var isFalse = function(v) { return v === false || v === 'false'; };
+
+      if (isFalse(_s.ordering_enabled)) {
+        css += '.bottom-link[href="riwayat.html"] { display: none !important; } .bottom-nav { grid-template-columns: repeat(5, 1fr) !important; }';
+      }
+      if (isFalse(_s.enable_game)) {
+        css += '.game-trigger { display: none !important; }';
+      }
+      if (isFalse(_s.enable_ai_chat)) {
+        css += '#ai-chat-btn { display: none !important; }';
+      }
+      if (isFalse(_s.enable_global_chat)) {
+        css += '#global-chat-btn { display: none !important; }';
+      }
+
+      if (css) {
+        var style = document.createElement('style');
+        style.id = 'anti-flash-style';
+        style.innerHTML = css;
+        document.head.appendChild(style);
+      }
+    } catch(e){}
+  </script>
+  <title>Rice Bowl Monster - Beranda</title>
+  
+  <link rel="stylesheet" href="styles.css">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{--bg:#4C2A85;--card:#fff;--text:#374151;--muted:#6b7280;--primary:#4C2A85;--primary-text:#fff;--border:#e5e7eb;--ring:rgba(76, 42, 133, 0.4);--success:#16a34a;--error:#dc2626}*{-webkit-box-sizing:border-box;box-sizing:border-box}html,body{height:100%}body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}.auth-body{display:grid;place-items:center;padding:24px}.auth-container{width:100%;max-width:420px;background:var(--card);border-radius:24px;padding:28px;-webkit-box-shadow:0 10px 30px rgba(0,0,0,.2);box-shadow:0 10px 30px rgba(0,0,0,.2)}.brand{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;gap:16px;margin-bottom:24px}.logo{width:65px;height:65px;-ms-flex-negative:0;flex-shrink:0}.logo img{width:100%;height:100%;-o-object-fit:contain;object-fit:contain}.brand-text h1{font-size:20px;margin:0 0 4px 0;color:var(--text);white-space:nowrap}.brand-text p{margin:0;font-size:14px;color:var(--muted);white-space:nowrap}.auth-form{display:grid;gap:16px}.form-field{display:grid;gap:8px}.form-field label{font-size:14px;font-weight:500;color:var(--muted)}.form-field input{border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:16px;background-color:var(--card);width:100%;outline:0}.form-field input:focus{border-color:var(--primary);-webkit-box-shadow:0 0 0 4px var(--ring);box-shadow:0 0 0 4px var(--ring)}.input-group{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;border:1px solid var(--border);border-radius:10px;-webkit-transition:all .2s;transition:all .2s}.input-group:focus-within{border-color:var(--primary);-webkit-box-shadow:0 0 0 4px var(--ring);box-shadow:0 0 0 4px var(--ring)}.input-prefix{padding:12px 10px 12px 14px;font-size:16px;color:var(--text);background-color:#f9fafb;border-right:1px solid var(--border)}.input-group input{border:none;-webkit-box-shadow:none;box-shadow:none;background:0 0}.message{font-size:14px;min-height:20px;text-align:center}.message.success{color:var(--success)}.message.error{color:var(--error)}.auth-actions{display:-webkit-box;display:-ms-flexbox;display:flex;gap:10px;margin-top:4px}.btn{width:100%;padding:12px 24px;border-radius:10px;border:1px solid transparent;cursor:pointer;font-size:16px;font-weight:700;-webkit-transition:all .2s;transition:all .2s}.btn:disabled{cursor:not-allowed;opacity:.7}.btn-primary{background:var(--primary);color:var(--primary-text)}.btn-primary:hover:not(:disabled){background:#3c216b}.btn-outline{background:var(--card);color:var(--primary);border-color:var(--border)}.btn-outline:hover:not(:disabled){background:#f9fafb;border-color:#d1d5db}.auth-footer{text-align:center;margin-top:20px}.modal{border:none;border-radius:12px;padding:0;max-width:400px;-webkit-box-shadow:0 10px 30px rgba(0,0,0,.2);box-shadow:0 10px 30px rgba(0,0,0,.2)}.modal::-webkit-backdrop{background:rgba(0,0,0,.5)}.modal::backdrop{background:rgba(0,0,0,.5)}.modal-card{padding:32px;display:grid;gap:18px}.modal-card h2{margin:0 0 8px 0;text-align:center}.modal-actions{display:-webkit-box;display:-ms-flexbox;display:flex;gap:10px}
-  </style>
-</head>
-
-<body class="auth-body">
-
-  <main class="auth-container">
-    <div class="brand">
-      <div class="logo">
-        <img src="logo-rbm.png" alt="Rice Bowl Monster Logo">
-      </div>
-      <div class="brand-text">
-        <h1>Rice Bowl Monsters</h1>
-        <p>Hallo, Monsters Lovers</p>
-      </div>
-    </div>
-
-    <form class="auth-form" id="login-form">
-      <div class="form-field">
-        <label for="username">No. Telepon (Username)</label>
-        <div class="input-group">
-          <span class="input-prefix">+62</span>
-          <input type="tel" id="username" name="username" placeholder="81234567890" required>
-        </div>
-      </div>
-
-      <div id="login-message" class="message"></div>
-      <div class="auth-actions">
-        <button type="button" class="btn btn-outline" id="btn-daftar">Daftar</button>
-        <button type="submit" class="btn btn-primary">Login</button>
-      </div>
-      <a href="home.html" class="btn btn-outline" style="text-align: center; text-decoration: none; margin-top: 8px;">Kembali ke Beranda</a>
-    </form>
-
-    <footer class="auth-footer">
-      <small>© <span id="year"></span> Rice Bowl Monster</small>
-    </footer>
-  </main>
-
-  <dialog id="daftar-modal" class="modal">
-    <form class="modal-card" id="register-form">
-      <h2>Buat Akun Baru</h2>
-      <div class="form-field">
-        <label for="reg-nama">Nama Lengkap</label>
-        <input type="text" id="reg-nama" name="reg-nama" placeholder="Masukkan nama lengkap" required>
-      </div>
-      <div class="form-field">
-        <label for="reg-username">No. Telepon (Username)</label>
-        <div class="input-group">
-          <span class="input-prefix">+62</span>
-          <input type="tel" id="reg-username" name="reg-username" placeholder="81234567890" required>
-        </div>
-      </div>
-      <div id="register-message" class="message"></div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" id="btn-batal">Batal</button>
-        <button type="submit" class="btn btn-primary">Daftar</button>
-      </div>
-    </form>
-  </dialog>
-
-  <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5xRkvhJSsgGvq6tYeKc4VBwzTyw6bpZgexRYtIYCTgXiGtN1wahPhSijnH5h3VHez/exec';
+    :root {
+      --bg: #ffffff;
+      --card: #ffffff;
+      --text: #374151;
+      --muted: #6b7280;
+      --primary: #4C2A85;
+      --primary-text: #ffffff;
+      --border: #00000000; /* Diubah menjadi abu-abu muda agar garis terlihat */
+    }
+    * { box-sizing: border-box; }
+    body {
+  margin: 0; /* <-- Menghilangkan garis putih di atas */
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
     
-    const yearSpan = document.getElementById('year');
-    const loginForm = document.getElementById('login-form');
-    const usernameInput = document.getElementById('username');
-    const loginMessage = document.getElementById('login-message');
-    const daftarBtn = document.getElementById('btn-daftar');
-    const daftarModal = document.getElementById('daftar-modal');
-    const registerForm = document.getElementById('register-form');
-    const regNamaInput = document.getElementById('reg-nama');
-    const regUsernameInput = document.getElementById('reg-username');
-    const registerMessage = document.getElementById('register-message');
-    const batalBtn = document.getElementById('btn-batal');
-
-    yearSpan.textContent = new Date().getFullYear();
-
-    function showMessage(element, text, isError = false) {
-      element.textContent = text;
-      element.className = isError ? 'message error' : 'message success';
+    img { max-width: 100%; display: block; }
+    
+    /* [STYLE POPUP PROMO] */
+    .popup-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.7); z-index: 2000; display: none;
+      justify-content: center; align-items: center; padding: 16px; 
+      opacity: 0; transition: opacity 0.3s ease; /* Transisi halus */
+    }
+    .popup-overlay.show {
+      opacity: 1;
+    }
+    .popup-content {
+      background: transparent; box-shadow: none; max-width: 300px; /* Sedikit diperbesar */
+      width: 100%; position: relative; transform: scale(0.9); transition: transform 0.3s ease;
+    }
+    .popup-content img { width: 100%; }
+    .popup-close {
+      background: #f3f4f6; border: none;
+      width: 32px; height: 32px; border-radius: 50%; font-size: 18px; font-weight: bold;
+      color: var(--text); cursor: pointer; display: flex; justify-content: center;
+      align-items: center; transition: all 0.2s ease;
+      position: absolute; /* Posisi absolut */
+      top: -12px; /* Sedikit di atas */
+      right: -12px; /* Sedikit di kanan */
+      box-shadow: 0 2px 5px rgba(255, 255, 255, 0.2);
+    }
+    
+    /* [BARU] Efek transisi untuk popup */
+    .popup-overlay {
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      opacity: 0;
+      visibility: hidden;
+    }
+    .popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .popup-close:hover {
+      background: #e5e7eb;
+      transform: scale(1.1);
+    }
+    
+    .menu-detail-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+    
+    /* Menu Detail Popup Styles */
+    .menu-detail-popup {
+      background: var(--card);
+      border-radius: 16px;
+      max-width: 320px;
+      width: 85%;
+      height: auto;
+      max-height: 90vh;
+      overflow: visible;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .menu-detail-content {
+      padding: 12px;
+    }
+    
+    .menu-detail-image {
+      width: 100%;
+      height: 120px;
+      object-fit: contain; /* prevent cropping */
+      background: #ffffff; /* letterbox background */
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .menu-detail-info h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 4px 0;
+      line-height: 1.2;
+    }
+    
+    .menu-detail-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    
+    .menu-detail-category {
+      font-size: 11px;
+      color: var(--muted);
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    
+    .menu-detail-description {
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    
+    .menu-detail-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-order {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary), #5a2d9a);
+      color: var(--primary-text);
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-order:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(76, 42, 133, 0.4);
+    }
+    
+    .btn-favorite {
+      background: #f3f4f6;
+      color: var(--text);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-favorite:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+    
+    /* Favorites Popup Styles */
+    .favorites-popup {
+      background: var(--card);
+      border-radius: 16px;
+      max-width: 320px;
+      width: 85%;
+      max-height: 60vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .favorites-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 16px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    
+    .favorites-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+    
+    .favorites-content {
+      padding: 0 16px 16px 16px;
+    }
+    
+    .favorite-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .favorite-item:hover {
+      background: #f3f4f6;
+      transform: translateY(-1px);
+    }
+    
+    .favorite-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    
+    .favorite-item-info {
+      flex: 1;
+    }
+    
+    .favorite-item-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 4px 0;
+    }
+    
+    .favorite-item-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .favorite-item-remove {
+      background: #fee2e2;
+      color: #dc2626;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .favorite-item-remove:hover {
+      background: #fecaca;
+    }
+    
+    .empty-favorites {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+    
+    .empty-favorites-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 50px 16px; /* <-- Jarak atas-bawah diperkecil lagi agar lebih tipis */
+      gap: 16px; 
+      padding: 0 16px; /* Padding atas/bawah di-nol-kan agar lebih tipis */
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background-color: transparent;
+      box-shadow: none;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      /* Transisi untuk efek scroll */
+      transition: background-color 0.3s ease, box-shadow 0.3s ease; 
+    }
+    
+    /* MODIFIKASI CSS UNTUK EFEK BARU */
+    .app-header.scrolled .brand-name,
+    .app-header.scrolled .location-link,
+    .app-header.scrolled .notification-btn {
+      color: var(--text);
+      border-bottom: 1px solid rgba(0, 0, 0, 0);
+    }
+    
+    .brand-name, .location-link, .notification-btn {
+        transition: color 0.3s ease;
+    }
+    /* END MODIFIKASI CSS */
+    .app-header .logo { width: 85px; height: 56px; flex-shrink: 0; }
+    .app-header .logo { width: 80px; height: 56px; flex-shrink: 0; }
+    .app-header .logo img {
+      width: 100%; height: 100%; object-fit: contain;
+    }
+    .brand-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 4px; /* <-- Jarak antara nama brand dan lokasi */
+    }
+    .brand-name {
+      font-size: 18px; font-weight: 700; margin: 0;
+      color: var(--primary-text); line-height: 1.2;
+    }
+    .location-row {
+      display: flex; align-items: center; gap: 6px; font-size: 9px;
+    }
+    .location-icon { font-size: 16px; }
+    .location-link {
+      color: var(--primary-text); font-weight: 600; text-decoration: underline;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
+    }
+    .notification-btn {
+      background: none; border: none; font-size: 24px; cursor: pointer;
+      padding: 4px; color: var(--primary-text); margin-left: auto;
     }
 
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const loginButton = e.submitter;
-      const phoneNumber = usernameInput.value;
+    .content { padding: 0; }
+    .promo-section { margin-bottom: -20px; /* DIUBAH: Tarik section di bawahnya ke atas */ }
+    .promo-slider { 
+      display: flex; overflow-x: auto; scroll-snap-type: x mandatory; 
+      gap: 0; scrollbar-width: none; scroll-behavior: smooth; 
+    }
+    .promo-slider::-webkit-scrollbar { display: none; }
+    .promo-item { 
+      flex: 0 0 100%; scroll-snap-align: center;
+      position: relative;
+      /* [BARU] Menambahkan lengkungan di bagian bawah */
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 0px;
+      border-top-left-radius: 0px;
+      border-top-right-radius: 0px;
+      overflow: hidden; /* Memastikan gambar mengikuti lengkungan */
+    }
+    .promo-item::after {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%;
+      height: 150px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+      z-index: 1;
+    }
+    .promo-item img {
+      /* DIUBAH: Atur tinggi gambar promo di sini. */
+      width: 100%; height: 200px; object-fit: cover; 
+      display: block;
+    }
+    
+.menu-icons { 
+  display: flex;
+  overflow-x: auto;
+  gap: 20px; 
+  padding: 24px 16px 16px 16px; /* <-- Padding disesuaikan */
+  text-align: center;
+  background: #0a101c; /* <-- Warna background konten */
+  background: transparent; /* Contoh: diubah menjadi transparan */
+  scrollbar-width: none;
+  
+  /* Tidak perlu lagi menimpa gambar */
+}
+  
+    .menu-icon { 
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      text-decoration: none; cursor: pointer; 
+    }
+    .menu-emoji { 
+      width: 48px; height: 48px; border-radius: 16px; background-color: var(--card);
+      display: grid; place-items: center; font-size: 24px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .menu-icon span { font-size: 12px; font-weight: 600; color: var(--primary-text); max-width: 100%;display: block;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}
+    
+    .menu-icon .menu-emoji.active {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(76, 42, 133, 0.5);
+      background-color: #f0e9ff;
+    }
 
-      loginButton.disabled = true;
-      loginButton.textContent = 'Memproses...';
-      showMessage(loginMessage, '');
+    .all-menu-section { padding: 16px; padding-bottom: 80px; }
+    .all-menu-title { margin: 0 0 12px 0; color: var(--primary-text); font-size: 16px; font-weight: 700; }
+    .all-menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .menu-card { background: var(--card); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: visible; }
+    .menu-card img { border-radius: 12px 12px 0 0; border: 1px solid #f3f4f6; }
+    .menu-card img { width: 100%; height: 110px; object-fit: cover; display: block; }
+    .menu-card .body { padding: 10px; display: grid; gap: 6px; }
+    .menu-card h3 { font-size: 14px; margin: 0; color: var(--text); }
+    .menu-card .price { font-size: 13px; font-weight: 700; color: var(--primary); }
 
-      fetch(`${SCRIPT_URL}?phone=${phoneNumber}`)
-        .then(response => response.json())
-        .then(result => {
-          if (result.status === 'success') {
-            const userProfile = {
-              nama: result.data.nama,
-              phone: result.data.phone,
-              username: result.data.username,
-              points: result.data.points_sisa
-            };
-            localStorage.setItem('rbm_user', JSON.stringify(userProfile));
+    /* Grouped menu styles */
+    .grouped-menu-section { padding: 16px; padding-bottom: 140px; }
+    .group-block { margin-bottom: 12px; }
+    /* [BARU] Menambahkan posisi relatif untuk panah indikator scroll */
+    .group-block {
+      position: relative;
+    }
+    /* [BARU] Gaya untuk panah indikator scroll di sisi kanan */
+    .group-block::after {
+      content: '›';
+      position: absolute;
+      right: 8px; /* Jarak dari tepi kanan */
+      top: 60%; /* Posisi vertikal, disesuaikan agar di tengah kartu */
+      transform: translateY(-50%);
+      font-size: 32px; /* Ukuran panah */
+      font-weight: bold;
+      color: var(--primary); /* Warna panah */
+      opacity: 0.6; /* [DIUBAH] Dibuat lebih jelas */
+      pointer-events: none; /* Memastikan panah tidak mengganggu scroll */
+      z-index: 5;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2); /* [BARU] Menambah bayangan agar lebih terbaca */
+    }
+    /* [BARU] Sembunyikan panah dengan transisi halus saat kelas 'scrolled-to-end' ditambahkan */
+    .group-block.scrolled-to-end::after {
+      opacity: 0;
+    }
+    /* [BARU] Tambahkan transisi pada opacity panah */
+    .group-block::after { transition: opacity 0.3s ease; }
+    .group-title { 
+      margin: 0 0 10px 0; 
+      font-size: 18px; /* Sedikit diperbesar */
+      font-weight: 800; 
+      color: var(--primary); /* Diubah agar kontras dengan background */
+    }
+.h-scroll { 
+  display: flex; 
+  gap: 10px; 
+  overflow-x: auto; 
+  scroll-snap-type: x proximity; 
+  /* Menghapus margin negatif untuk membuat scroll dimulai dari padding container */
+  margin-left: -5px;
+  /* Menambahkan padding agar kartu tidak menempel di tepi dan bayangan terlihat */
+  padding: 8px 16px 2px 16px; /* padding-bottom dikurangi */
+
+  overflow-y: visible; /* <-- PENTING: Untuk memastikan konten vertikal tidak terpotong */
+}
+    .h-scroll::-webkit-scrollbar { display: none; }
+.h-card { 
+  flex: 0 0 160px; 
+  scroll-snap-align: start; 
+  border-radius: 12px; 
+  background: var(--card);
+  cursor: pointer;
+  position: relative;
+  display: flex; /* [DIUBAH] Menggunakan flexbox untuk struktur yang lebih baik */
+  flex-direction: column; /* [BARU] Arah tumpukan vertikal */
+  /* Pastikan tidak ada "overflow: hidden" di sini */
+}
+    .h-card img { width: 100%; height: 110px; object-fit: cover; border-radius: 12px 12px 0 0; display: block; }
+    .h-card .body { 
+      padding: 8px; 
+      flex-grow: 1; /* [BARU] Memastikan body mengisi sisa ruang */
+      display: flex; /* [BARU] Menggunakan flexbox untuk konten di dalamnya */
+      flex-direction: column; /* [BARU] Arah tumpukan vertikal */
+    }
+    .h-card .body h3 { font-size: 13px; margin: 0 0 4px 0; color: var(--text); flex-grow: 1; /* [BARU] Judul mengisi ruang agar harga tetap di bawah */ }
+    /* [BARU] CSS untuk deskripsi di dalam h-card */
+    .h-card .body .h-card-description {
+        font-size: 11px;
+        color: var(--muted);
+        margin: 2px 0 6px 0; /* Sedikit jarak atas dan bawah */
+        line-height: 1.3;
+    }
+    /* [BARU] Style untuk menu kategori yang sticky */
+    .menu-icons-section {
+        position: sticky;
+        top: 50px; /* Disesuaikan agar menempel dengan header (tinggi header 56px) */
+        background-color: #f3f4f6 !important;
+        z-index: 990;
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: top 0.3s ease;
+    }
+    /* [BARU] Style untuk ikon kategori yang aktif */
+    .menu-icon.active .menu-emoji {
+        background-color: var(--primary);
+        color: var(--primary-text);
+    }
+    .h-card .body .price { font-size: 12px; font-weight: 700; color: var(--primary); margin-top: auto; /* [BARU] Mendorong harga ke bagian bawah */ }
+    
+    /* Sisa CSS Anda tetap sama... (user-profile, voucher, dll.) */
+    .user-profile-section { padding: 0 16px; margin-bottom: 20px; }
+    .user-profile-card { background: var(--card); border-radius: 16px; padding: 12px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-top: -10px; position: relative; z-index: 2; }
+    .profile-content { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .profile-left { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .profile-right { display: flex; align-items: center; flex-shrink: 0; }
+    .welcome-text { display: flex; align-items: center; gap: 4px; }
+    .hello-text { font-size: 16px; font-weight: 400; color: var(--text); }
+    .user-name { font-size: 16px; font-weight: 700; color: var(--primary); }
+    .points-display {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .points-icon {
+      width: 25px;  /* <-- Ubah lebar di sini */
+      height: 3cap; /* <-- Ubah tinggi di sini */
+      flex-shrink: 0;
+    }
+    .points-text-container {
+      display: flex;
+      flex-direction: column;
+    }
+    .points-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin: 0;
+    }
+    .points-value {
+      font-size: 18px; /* DIUBAH: Ukuran font diperkecil */
+      font-weight: 700;
+      color: var(--primary);
+      background: none;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      line-height: 1.2;
+    }
+    .pending-points-row { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+    .pending-label { font-size: 13px; color: var(--muted); }
+    .pending-value { font-size: 13px; font-weight: 700; color: #b45309; background: linear-gradient(135deg, #fff7ed, #ffedd5); padding: 4px 10px; border-radius: 16px; border: 1px solid #fed7aa; }
+    .exchange-btn { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), #5a2d9a); color: var(--primary-text); border: none; border-radius: 20px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(76, 42, 133, 0.25); position: relative; overflow: hidden; }
+    .exchange-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+    .exchange-btn:hover { background: linear-gradient(135deg, #3c216b, #4a1f6b); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(76, 42, 133, 0.4); }
+    .exchange-btn:hover::before { left: 100%; }
+    .exchange-btn:active { transform: translateY(-1px); }
+    .exchange-icon { font-size: 18px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); }
+    .exchange-text { font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
+    .voucher-section { padding: 0 16px; margin-bottom: 10px; }
+    .voucher-card { background: var(--card); border-radius: 10px; padding: 8px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; }
+    .voucher-content { display: flex; align-items: center; gap: 12px; }
+    .voucher-item { display: flex; align-items: center; gap: 8px; text-decoration: none; flex: 1; padding: 6px 8px; border-radius: 6px; transition: all 0.2s ease; }
+    .voucher-item:hover { background: #f8f9fa; transform: translateY(-1px); }
+    .voucher-icon { font-size: 16px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f3f4f6, #e5e7eb); border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .voucher-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .voucher-divider { width: 1px; height: 24px; background: #e5e7eb; flex-shrink: 0; }
+    /* Badge Favorit */
+/* == GAYA BADGE PITA - SUDUT LEBIH TAJAM == */
+.fav-badge {
+  position: absolute;
+  left: -4px; /* [DIUBAH] Atur posisi dari kiri */
+  transform: none; /* [DIUBAH] Hapus transformasi */
+  z-index: 3; /* [DIUBAH] Sesuaikan z-index */
+  
+  /* Tampilan Pita */
+  background: #6b7280;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px; /* [DIUBAH] Sesuaikan padding */
+  box-shadow: -2px 3px 8px rgba(0,0,0,0.3);
+  border-radius: 0 9px 9px 0; /* <-- DIUBAH MENJADI 2px AGAR LEBIH TAJAM */
+  pointer-events: none;
+}
+/* [BARU] Gaya untuk Filter Kategori */
+.group-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.group-title {
+    flex-grow: 1;
+    margin: 0;
+}
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+}
+.filter-btn {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    /* [BARU] Penyesuaian untuk tombol emoji */
+    width: 36px;
+    height: 36px;
+    font-size: 18px; /* Sedikit diperbesar agar lebih jelas */
+    display: flex; /* [DIUBAH] Menggunakan flexbox untuk centering */
+    align-items: center; /* [DIUBAH] Tengah secara vertikal */
+    justify-content: center; /* [DIUBAH] Tengah secara horizontal */
+    padding: 0; /* [DIUBAH] Hapus padding agar centering sempurna */
+}
+
+/* [BARU] Skeleton Loading Animation */
+@keyframes skeleton-loading {
+  0% { background-color: #f3f4f6; }
+  50% { background-color: #e5e7eb; }
+  100% { background-color: #f3f4f6; }
+}
+.skeleton { animation: skeleton-loading 1.5s infinite ease-in-out; }
+.skeleton-card {
+  flex: 0 0 160px;
+  border-radius: 12px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-right: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.skeleton-img { width: 100%; height: 110px; }
+.skeleton-body { padding: 8px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.skeleton-text { height: 12px; border-radius: 4px; }
+.skeleton-title { width: 80%; height: 14px; margin-bottom: 4px; }
+.skeleton-price { width: 40%; height: 14px; margin-top: auto; }
+
+/* [BARU] Animasi Pin Berkedip */
+@keyframes blink-pin { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+.pin-icon { display: inline-block; animation: blink-pin 2s infinite; margin-right: 4px; }
+
+/* Lipatan 3D (tidak perlu diubah) */
+.fav-badge::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  z-index: -1;
+  border-top: 6px solid #4b5563;
+  border-left: 6px solid transparent; 
+}
+  </style>
+  <!-- [BARU] CSS untuk Indikator Scroll Menu -->
+  <style>
+    .h-scroll-dots {
+      text-align: center; /* [DIUBAH] Mengurangi jarak dari slider ke titik */
+      margin-top: 6px; /* Jarak dari slider ke titik diperkecil */
+      padding-bottom: 0px; /* Jarak tambahan di bawah titik dihilangkan */
+    }
+    .h-scroll-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #d1d5db; /* Warna non-aktif */
+      margin: 0 3px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+    .h-scroll-dot.active {
+      background-color: var(--primary); /* Warna aktif */
+      transform: scale(1.2);
+    }
+  </style>
+<style>
+  /* CSS BARU UNTUK PROFIL PENGGUNA (DESAIN LEBIH BAIK) */
+  .user-profile-section {
+    /* Nilai ketiga (24px) adalah padding-bottom, yang mengatur jarak ke bawah. */
+    /* Ubah angka ini untuk mengatur jarak ke section "Spesial Hari Ini". */
+    /* Contoh: 12px untuk jarak lebih dekat, 30px untuk jarak lebih jauh. */
+    padding: 16px 16px 0px 16px; /* Jarak bawah dikurangi dari 24px menjadi 12px */
+    position: relative;
+    z-index: 2;
+    background: var(--bg); /* Warna background utama */
+    border-radius: 24px 24px 0 0; /* <-- DIUBAH: Lengkungan sekarang di atas */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0); /* <-- DIUBAH: Warna bayangan menjadi abu-abu transparan */
+  }
+  .welcome-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 8px 20px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    border: 1px solid var(--border);
+  }
+  .user-profile-section .actions-grid {
+    display: flex; /* Menggunakan flexbox untuk tinggi yang sama */
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 7px; /* <-- ATUR JARAK DI SINI: Jarak antara 'Hello' dan kotak poin */
+  }
+  .action-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px; 
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border);
+  }
+  .action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  }
+  .action-card .points-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .action-card .exchange-text { font-weight: 600; }
+</style>
+</head>
+<style>
+    /* [BARU] Style untuk Pop-up Tipe Pesanan di index.html */
+    .popup-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); display: flex;
+        justify-content: center; align-items: center; z-index: 2001;
+        opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .popup-overlay.show { opacity: 1; visibility: visible; }
+    .popup-box {
+        background: white; padding: 24px; border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%;
+        max-width: 380px; text-align: left; transform: scale(0.9);
+        transition: transform 0.2s ease;
+    }
+    .popup-overlay.show .popup-box { transform: scale(1); }
+    .popup-box h3 { margin-top: 0; margin-bottom: 20px; font-size: 18px; color: var(--text); }
+    .popup-box .option-group { display: grid; gap: 12px; margin-bottom: 20px; }
+    .popup-box .option-btn {
+        padding: 14px; border: 1px solid var(--border); border-radius: 10px;
+        font-weight: 600; cursor: pointer; background-color: var(--card);
+        text-align: left; font-size: 16px;
+    }
+    .popup-box .option-btn.active {
+        background-color: #eef2ff; color: var(--primary); border-color: var(--primary);
+    }
+    .popup-box #table-number-input {
+        width: 100%; border: 1px solid #e5e7eb; border-radius: 8px;
+        padding: 12px; font-size: 16px; margin-top: 12px;
+    }
+    .popup-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+    .popup-buttons button { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .popup-buttons .btn-save { background-color: var(--primary); color: white; }
+    
+    @keyframes slideUpFade {
+        0% { opacity: 0; transform: translateY(50px) scale(0.95); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* [BARU] AI Chat Styles */
+    .ai-chat-trigger {
+        position: fixed;
+        bottom: 90px; /* [DIUBAH] Default posisi bawah (saat tidak ada checkout) */
+        right: 20px;
+        background: linear-gradient(135deg, var(--primary), #7c3aed);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(76, 42, 133, 0.4);
+        z-index: 9998; /* [DIUBAH] Z-Index Maksimal agar selalu di atas */
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 13px;
+        animation: bounceIn 1s;
+    }
+    @keyframes bounceIn { 0% { transform: scale(0); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    .ai-chat-trigger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(76, 42, 133, 0.5); }
+    .ai-chat-trigger:active { transform: scale(0.95); }
+    
+    .ai-chat-modal {
+        position: fixed;
+        bottom: 80px; /* [DIUBAH] Default posisi modal */
+        right: 20px;
+        width: 85%;
+        max-width: 320px;
+        height: 420px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        z-index: 9999; /* [DIUBAH] Di atas tombol */
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* [BARU] Animasi posisi */
+        animation: popIn 0.3s ease-out;
+    }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.8) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .ai-chat-modal.show { display: flex; }
+
+    .ai-chat-header {
+        background: linear-gradient(135deg, var(--primary), #7c3aed);
+        color: white;
+        padding: 16px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+    }
+    .ai-chat-messages {
+        flex: 1; padding: 16px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 12px;
+    }
+    .ai-message {
+        padding: 10px 14px; border-radius: 16px; font-size: 13px; max-width: 85%; line-height: 1.5; word-wrap: break-word;
+    }
+    .ai-message.bot { background: white; color: #374151; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .ai-message.user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 2px 5px rgba(76, 42, 133, 0.2); }
+    
+    .ai-chat-input-area {
+        padding: 12px; background: white; border-top: 1px solid #f3f4f6; display: flex; gap: 8px; align-items: center;
+    }
+    .ai-chat-input-area input { flex: 1; background: #f3f4f6; border: none; border-radius: 20px; padding: 10px 16px; font-size: 13px; outline: none; color: #374151; }
+    .ai-chat-input-area button { background: var(--primary); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* [BARU] Global Chat Styles */
+    .global-chat-trigger {
+        position: fixed;
+        bottom: 140px; /* [DIUBAH] Default posisi (di atas AI chat) - Jarak diperkecil */
+        right: 20px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 13px;
+        animation: bounceIn 1s;
+    }
+    .global-chat-trigger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+    .global-chat-trigger:active { transform: scale(0.95); }
+
+    /* [BARU] Posisi saat Checkout Muncul (Naik ke atas) */
+    body.has-cart .ai-chat-trigger {
+        bottom: 160px;
+    }
+    
+    body.has-cart .global-chat-trigger {
+        bottom: 210px; /* Jarak diperkecil saat ada keranjang */
+    }
+
+    body.has-cart .ai-chat-modal {
+        bottom: 150px;
+    }
+
+    /* [BARU] Posisi Tombol Kiri saat Checkout Muncul */
+    body.has-cart .floating-table-btn {
+        bottom: 90px;
+    }
+    /* [DIUBAH] Posisi Game saat Checkout Muncul (Tanpa Meja) - Ubah ke 90px agar tidak ikut naik */
+    body.has-cart .game-trigger {
+        bottom: 90px;
+    }
+    /* [BARU] Posisi Game saat Checkout Muncul DAN Ada Meja */
+    body.has-cart.has-table .game-trigger {
+        bottom: 160px;
+    }
+
+    /* [BARU] Game Button Styles */
+    .game-trigger {
+        position: fixed;
+        bottom: 90px; /* [DIUBAH] Default posisi bawah (jika tidak ada meja) */
+        left: 20px;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 13px;
+        animation: bounceIn 1s;
+        text-decoration: none;
+    }
+    .game-trigger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5); }
+    .game-trigger:active { transform: scale(0.95); }
+
+    /* [BARU] Posisi Game saat Ada Meja */
+    body.has-table .game-trigger {
+        bottom: 160px;
+    }
+
+    /* [BARU] Penyesuaian Posisi Global Chat saat AI Chat Nonaktif */
+    body.ai-chat-disabled .global-chat-trigger {
+        bottom: 90px; /* Turun ke posisi default AI Chat */
+    }
+    
+    body.ai-chat-disabled.has-cart .global-chat-trigger {
+        bottom: 160px; /* Turun ke posisi default AI Chat saat ada keranjang */
+    }
+
+    /* [BARU] Notification Badge */
+    .notification-badge {
+        position: absolute; top: -5px; right: -5px;
+        background-color: #ef4444; color: white;
+        border-radius: 50%; padding: 2px 6px;
+        font-size: 10px; font-weight: bold;
+        border: 2px solid white; min-width: 18px;
+        text-align: center;
+    }
+</style>
+<style>
+  /* [BARU] CSS untuk Tombol Keranjang Melayang & Pop-up Checkout */
+  /* [DIUBAH] Tombol keranjang melayang sekarang lebih lebar untuk menampung harga */
+  .floating-cart-btn {
+    position: fixed;
+    bottom: 90px; /* Di atas bottom nav */
+    right: 20px;
+    min-width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary), #5a2d9a);
+    border-radius: 30px; /* Bentuk pil */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    cursor: pointer;
+    z-index: 1500;
+    transform: scale(0);
+    transition: transform 0.3s ease;
+    padding: 0 10px;
+    overflow: hidden;
+    gap: 12px; /* [BARU] Menambah jarak antara teks dan ikon */
+  }
+  /* [DIUBAH] Mengatur agar "Checkout" dan harga tersusun vertikal */
+  /* [DIUBAH] Mengatur agar teks dan harga menjadi satu baris */
+  .floating-cart-btn .cart-details {
+    display: flex;
+    flex-direction: column; /* Membuat item tersusun ke bawah */
+    align-items: center;
+    justify-content: center; /* Pusatkan secara vertikal */
+    gap: 2px; /* Jarak antar teks */
+    padding: 0 10px;
+    align-items: baseline; /* [DIUBAH] Membuat teks sejajar dengan baik */
+    gap: 6px; /* [DIUBAH] Jarak antar teks */
+    color: white;
+    font-weight: bold;
+    line-height: 1.2; /* Atur jarak baris */
+    padding-left: 12px; /* [DIUBAH] Menambah padding kiri */
+  }
+  .floating-cart-btn .cart-details .checkout-text { font-size: 13px; opacity: 0.9; }
+
+  /* [BARU] Style untuk tombol meja melayang */
+  .floating-table-btn {
+    position: fixed;
+    bottom: 90px;
+    left: 20px;
+    height: 56px; /* [DIUBAH] Menyesuaikan tinggi */
+    width: 56px; /* [BARU] Menetapkan lebar agar menjadi lingkaran */
+    background: #1f2937; /* Warna gelap agar kontras */
+    border-radius: 50%; /* [DIUBAH] Menjadi lingkaran */
+    display: flex;
+    flex-direction: column; /* [BARU] Membuat konten tersusun vertikal */
+    align-items: center;
+    justify-content: center;
+    padding: 6px 0; /* [DIUBAH] Menyesuaikan padding */
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    cursor: pointer;
+    z-index: 1500;
+    color: white;
+    line-height: 1.2; /* [BARU] Mengatur jarak baris */
+    transform: scale(0);
+    transition: all 0.3s ease; /* [DIUBAH] Agar posisi bottom juga teranimasi */
+  }
+  /* [BARU] Style untuk teks di dalam tombol meja */
+  .floating-table-label { font-size: 11px; opacity: 0.8; }
+  #floatingTableNumber { font-size: 18px; font-weight: 700; }
+
+
+  .floating-table-btn.show {
+    transform: scale(1);
+  }
+  .floating-cart-btn .cart-details .cart-total-price { font-size: 15px; }
+  .floating-cart-btn .cart-details .checkout-text { font-size: 12px; opacity: 0.9; font-weight: 500; }
+  .floating-cart-btn .cart-details .cart-total-price { font-size: 16px; }
+  .floating-cart-btn .cart-icon-wrapper {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .floating-cart-btn.show {
+    transform: scale(1);
+  }
+  .floating-cart-btn .cart-icon { font-size: 28px; }
+  .cart-item-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: #dc2626;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid white;
+  }
+
+  /* [BARU] CSS untuk fitur catatan pada item checkout */
+  .note-container {
+    margin-top: 8px;
+  }
+  .add-note-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+  }
+  .note-input {
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 12px;
+    margin-top: 6px;
+    resize: vertical;
+  }
+  /* [DIUBAH] CSS untuk kontrol keranjang pada kartu menu agar tidak menutupi konten */
+  .h-card .cart-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  /* [BARU] Wadah untuk harga dan kontrol agar sejajar */
+  .h-card .price-and-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto; /* Mendorong elemen ini ke bawah */
+    padding-top: 8px; /* Jarak dari nama menu */
+  }
+
+  .h-card .cart-controls button { 
+    background: var(--primary); color: white; border: none; width: 28px; height: 28px; 
+    border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; 
+    transition: transform 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .h-card .cart-controls button:hover { transform: scale(1.1); }
+  .h-card .cart-controls .item-quantity { font-weight: bold; font-size: 14px; min-width: 12px; text-align: center; }
+  .item-quantity-indicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #dc2626;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid white;
+    transform: scale(0);
+    transition: transform 0.2s ease-out;
+    z-index: 1; /* [BARU] Memastikan indikator selalu di depan */
+  }
+  .item-quantity-indicator.show { transform: scale(1); }
+</style>
+<style>
+  /* [BARU] CSS untuk tombol Tukar Poin yang baru */
+  .exchange-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    flex: 1;
+  }
+  .exchange-card .exchange-text {
+    font-weight: 700;
+  }
+  </style>
+  <!-- [BARU] CSS untuk Pop-up Notifikasi Pesanan Siap -->
+  <style>
+    .notification-popup-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); display: flex;
+        justify-content: center; align-items: center; z-index: 3000;
+        opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .notification-popup-overlay.show { opacity: 1; visibility: visible; }
+    .notification-popup-box {
+        background: white; padding: 24px; border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%;
+        max-width: 340px; text-align: center; transform: scale(0.9);
+        transition: transform 0.3s ease;
+        border-top: 8px solid var(--primary);
+    }
+    .notification-popup-overlay.show .notification-popup-box { transform: scale(1); }
+    .notification-popup-box .icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+    .notification-popup-box h3 { margin-top: 0; margin-bottom: 12px; font-size: 20px; color: var(--text); }
+    .notification-popup-box p { margin-bottom: 24px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+    .notification-popup-box .btn-close {
+        width: 100%; padding: 12px; border: none; border-radius: 10px;
+        font-weight: 600; cursor: pointer; background-color: var(--primary);
+        color: white; font-size: 16px;
+    }
+    /* [BARU] Override Bottom Nav untuk 6 item */
+    .bottom-nav {
+      position: fixed; bottom: 16px; left: 16px; right: 16px;
+      background: white; border-radius: 50px;
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      padding: 6px 8px; z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .bottom-link {
+      display: flex; flex-direction: column; align-items: center;
+      text-decoration: none; color: #888; padding: 6px 4px;
+      font-size: 10px; gap: 4px;
+      font-family: serif;
+    }
+    .bottom-link .icon { font-size: 18px; }
+    .bottom-link.active { color: #4C2A85; font-weight: 600; }
+</style>
+<style>
+  /* [BARU] CSS untuk Kartu Promo Spesial */
+  .special-offer-section {
+    padding: 0 16px; /* Menjaga padding kiri-kanan */
+    margin-bottom: 20px; /* Jarak ke bawah */
+  }
+  .special-offer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Membuat 3 kolom */
+    gap: 10px; /* Jarak antar kartu */
+  }
+  .special-offer-card {
+    display: flex; /* Mengubah ke flexbox */
+    flex-direction: column; /* Arah tumpukan vertikal */
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    color: var(--text);
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden; /* Agar gambar tidak keluar dari border-radius */
+    border: 0px solid var(--border);
+  }
+  .special-offer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+  /* [BARU] CSS untuk slider gambar di dalam kartu outlet */
+  .outlet-image-slider {
+    position: relative;
+    overflow: hidden;
+  }
+  .outlet-image-track {
+    display: flex;
+    scroll-snap-type: x mandatory;
+    overflow-x: auto;
+    scrollbar-width: none; /* Sembunyikan scrollbar Firefox */
+  }
+  .outlet-image-track::-webkit-scrollbar {
+    display: none; /* Sembunyikan scrollbar Chrome/Safari */
+  }
+  .outlet-image-track img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    flex-shrink: 0;
+    scroll-snap-align: center;
+  }
+  .outlet-image-dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.6);
+    transition: background-color 0.3s;
+  }
+  .dot.active {
+    background-color: white;
+  }
+  .offer-image {
+    width: 100%; /* Lebar penuh */
+    height: 100%; /* Tinggi gambar disesuaikan */
+  }
+  .offer-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .offer-details {
+    padding: 10px; /* Padding untuk teks */
+    text-align: center; /* Teks di tengah */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .offer-title { font-size: 13px; font-weight: 700; margin: 0; line-height: 1.3; }
+  .offer-description { display: none; } /* Deskripsi disembunyikan agar lebih ringkas */
+</style>
+<body>
+  <div class="popup-overlay" id="promoPopup">
+    <div class="popup-content">
+      <img src="https://placehold.co/300x400/png?text=Promo+Spesial" alt="Promo Spesial">
+      <button class="popup-close" id="promoCloseBtn" aria-label="Tutup">X</button>
+    </div>
+  </div>
+
+  <header class="app-header" style="justify-content: space-between;">
+    <div class="logo">
+      <!-- [DIUBAH] Gunakan placeholder jika file lokal tidak ada untuk mencegah error -->
+      <img src="https://placehold.co/150x60/png?text=RBM+Logo" alt="Rice Bowl Monster Logo" onerror="this.style.display='none'">
+    </div>
+    <!-- Bagian Lokasi dipindahkan ke sini -->
+    <div class="location-row">
+      <span class="location-icon">📍</span>
+      <a href="#" class="location-link" id="findNearestLocation">
+        Cari Lokasi Terdekat
+      </a>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="promo-section">
+      <div class="promo-slider" id="promoSlider">
+        <div class="promo-item"><img src="https://placehold.co/800x400/jpg?text=Banner+Utama+1" alt="Latar Utama 1"></div>
+        <div class="promo-item"><img src="https://placehold.co/800x400/png?text=Banner+Utama+2" alt="Latar Utama 1"></div>
+        <div class="promo-item"><img src="https://placehold.co/800x400/png?text=Banner+Utama+3" alt="Latar Utama 1"></div>
+    </section>
+    
+
+    <div style="background-color: #f3f4f6;"> <!-- Wrapper untuk konten di bawah promo -->
+      <section class="user-profile-section">
+        <!-- KONTEN INI AKAN DIUBAH OLEH JAVASCRIPT -->
+        <div id="user-profile-content">
+          <!-- Tampilan Default (Guest/Tamu) -->
+          <div class="welcome-card">
+            <div class="welcome-text">
+              <span class="hello-text">Hello, </span>
+              <span class="user-name">Monsters Lovers</span>
+            </div>
+          </div>
+          <div class="actions-grid">
+            <a href="login.html" class="exchange-card welcome-card" style="cursor: pointer; text-decoration: none; justify-content: center;">
+              <span class="exchange-text">Login / Daftar</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+    <!-- [BARU] Bagian Promo Spesial -->
+<section class="special-offer-section">
+    <div class="special-offer-grid">
+        <a href="#" target="_blank" class="special-offer-card" data-position="1" data-platform="gofood">
+            <div class="offer-image" style="height: 100%;">
+                <img src="https://placehold.co/100x50/png?text=GoFood" alt="Pesan via GoFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+            </div>
+        </a>
+        <a href="#" target="_blank" class="special-offer-card" data-position="2" data-platform="shopeefood">
+            <div class="offer-image" style="height: 100%;">
+                <img src="https://placehold.co/100x50/png?text=Shopee" alt="Pesan via ShopeeFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+            </div>
+            </a>
+        <a href="#" target="_blank" class="special-offer-card" data-position="3" data-platform="grabfood">
+            <div class="offer-image" style="height: 100%;">
+                <img src="https://placehold.co/100x50/png?text=Grab" alt="Pesan via GrabFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+            </div>
+            </a>
+    </div>
+</section>
+<!-- [DIUBAH] Bagian Informasi Outlet dengan Slider -->
+<style>
+  .outlet-slider-section { padding: 0 16px 20px 16px; }
+  .outlet-slider-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    background: var(--card);
+  }
+  .outlet-slider-track {
+    display: flex;
+    transition: transform 0.9s ease-in-out;
+  }
+  .outlet-slide {
+    min-width: 100%;
+    box-sizing: border-box;
+  }
+  .outlet-slide img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+  }
+  .outlet-info {
+    padding: 12px 16px;
+  }
+  .outlet-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .outlet-info p {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .outlet-info a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  /* [DIUBAH] Wadah untuk menata tautan reservasi dan peta */
+  .outlet-links {
+    display: grid; /* Menggunakan grid agar mudah ditata */
+    gap: 8px; /* Jarak antar tombol */
+    margin-top: 12px;
+  }
+  .outlet-links p {
+    margin: 0; /* Menghapus margin bawaan paragraf */
+  }
+  /* [DIUBAH] Membuat link menjadi seperti tombol full-width */
+  .outlet-links a {
+    display: block;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+  }
+  .outlet-links .map-link {
+    background-color: #eef2ff; /* Warna biru muda */
+    color: var(--primary);
+  }
+  .outlet-links .map-link:hover { background-color: #e0e7ff; }
+</style>
+<section class="outlet-slider-section">
+    <!-- [BARU] CSS untuk indikator titik slider outlet utama -->
+    <style>
+      .main-outlet-dots {
+        text-align: center;
+        padding-top: 12px;
+      }
+      .main-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #d1d5db; /* Warna non-aktif */
+        margin: 0 4px;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+      .main-dot.active {
+        background-color: var(--primary); /* Warna aktif */
+        transform: scale(1.2);
+      }
+    </style>
+    <!-- [BARU] CSS untuk slider gambar outlet -->
+    <style>
+      .outlet-image-slider {
+        position: relative;
+      }
+      .outlet-image-track {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none; /* Sembunyikan scrollbar Firefox */
+        scroll-behavior: smooth;
+      }
+      .outlet-image-track::-webkit-scrollbar {
+        display: none; /* Sembunyikan scrollbar Chrome/Safari */
+      }
+      .outlet-image-track img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        flex-shrink: 0;
+        scroll-snap-align: center;
+      }
+      .outlet-image-dots {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 6px;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.6);
+        transition: background-color 0.3s;
+      }
+      .dot.active {
+        background-color: white;
+      }
+    </style>
+    <div class="outlet-slider-container" id="outletSlider">
+        <div class="outlet-slider-track">
+            <!-- Outlet akan dimuat secara dinamis dari pengaturan -->
+            <div style="padding: 20px; text-align: center; color: #6b7280; width: 100%;">Belum ada outlet yang ditambahkan.</div>
+        </div>
+        <div class="main-outlet-dots" id="mainOutletDots"></div> <!-- [BARU] Kontainer untuk titik indikator -->
+    </div>
+</section>
+
+    <!-- [BARU] Bagian Kategori Menu -->
+    <section class="menu-icons-section" style="padding: 16px 16px 0 16px; background-color: #f3f4f6; margin-top: -20px;">
+        <div class="menu-icons" style="background: transparent; padding: 0; justify-content: flex-start; gap: 16px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;">
+            <!-- Ikon kategori akan dimuat di sini oleh JavaScript -->
+        </div>
+    </section>
+    <section class="grouped-menu-section">
+      <div id="groupedMenuContainer"></div>
+    </section>
+    </div> <!-- Penutup wrapper -->
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bottom-link active" href="index.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar Poin</span> </a>
+    <a class="bottom-link" href="diskon.html"> <span class="icon">🏷️</span> <span>Diskon</span> </a>
+    <a class="bottom-link" href="riwayat.html"> <span class="icon">🧾</span> <span>Riwayat</span> </a>
+    <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+    <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
+  </nav>
+
+  <!-- [BARU] Popup untuk Detail Menu -->
+  <div class="popup-overlay" id="menuDetailPopup">
+    <div class="menu-detail-popup">
+      <div class="menu-detail-header">
+        <button class="popup-close" id="menuDetailCloseBtn" aria-label="Tutup">×</button>
+      </div>
+      <div class="menu-detail-content">
+        <img id="menuDetailImage" src="" alt="Detail Menu" class="menu-detail-image">
+        <div id="menuDetailInfo" class="menu-detail-info">
+          <!-- Konten detail menu akan dimasukkan di sini oleh JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- [BARU] Tombol Keranjang Melayang -->
+  <!-- [DIUBAH] Struktur Tombol Keranjang Melayang -->
+  <div class="floating-cart-btn" id="floatingCartBtn">
+    <div class="cart-details">
+      <span class="checkout-text">Checkout</span>
+      <span class="cart-total-price" id="cartTotalPrice">Rp 0</span>
+    </div>
+    <div class="cart-icon-wrapper">
+      <span class="cart-icon">🛒</span>
+      <span class="cart-item-count" id="cartItemCount">0</span>
+    </div>
+  </div>
+
+  <!-- [BARU] Tombol Meja Melayang -->
+  <div class="floating-table-btn" id="floatingTableBtn">
+    <span class="floating-table-label">Meja</span>
+    <span id="floatingTableNumber"></span>
+  </div>
+
+  <!-- [BARU] AI Chat Button & Modal -->
+  <button id="ai-chat-btn" class="ai-chat-trigger" onclick="toggleChat()">
+      <span>🤖</span> 
+  </button>
+
+  <div id="ai-chat-modal" class="ai-chat-modal">
+      <div class="ai-chat-header">
+          <span>🤖 Monster Assistant</span>
+          <span>🤖</span>
+          <button onclick="toggleChat()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">&times;</button>
+      </div>
+      <div id="ai-chat-messages" class="ai-chat-messages">
+          <div class="ai-message bot">Halo! Saya AI Rice Bowl Monster. 🤖<br>Mau tanya rekomendasi menu, promo, atau lokasi?</div>
+      </div>
+      <div class="ai-chat-input-area">
+          <input type="text" id="ai-input" placeholder="Ketik pertanyaan..." onkeypress="handleChatInput(event)">
+          <button onclick="sendUserMessage()">➤</button>
+      </div>
+  </div>
+
+  <!-- [BARU] Global Chat Button & Modal -->
+  <button id="global-chat-btn" class="global-chat-trigger" onclick="toggleGlobalChat()">
+      <span>💬</span>
+      <span id="global-chat-badge" class="notification-badge" style="display:none;">0</span>
+  </button>
+
+  <div id="global-chat-modal" class="ai-chat-modal">
+      <div class="ai-chat-header" style="background: linear-gradient(135deg, #10b981, #059669);">
+          <span>👥 Community Chat</span>
+          <button onclick="toggleGlobalChat()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">&times;</button>
+      </div>
+      <!-- Pinned Message in Modal -->
+      <div id="global-chat-pinned" style="display:none; background:#fffbeb; padding:8px 12px; border-bottom:1px solid #fcd34d; cursor:pointer;" onclick="scrollToGlobalPinned()">
+          <div id="global-chat-pinned-text" style="font-size:12px; color:#374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;"></div>
+      </div>
+      <div id="global-chat-messages" class="ai-chat-messages">
+          <div class="ai-message bot" style="background:#e0f2fe; color:#0369a1;">Selamat datang di Global Chat! 👋<br>Ngobrol seru sesama Monsters Lovers di sini.</div>
+      </div>
+      <!-- [BARU] Typing Indicator -->
+      <div id="global-chat-typing-indicator" style="display:none; padding:4px 12px; font-size:11px; color:#6b7280; font-style:italic; background:#f8f9fa; border-top:1px solid #f3f4f6;"></div>
+      <!-- [BARU] Reply Indicator -->
+      <div id="global-chat-reply-indicator" style="display:none; background:#f0f9ff; padding:8px 12px; border-left:3px solid #0ea5e9; font-size:12px; border-top: 1px solid #e5e7eb;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong id="global-chat-reply-name" style="color:#0369a1;">Name</strong>
+              <button onclick="cancelGlobalReply()" style="border:none; background:none; color:#ef4444; font-weight:bold; cursor:pointer;">✕</button>
+          </div>
+          <div id="global-chat-reply-text" style="color:#64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top:2px;">Text</div>
+      </div>
+      <div id="global-chat-input-area" class="ai-chat-input-area">
+          <input type="text" id="global-chat-input" placeholder="Tulis pesan..." onkeypress="handleGlobalChatInput(event)" oninput="handleGlobalChatTyping()">
+          <button onclick="sendGlobalMessage()" style="background: #10b981;">➤</button>
+      </div>
+      <div id="global-chat-login-warning" style="display:none; padding:12px; text-align:center; background:#f3f4f6; border-top:1px solid #e5e7eb; font-size:13px; color:#6b7280;">
+          🔒 Silakan <a href="login.html" style="color:#059669; font-weight:bold; text-decoration:none;">Login</a> untuk mengirim pesan.
+      </div>
+  </div>
+
+  <!-- [BARU] Game Button -->
+  <a href="game.html" class="game-trigger">
+      <span>🎮</span>
+  </a>
+
+  <!-- [BARU] Pop-up untuk memilih Tipe Pesanan -->
+  <div class="popup-overlay" id="orderTypePopup">
+      <div class="popup-box">
+          <h3>Pilih Tipe Pesanan</h3>
+          <div class="option-group">
+              <button class="option-btn active" data-type="Dine-in">Makan di Tempat</button>
+              <button class="option-btn" data-type="Takeaway">Bawa Pulang</button>
+          </div>
+          <div id="table-number-container">
+              <label for="table-number-input" style="font-weight: 600;">Nomor Meja</label>
+              <input type="number" id="table-number-input" placeholder="Masukkan nomor meja Anda">
+          </div>
+          <div class="popup-buttons">
+              <button class="btn-save" id="saveOrderTypeBtn">Simpan</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- [BARU] Pop-up untuk mengurangi varian Mie -->
+  <div class="popup-overlay" id="mieRemoveOptionPopup">
+      <div class="popup-box">
+          <h3 id="mieRemoveOptionPopupTitle">Kurangi Varian Mie</h3>
+          <p>Pilih varian yang ingin Anda kurangi dari keranjang.</p>
+          <!-- Opsi varian akan di-generate oleh JavaScript di sini -->
+          <div class="option-group" id="mieRemoveOptionsContainer">
+          </div>
+          <div class="popup-buttons" style="margin-top: 24px;">
+              <button class="btn-save" id="confirmMieRemoveBtn" style="display: none; background-color: #c62828;">Konfirmasi Pengurangan</button>
+              <button class="btn-secondary" id="closeMieRemoveBtn" style="flex: 1;">Batal</button>
+          </div>
+      </div>
+  </div>
+
+
+  <!-- [BARU] Pop-up untuk Pilihan Varian Mie -->
+  <div class="popup-overlay" id="mieOptionPopup">
+      <div class="popup-box">
+          <h3 id="mieOptionPopupTitle">Pilih Varian Mie</h3>
+          <p>Pilih jenis mie yang Anda inginkan.</p>
+          <div class="option-group" id="mieOptionsContainer">
+              <button class="option-btn active" data-variant="Goreng">
+                  <strong>Mie Goreng</strong>
+                  <small>Mie yang digoreng dengan bumbu khas, disajikan kering tanpa kuah.</small>
+              </button>
+              <button class="option-btn" data-variant="Basah">
+                  <strong>Mie Basah</strong>
+                  <small>Mie yang disajikan dengan kuah kaldu gurih yang melimpah.</small>
+              </button>
+          </div>
+          <div class="popup-buttons">
+              <button class="btn-save" id="saveMieOptionBtn">Konfirmasi</button>
+          </div>
+      </div>
+  </div>
+
+
+  <!-- [BARU] Pop-up Kustom untuk Notifikasi Pesanan Siap -->
+  <div class="notification-popup-overlay" id="orderReadyPopup">
+      <div class="notification-popup-box">
+          <div class="icon">🍜</div>
+          <h3 id="notificationPopupTitle">Pesananmu Sudah Siap!</h3>
+          <p id="notificationPopupMessage">Silakan ambil pesanan Anda di konter. Terima kasih!</p>
+          <button class="btn-close" id="notificationPopupCloseBtn">Oke</button>
+      </div>
+  </div>
+
+
+  <!-- [BARU] Elemen audio untuk notifikasi dari kasir -->
+  <!-- [DIUBAH] Hapus src default agar tidak error saat load jika file belum ada -->
+  <audio id="cashier-notification-sound" preload="auto"></audio>
+
+  <!-- [BARU] Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script>
+    // ==========================================
+    // 1. CONFIGURATION & GLOBAL STATE
+    // ==========================================
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxlPGEih-uNcZ1AJmVDgLbAk1k9M0ctDX-j_hgRob5aMEoXFH-qjf7FcSis7xSKQ_G3/exec';
+    let isOrderingEnabled = false; // [DIUBAH] Default Non-Aktif untuk mencegah flash saat loading
+    
+    // [BARU] Konfigurasi Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+        authDomain: "ricebowlmonst.firebaseapp.com",
+        databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+        projectId: "ricebowlmonst",
+        storageBucket: "ricebowlmonst.firebasestorage.app",
+        messagingSenderId: "723669558962",
+        appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+    };
+
+    // Initialize Firebase
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = typeof firebase !== 'undefined' ? firebase.database() : null;
+
+    // [BARU] Variabel global untuk menyimpan interval slider agar bisa di-reset
+    window.promoInterval = null;
+    window.mainOutletInterval = null;
+    window.outletImageIntervals = [];
+
+    // [BARU] Variabel Global Keranjang
+    let cart = []; 
+
+    // [BARU] State Fitur Aplikasi (Default Aktif)
+    let appFeatures = {
+        aiChat: true,
+        game: true,
+        globalChat: true
+    };
+    
+    // [BARU] Variabel untuk menyimpan data menu dari Kasir
+    let globalMenuData = [];
+    let isMenuLoaded = false; // [BARU] Flag status loading
+    let currentSessionOutletId = null; // [BARU] Simpan ID outlet hanya untuk sesi ini (tidak disimpan di localStorage)
+    const CATEGORIES_KEY = 'rbm_menu_categories';
+    const defaultCategories = [];
+
+    // ==========================================
+    // 2. UI HELPERS & UTILITIES
+    // ==========================================
+
+    // [BARU] Update UI Fitur berdasarkan State
+    function updateFeaturesUI() {
+        const aiChatBtn = document.getElementById('ai-chat-btn');
+        const gameBtn = document.querySelector('.game-trigger');
+        const globalChatBtn = document.getElementById('global-chat-btn');
+        
+        // [BARU] Tambahkan class ke body untuk styling CSS jika AI Chat mati
+        if (!appFeatures.aiChat) {
+            document.body.classList.add('ai-chat-disabled');
+        } else {
+            document.body.classList.remove('ai-chat-disabled');
+        }
+
+        // Update AI Chat Button
+        if (aiChatBtn) {
+            const aiModal = document.getElementById('ai-chat-modal');
+            const isAiOpen = aiModal && aiModal.classList.contains('show');
+            // Tampilkan tombol hanya jika fitur aktif DAN modal sedang tertutup
+            aiChatBtn.style.display = (appFeatures.aiChat && !isAiOpen) ? 'flex' : 'none';
             
-            showMessage(loginMessage, 'Login berhasil!', false);
-            setTimeout(() => {
-              window.location.href = 'home.html';
-            }, 1000);
+            // Jika fitur dimatikan saat modal terbuka, tutup modal
+            if (!appFeatures.aiChat && isAiOpen) toggleChat();
+        }
+
+        // Update Game Button
+        if (gameBtn) {
+            gameBtn.style.display = appFeatures.game ? 'flex' : 'none';
+        }
+
+        // Update Global Chat Button
+        if (globalChatBtn) {
+            const globalModal = document.getElementById('global-chat-modal');
+            const isGlobalOpen = globalModal && globalModal.classList.contains('show');
+            globalChatBtn.style.display = (appFeatures.globalChat && !isGlobalOpen) ? 'flex' : 'none';
+            
+            if (!appFeatures.globalChat && isGlobalOpen) toggleGlobalChat();
+        }
+    }
+
+    // [BARU] Helper untuk normalisasi kunci kategori (hapus spasi & simbol aneh)
+    const normalizeKey = (str) => String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    function parsePrice(priceString) {
+        if (!priceString) return 0;
+        if (typeof priceString === 'number') return priceString;
+        return parseFloat(String(priceString).replace(/[^0-9]/g, ''));
+    }
+
+    function formatPrice(price) {
+        return `Rp ${Math.round(price).toLocaleString('id-ID')}`;
+    }
+
+    // [BARU] Fungsi untuk mengambil kategori dari localStorage (sinkron dengan app kasir)
+    function getStoredCategories() {
+        const stored = localStorage.getItem(CATEGORIES_KEY);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.every(c => typeof c === 'object' && c.name && c.value)) {
+                    return parsed;
+                }
+            } catch (e) {
+                console.error("Gagal mem-parsing kategori dari localStorage", e);
+            }
+        }
+        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(defaultCategories));
+        return defaultCategories;
+    }
+
+    // ==========================================
+    // 3. FIREBASE DATA SYNC (MENU & CATEGORIES)
+    // ==========================================
+    // [BARU] Fungsi untuk mengambil data menu dari Firebase (Realtime)
+    function initFirebaseMenu() {
+      if (!db) {
+          console.error("Firebase belum terinisialisasi");
+          return;
+      }
+      const menuRef = db.ref('products');
+      const categoriesRef = db.ref('categories'); // [BARU] Referensi kategori
+
+      // [BARU] Listener untuk sinkronisasi kategori dari Firebase
+      categoriesRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          console.log('Categories synced from Firebase:', data);
+          let categories = [];
+          if (data) {
+              // [DIUBAH] Handle struktur data yang mungkin nested per outlet (sidoarjo/surabaya)
+              // Agar emoji dari kasir terbaca dengan benar
+              const allCats = [];
+              const traverse = (obj) => {
+                  if (Array.isArray(obj)) {
+                      obj.forEach(item => {
+                          if (item && typeof item === 'object') allCats.push(item);
+                      });
+                  } else if (typeof obj === 'object' && obj !== null) {
+                      // Cek apakah ini object kategori atau container outlet
+                      if (obj.name && (obj.value || obj.id)) {
+                          allCats.push(obj);
+                      } else {
+                          Object.values(obj).forEach(val => traverse(val));
+                      }
+                  }
+              };
+              traverse(data);
+
+              // Deduplikasi berdasarkan value/id
+              const uniqueMap = new Map();
+              allCats.forEach(c => {
+                  const key = normalizeKey(c.value || c.id || c.name);
+                  if (key && !uniqueMap.has(key)) {
+                      uniqueMap.set(key, {
+                          name: c.name,
+                          emoji: c.emoji,
+                          value: c.value || c.id || c.name || 'unknown'
+                      });
+                  }
+              });
+              categories = Array.from(uniqueMap.values());
           } else {
-            showMessage(loginMessage, result.message, true);
+              categories = defaultCategories;
           }
-        })
-        .catch(error => {
-          showMessage(loginMessage, 'Koneksi gagal. Periksa kembali jaringan Anda.', true);
-          console.error('Error:', error);
-        })
-        .finally(() => {
-          loginButton.disabled = false;
-          loginButton.textContent = 'Login';
-        });
-    });
+          localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
+          
+          // Render ulang ikon kategori dan menu
+          renderCategoryIcons();
+          if (globalMenuData.length > 0) {
+              let locationId = currentSessionOutletId;
+              renderGroupedMenus(locationId);
+          }
+      }, (error) => {
+          console.error("Gagal mengambil kategori dari Firebase:", error);
+      });
+      
+      // Listener realtime: akan otomatis update jika data di Firebase berubah
+      menuRef.on('value', (snapshot) => {
+        isMenuLoaded = true; // [BARU] Data berhasil dimuat
+        const data = snapshot.val();
+        if (data) {
+          const rawData = [];
+          
+          // Helper untuk cek apakah objek adalah produk
+          const isProduct = (obj) => (obj.name || obj.nama || obj.nama_menu) && (obj.price || obj.harga);
 
-    registerForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const registerButton = e.submitter;
-      registerButton.disabled = true;
-      registerButton.textContent = 'Mendaftar...';
-      showMessage(registerMessage, '');
+          // [PERBAIKAN] Fungsi ekstraksi yang mengenali struktur Outlet -> Produk
+          const extractProductsWithLocation = (obj, currentLocation) => {
+              if (!obj || typeof obj !== 'object') return;
+              
+              // Jika ini adalah produk
+              if (isProduct(obj)) {
+                  const item = { ...obj };
+                  // Jika kita tahu lokasinya dari struktur folder (parent key), tambahkan ke data item
+                  if (currentLocation) {
+                      if (!item.locations) {
+                          item.locations = [currentLocation];
+                      } else if (Array.isArray(item.locations) && !item.locations.includes(currentLocation)) {
+                          item.locations.push(currentLocation);
+                      }
+                  }
+                  rawData.push(item);
+                  return;
+              }
+              
+              // Jika bukan produk, telusuri anak-anaknya
+              Object.keys(obj).forEach(key => {
+                  const child = obj[key];
+                  if (typeof child === 'object' && child !== null) {
+                      if (!child.id) child.id = key;
+                      
+                      // Logika Deteksi Outlet:
+                      // Jika kita berada di root (currentLocation null) dan anak ini BUKAN produk,
+                      // maka kemungkinan besar 'key' adalah ID Outlet (misal: 'sidoarjo', 'jakarta').
+                      let nextLocation = currentLocation;
+                      if (!currentLocation && !isProduct(child)) {
+                          nextLocation = key;
+                      }
+                      
+                      extractProductsWithLocation(child, nextLocation);
+                  }
+              });
+          };
 
-      const payload = {
-        action: 'register',
-        nama: regNamaInput.value,
-        username: regUsernameInput.value
+          extractProductsWithLocation(data, null);
+          console.log('Menu synced from Firebase (Cleaned):', rawData);
+          
+          globalMenuData = rawData.map(item => ({
+            name: item.name || item.nama || item.nama_menu || 'Menu Tanpa Nama',
+            price: item.price || item.harga || 'Rp 0',
+            category: (item.category || item.kategori || 'makanan').toLowerCase(),
+            img: item.img || item.gambar || item.image || 'https://placehold.co/150x150?text=No+Image',
+            description: item.description || item.deskripsi || '',
+            locations: (Array.isArray(item.locations) ? item.locations : (item.locations ? [item.locations] : ['sidoarjo', 'surabaya'])).map(l => String(l).toLowerCase()), 
+            favorite: item.favorite || false,
+            spicy: item.spicy || false,
+            available: item.available,
+            is_active: item.is_active
+          })).filter(item => (item.available !== false && item.available !== 'false') && (item.is_active !== false && item.is_active !== 'false'));
+
+          // [OPTIMASI] Simpan data menu ke cache lokal agar loading berikutnya instan
+          localStorage.setItem('rbm_menu_data_cache', JSON.stringify(globalMenuData));
+
+          let locationId = currentSessionOutletId;
+          renderGroupedMenus(locationId);
+        } else {
+           console.log('Data menu kosong di Firebase');
+           globalMenuData = [];
+           renderGroupedMenus(null);
+        }
+      }, (error) => {
+          console.error("Error fetching menu from Firebase:", error);
+          isMenuLoaded = true; // [BARU] Stop loading jika terjadi error
+          const container = document.getElementById('groupedMenuContainer');
+          container.innerHTML = `<div style="text-align:center; padding:20px;">Gagal memuat menu (Firebase Error)</div>`;
+      });
+    }
+
+    // ==========================================
+    // 4. PROMO & FAVORITES LOGIC
+    // ==========================================
+    function handlePromoPopup() {
+      const popup = document.getElementById('promoPopup');
+      const popupContent = document.querySelector('#promoPopup .popup-content');
+      const closeBtn = document.getElementById('promoCloseBtn');
+      if (!popup || !closeBtn) return;
+
+      // Tampilkan popup dengan efek
+      popup.style.display = 'flex';
+      setTimeout(() => {
+        popup.classList.add('show');
+        if (popupContent) popupContent.style.transform = 'scale(1)';
+      }, 10);
+
+      closeBtn.addEventListener('click', () => {
+        popup.style.display = 'none';
+        popup.classList.remove('show');
+      });
+    }
+
+    function saveFavorites(favorites) {
+      localStorage.setItem('rbm_favorites', JSON.stringify(favorites));
+    }
+
+    function toggleFavorite(menuData) {
+      const favorites = getFavorites();
+      const existingIndex = favorites.findIndex(fav => fav.name === menuData.name);
+      
+      if (existingIndex > -1) {
+        // Remove from favorites
+        favorites.splice(existingIndex, 1);
+      } else {
+        // Add to favorites
+        favorites.push(menuData);
+      }
+      
+      saveFavorites(favorites);
+    }
+
+    function showMenuDetail(menuData) {
+      const popup = document.getElementById('menuDetailPopup');
+      const closeBtn = document.getElementById('menuDetailCloseBtn');
+      const imgEl = document.getElementById('menuDetailImage');
+      const infoEl = document.getElementById('menuDetailInfo');
+
+      if (!popup || !imgEl || !infoEl) return;
+
+      imgEl.src = menuData.img;
+      imgEl.alt = menuData.name;
+
+      // Cek apakah fitur pesan aktif
+      const orderButtonHtml = isOrderingEnabled 
+        ? '<button class="btn-order">Pesan Sekarang</button>' 
+        : '<button class="btn-secondary" disabled style="width:100%; cursor:not-allowed; background-color:#e5e7eb; color:#9ca3af;">Mode Katalog (Pemesanan Tutup)</button>';
+
+      infoEl.innerHTML = `
+        <span class="menu-detail-category">${menuData.category}</span>
+        <h2>${menuData.name}</h2>
+        <div class="menu-detail-price">${menuData.price}</div>
+        <p class="menu-detail-description">${menuData.description}</p>
+        <div class="menu-detail-actions">
+          ${orderButtonHtml}
+        </div>
+      `;
+
+      popup.style.display = 'flex';
+      setTimeout(() => {
+        popup.classList.add('show');
+        popup.querySelector('.menu-detail-popup').style.transform = 'scale(1)';
+      }, 10);
+
+      const closePopup = () => {
+        popup.classList.remove('show');
+        popup.querySelector('.menu-detail-popup').style.transform = 'scale(0.9)';
+        setTimeout(() => popup.style.display = 'none', 300);
       };
 
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8',
-        },
-        body: JSON.stringify(payload)
-      })
-      .then(response => response.json())
-      .then(result => {
-        if (result.status === 'success') {
-          showMessage(registerMessage, result.message, false);
-          setTimeout(() => {
-            daftarModal.close();
-            usernameInput.value = regUsernameInput.value;
-            loginForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true, submitter: loginForm.querySelector('button[type="submit"]') }));
-          }, 2000);
-        } else {
-          showMessage(registerMessage, result.message, true);
-        }
-      })
-      .catch(error => {
-        showMessage(registerMessage, 'Koneksi gagal. Coba lagi.', true);
-        console.error('Error:', error);
-      })
-      .finally(() => {
-        registerButton.disabled = false;
-        registerButton.textContent = 'Daftar';
-      });
-    });
+      closeBtn.onclick = closePopup;
+      popup.onclick = (e) => { if (e.target === popup) closePopup(); };
+    }
 
-    daftarBtn.addEventListener('click', () => {
-      if (typeof daftarModal.showModal === 'function') {
-        registerForm.reset();
-        showMessage(registerMessage, '');
-        daftarModal.showModal();
+    function isFavorite(menuData) {
+      const favorites = getFavorites();
+      return favorites.some(fav => fav.name === menuData.name);
+    }
+
+    function updateFavoriteButton(button, menuData) {
+      const isFav = isFavorite(menuData);
+      if (isFav) {
+        button.classList.add('favorited');
+        button.textContent = '❤️ Favorit';
+        button.style.background = '#fee2e2';
+        button.style.color = '#dc2626';
       } else {
-        alert('Dialog tidak didukung pada browser ini.');
+        button.classList.remove('favorited');
+        button.textContent = '❤️ Favorit';
+        button.style.background = '#f3f4f6';
+        button.style.color = 'var(--text)';
       }
-    });
+    }
 
-    batalBtn.addEventListener('click', () => {
-      daftarModal.close();
-    });
+    function showFavorites() {
+      const popup = document.getElementById('favoritesPopup');
+      const closeBtn = document.getElementById('favoritesCloseBtn');
+      const favoritesList = document.getElementById('favoritesList');
+      
+      if (!popup) return;
+
+      const favorites = getFavorites();
+      
+      if (favorites.length === 0) {
+        favoritesList.innerHTML = `
+          <div class="empty-favorites">
+            <div class="empty-favorites-icon">❤️</div>
+            <p>Belum ada menu favorit</p>
+            <p style="font-size: 14px; margin-top: 8px;">Klik tombol ❤️ pada menu untuk menambahkannya ke favorit</p>
+          </div>
+        `;
+      } else {
+        favoritesList.innerHTML = favorites.map(fav => `
+          <div class="favorite-item" onclick="showMenuDetail(${JSON.stringify(fav).replace(/"/g, '&quot;')})">
+            <img src="${fav.img}" alt="${fav.name}">
+            <div class="favorite-item-info">
+              <div class="favorite-item-name">${fav.name}</div>
+              <div class="favorite-item-price">${fav.price}</div>
+            </div>
+            <button class="favorite-item-remove" onclick="event.stopPropagation(); removeFavorite('${fav.name}')">Hapus</button>
+          </div>
+        `).join('');
+      }
+
+      popup.style.display = 'flex';
+
+      closeBtn.onclick = () => {
+        popup.style.display = 'none';
+      };
+
+      popup.onclick = (e) => {
+        if (e.target === popup) {
+          popup.style.display = 'none';
+        }
+      };
+    }
+
+    function removeFavorite(menuName) {
+      const favorites = getFavorites();
+      const updatedFavorites = favorites.filter(fav => fav.name !== menuName);
+      saveFavorites(updatedFavorites);
+      showFavorites(); // Refresh the favorites list
+    }
+
+    // ==========================================
+    // 5. LOCATION & OUTLET LOGIC
+    // ==========================================
+    // [BARU] Fungsi manual refresh lokasi
+    window.refreshLocation = function() {
+        const locationLink = document.getElementById('findNearestLocation');
+        if (locationLink) {
+            locationLink.textContent = 'Memuat ulang...';
+        }
+        findNearestStore();
+    }
+
+    async function findNearestStore() {
+      const locationLink = document.getElementById('findNearestLocation');
+      if (!locationLink) return;
+
+      // [OPTIMASI] Trigger request lokasi SEGERA agar popup muncul tanpa menunggu Firebase
+      const locationPromise = new Promise((resolve, reject) => {
+          if (!navigator.geolocation) {
+              reject(new Error('Geolokasi tidak didukung'));
+              return;
+          }
+          locationLink.textContent = 'Mencari lokasi...';
+          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
+      });
+
+      // [DIUBAH] Ambil data lokasi langsung dari Firebase (Paralel)
+      let stores = [];
+      try {
+          if (typeof db !== 'undefined') {
+              const snapshot = await db.ref('customer_app_settings/outlets').once('value');
+              const data = snapshot.val();
+              if (data && Array.isArray(data)) {
+                  stores = data;
+              }
+          }
+      } catch(e) {
+          console.error("Gagal ambil lokasi dari Firebase:", e);
+      }
+
+      // [BARU] Handle jika data outlet kosong (Gagal memuat)
+      if (stores.length === 0) {
+          locationLink.innerHTML = 'Gagal memuat. <span style="text-decoration:underline;">Coba Lagi ↻</span>';
+          locationLink.href = '#';
+          locationLink.onclick = (e) => {
+              e.preventDefault();
+              window.refreshLocation();
+          };
+          renderGroupedMenus(null);
+          return;
+      }
+
+      // Fungsi untuk menghitung jarak (Haversine formula)
+      function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius bumi dalam km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Jarak dalam km
+      }
+
+      // [DIUBAH] Fungsi untuk memperbarui link online food berdasarkan data-platform
+      function updateOnlineFoodLinks(store) {
+        if (!store) return;
+        const links = store.links || {};
+
+        const onlineFoodCards = document.querySelectorAll('.special-offer-card');
+        onlineFoodCards.forEach((card, index) => {
+            // [FIX] Reset ke link default dulu agar tidak 'nyangkut' link outlet sebelumnya
+            const defaultLink = card.dataset.defaultLink;
+            if (defaultLink) card.href = defaultLink;
+
+            // Prioritas 1: Cek berdasarkan Posisi (1, 2, 3)
+            const position = card.dataset.position || String(index + 1);
+            if (links[position]) {
+                card.href = links[position];
+                return;
+            }
+
+            // Prioritas 2: Cek berdasarkan Platform (Legacy)
+            const platform = card.dataset.platform;
+            if (platform && links[platform]) {
+                card.href = links[platform];
+            }
+        });
+      }
+
+      try {
+          // Tunggu hasil lokasi user (yang sudah berjalan paralel dengan fetch Firebase)
+          const position = await locationPromise;
+          
+          const userLat = position.coords.latitude;
+          const userLon = position.coords.longitude;
+
+          let nearestStore = null;
+          let minDistance = Infinity;
+
+          stores.forEach(store => {
+            const distance = getDistance(userLat, userLon, store.lat, store.lon);
+            if (distance < minDistance) {
+              minDistance = distance;
+              nearestStore = store;
+            }
+          });
+
+          if (nearestStore) {
+            locationLink.textContent = nearestStore.name;
+            locationLink.href = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLon}&destination=${nearestStore.lat},${nearestStore.lon}`;
+            locationLink.target = '_blank'; // Buka di tab baru
+            locationLink.onclick = null; // Hapus event click sebelumnya jika ada
+            
+            // [DIUBAH] Tidak lagi menyimpan ke localStorage agar setiap refresh memilih ulang
+            currentSessionOutletId = nearestStore.id;
+            // [FIX] Simpan ke localStorage agar halaman checkout/payment bisa mengakses ID outlet
+            localStorage.setItem('rbm_outlet_info', JSON.stringify({ ...nearestStore, saved_at: Date.now() }));
+            
+            updateOnlineFoodLinks(nearestStore); // [BARU] Perbarui link online food
+            // Render menu berdasarkan lokasi terdekat
+            renderGroupedMenus(nearestStore.id);
+            try { hideMandatoryManualOverlay(); } catch(e){}
+          } else {
+            locationLink.textContent = 'Lokasi tidak ditemukan';
+            renderGroupedMenus(null); // Kosongkan menu jika tidak ditemukan
+            updateOnlineFoodLinks(stores[0]); // Default ke Sidoarjo
+          }
+
+      } catch (error) {
+          console.error("Error mendapatkan lokasi: ", error.message);
+          console.warn('Geolocation ditolak/gagal.');
+          
+          locationLink.textContent = 'Pilih Lokasi Manual';
+          locationLink.href = '#';
+          locationLink.onclick = null;
+          
+          // [DIUBAH] Cek apakah ada lokasi tersimpan sebelum menampilkan popup
+          const savedRaw = localStorage.getItem('rbm_outlet_info');
+          let hasSavedOutlet = false;
+          
+          if (savedRaw) {
+              try {
+                  const saved = JSON.parse(savedRaw);
+                  if (saved && saved.id) {
+                      hasSavedOutlet = true;
+                      
+                      // Cek kesegaran data (24 jam)
+                      const AGE_LIMIT = 24 * 60 * 60 * 1000;
+                      const age = Date.now() - (saved.saved_at || 0);
+                      
+                      if (age <= AGE_LIMIT) {
+                          // Masih fresh, gunakan otomatis
+                          currentSessionOutletId = saved.id;
+                          locationLink.textContent = saved.name;
+                          locationLink.href = saved.map_link || '#';
+                          renderGroupedMenus(saved.id);
+                          updateOnlineFoodLinks(saved);
+                          try { hideMandatoryManualOverlay(); } catch(e){}
+                      }
+                      else {
+                          // [DIUBAH] Jika stale, anggap tidak ada saved outlet agar popup muncul
+                          hasSavedOutlet = false;
+                      }
+                  }
+              } catch(e) {
+                  console.error("Error parsing saved outlet:", e);
+              }
+          }
+          
+          // Jika tidak ada lokasi tersimpan, baru tampilkan popup list
+          if (!hasSavedOutlet) {
+              showLocationListInPage(stores);
+          }
+      }
+    }
+
+    // [BARU] Fungsi untuk menampilkan popup pemilihan lokasi manual
+    function showLocationListInPage(stores) {
+        // Cek jika popup sudah ada agar tidak duplikat
+        if (document.getElementById('locationPickerPopup')) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'locationPickerPopup';
+        overlay.className = 'popup-overlay show';
+        overlay.style.display = 'flex';
+        overlay.style.zIndex = '3000';
+        
+        let listHtml = stores.map(store => `
+            <div class="location-option" style="padding: 14px 16px; border-radius: 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; background: #f9fafb; display: flex; align-items: center; gap: 14px; border: 1px solid transparent;" data-id="${store.id}" onmouseover="this.style.background='#f3f4f6'; this.style.transform='scale(1.01)';" onmouseout="this.style.background='#f9fafb'; this.style.transform='scale(1)';">
+                <div style="font-size: 22px; line-height: 1; filter: grayscale(0.2);">🏪</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: var(--text); font-size: 13px; letter-spacing: -0.2px; margin-bottom: 2px;">${store.name}</div>
+                    <div style="font-size: 11px; color: #9ca3af;">${store.address || 'Outlet Resmi'}</div>
+                </div>
+                <div style="color: #d1d5db; font-size: 18px; font-weight: 300;">›</div>
+            </div>
+        `).join('');
+
+        overlay.innerHTML = `
+            <div class="popup-box" style="width: 80%; max-width: 300px; max-height: 60vh; overflow-y: auto; background: white; padding: 24px 20px; border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="width: 32px; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 0 auto 16px auto;"></div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.5px;">Pilih Outlet</h3>
+                    <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0 0;">Lokasi terdekat untuk menu tersedia</p>
+                </div>
+                <div class="location-list">
+                    ${listHtml}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        overlay.querySelectorAll('.location-option').forEach(el => {
+            el.addEventListener('click', () => {
+                const storeId = el.dataset.id;
+                const selectedStore = stores.find(s => s.id == storeId);
+                if (selectedStore) {
+                    // Set lokasi sesi ini (tidak disimpan permanen)
+                    currentSessionOutletId = selectedStore.id;
+                    // [FIX] Simpan ke localStorage agar halaman checkout/payment bisa mengakses ID outlet
+                    localStorage.setItem('rbm_outlet_info', JSON.stringify({ ...selectedStore, saved_at: Date.now() }));
+                    
+                    // Update UI Header
+                    const locationLink = document.getElementById('findNearestLocation');
+                    if (locationLink) {
+                        locationLink.textContent = selectedStore.name;
+                        locationLink.href = selectedStore.map_link || '#';
+                    }
+                    
+                    // Render menu ulang berdasarkan lokasi baru
+                    renderGroupedMenus(selectedStore.id);
+                    
+                    // Tutup popup
+                    overlay.remove();
+                    
+                    // Sembunyikan overlay mandatory jika ada
+                    try { hideMandatoryManualOverlay(); } catch(e){}
+                }
+            });
+        });
+    }
+    // Check saved outlet freshness (if user saved outlet long ago)
+    function checkSavedOutletFreshness() {
+      try {
+        const raw = localStorage.getItem('rbm_outlet_info');
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (!saved || !saved.saved_at) return;
+        const AGE_LIMIT = 24 * 60 * 60 * 1000; // 24 hours
+        const age = Date.now() - saved.saved_at;
+        if (age > AGE_LIMIT) {
+          showOutletStaleBanner(saved);
+        }
+      } catch(e) { console.warn('checkSavedOutletFreshness failed', e); }
+    }
+
+    function showOutletStaleBanner(saved) {
+      try {
+        if (!saved) return;
+        let banner = document.getElementById('outletStaleBanner');
+        if (banner) return; // already shown
+        banner = document.createElement('div');
+        banner.id = 'outletStaleBanner';
+        banner.style.position = 'fixed';
+        banner.style.left = '12px';
+        banner.style.right = '12px';
+        banner.style.top = '64px';
+        banner.style.zIndex = 1200;
+        banner.style.background = '#fff9f0';
+        banner.style.border = '1px solid #ffd6cc';
+        banner.style.padding = '8px 10px';
+        banner.style.borderRadius = '8px';
+        banner.style.display = 'flex';
+        banner.style.alignItems = 'center';
+        banner.style.justifyContent = 'space-between';
+        banner.style.gap = '8px';
+        banner.innerHTML = `
+          <div style="font-size:13px; color:#333">Lokasi tersimpan: <strong>${(saved.name||'Outlet')}</strong> — sudah lama disimpan. Gunakan atau pilih lokasi baru?</div>
+          <div style="display:flex; gap:8px">
+            <button id="useSavedOutletBtn" style="background:#4C2A85;color:white;border:none;padding:6px 10px;border-radius:8px;cursor:pointer">Gunakan</button>
+            <button id="chooseOutletBtn" style="background:#ffffff;border:1px solid #ddd;padding:6px 10px;border-radius:8px;cursor:pointer">Pilih Lokasi</button>
+          </div>
+        `;
+        document.body.appendChild(banner);
+        document.getElementById('useSavedOutletBtn').addEventListener('click', function(){
+          renderGroupedMenus(saved.id);
+          banner.remove();
+          try { hideMandatoryManualOverlay(); } catch(e){}
+        });
+        document.getElementById('chooseOutletBtn').addEventListener('click', function(){
+          window.location.href = 'lokasi.html';
+        });
+      } catch(e) { console.warn('showOutletStaleBanner failed', e); }
+    }
+
+    // Check permission via Permissions API and enforce manual pick when denied
+    function checkGeolocationPermissionAndEnforce() {
+      try {
+        if (!navigator.permissions || !navigator.permissions.query) return;
+        navigator.permissions.query({ name: 'geolocation' }).then(status => {
+          if (status.state === 'denied') {
+            // hide other overlays and show forced manual overlay
+            try { hideMandatoryLocationOverlay(); } catch(e){}
+            showMandatoryManualOverlay();
+          } else {
+            // permission not denied -> ensure manual overlay hidden
+            hideMandatoryManualOverlay();
+            hideMandatoryLocationOverlay();
+          }
+          status.onchange = function(){
+            if (this.state === 'denied') showMandatoryManualOverlay();
+            else hideMandatoryManualOverlay();
+          };
+        }).catch(()=>{});
+      } catch(e) { console.warn('checkGeolocationPermissionAndEnforce failed', e); }
+    }
+
+    // Show a simplified overlay that forces user to pick manual location (used when geolocation is denied)
+    function showMandatoryManualOverlay() {
+      try {
+        // If overlay already exists, don't recreate
+        if (document.getElementById('mandatoryManualOverlay')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'mandatoryManualOverlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0'; overlay.style.left = '0'; overlay.style.right = '0'; overlay.style.bottom = '0';
+        overlay.style.background = 'rgba(0,0,0,0.45)';
+        overlay.style.zIndex = 2100;
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+
+        const box = document.createElement('div');
+        box.style.background = '#fff';
+        box.style.padding = '18px';
+        box.style.borderRadius = '12px';
+        box.style.maxWidth = '420px';
+        box.style.width = '90%';
+        box.style.textAlign = 'center';
+
+        box.innerHTML = `
+          <div style="font-size:16px; font-weight:700; margin-bottom:8px;">Akses Lokasi Tidak Diizinkan</div>
+          <div style="color:#666; margin-bottom:12px;">Anda harus memilih lokasi secara manual setiap kali memuat ulang halaman. Silakan pilih lokasi sekarang.</div>
+          <div style="display:flex; gap:10px; justify-content:center;">
+            <button id="mandatoryManualChooseBtn" style="background:#4C2A85;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer">Pilih Lokasi</button>
+          </div>
+        `;
+
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        document.getElementById('mandatoryManualChooseBtn').addEventListener('click', function(){
+          window.location.href = 'lokasi.html';
+        });
+      } catch(e) { console.warn('showMandatoryManualOverlay failed', e); }
+    }
+
+    function hideMandatoryManualOverlay() {
+      try { const el = document.getElementById('mandatoryManualOverlay'); if (el) el.remove(); } catch(e){}
+    }
+
+    // ==========================================
+    // 6. SLIDERS & MENU RENDERING
+    // ==========================================
+    function initPromoSlider() {
+      const slider = document.getElementById('promoSlider');
+      if (!slider) return;
+      
+      if (window.promoInterval) clearInterval(window.promoInterval);
+      
+      let currentSlide = 0;
+      
+      window.promoInterval = setInterval(() => {
+        const slides = slider.children; // Ambil children terbaru
+        const totalSlides = slides.length;
+        if (totalSlides === 0) return;
+        currentSlide = (currentSlide + 1) % totalSlides;
+        slider.scrollTo({ left: currentSlide * slider.offsetWidth, behavior: 'smooth' });
+      }, 3000);
+    }
+
+    function getAllItems() {
+      // [DIUBAH] Prioritaskan data dari server (Kasir)
+      if (globalMenuData && globalMenuData.length > 0) {
+        return globalMenuData;
+      }
+      
+      // [DIUBAH] Hapus data fallback. Kembalikan array kosong jika data server belum ada.
+      return [];
+    }
+
+    // [BARU] Fungsi untuk merender ikon kategori secara dinamis
+    function renderCategoryIcons(customCategories = null) {
+        const categories = customCategories || getStoredCategories();
+        const container = document.querySelector('.menu-icons');
+        if (!container) return;
+
+        container.innerHTML = categories.map((cat, index) => {
+            // [PERBAIKAN] Gunakan fallback aman jika cat.value kosong
+            const val = cat.value || cat.id || cat.name || '';
+            const groupKey = normalizeKey(val); // Gunakan normalisasi yang konsisten
+            return `
+                <a href="#group-${groupKey}" class="menu-icon ${index === 0 ? 'active' : ''}">
+                    <div class="menu-emoji">${cat.emoji || '🍽️'}</div>
+                    <span style="color: var(--text);">${cat.name}</span>
+                </a>
+            `;
+        }).join('');
+    }
+
+    function renderGroupedMenus(locationId = null) {
+      const container = document.getElementById('groupedMenuContainer');
+      if (!container) return;
+
+      // [BARU] Update status ordering berdasarkan outlet yang dipilih
+      if (locationId) {
+          try {
+              const settings = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+              const outlets = settings.outlets || [];
+              // Cari outlet yang sedang aktif
+              const currentOutlet = outlets.find(o => String(o.id) === String(locationId));
+              
+              // Jika outlet ditemukan dan memiliki setting ordering_enabled spesifik
+              if (currentOutlet && typeof currentOutlet.ordering_enabled !== 'undefined') {
+                  isOrderingEnabled = currentOutlet.ordering_enabled === true;
+                  updateAppModeUI(); // Refresh UI (tombol tambah, keranjang, dll)
+              } else {
+                  // Fallback ke setting global jika tidak ada setting per outlet
+                  if (typeof settings.ordering_enabled !== 'undefined') {
+                      isOrderingEnabled = settings.ordering_enabled === true;
+                      updateAppModeUI();
+                  }
+              }
+          } catch(e) { console.warn('Gagal cek status outlet:', e); }
+      }
+      
+      // [BARU] Jika lokasi belum ditentukan, tampilkan pesan kosong
+      if (!locationId || locationId === 'null') {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 48px; margin-bottom: 16px;">📍</div>
+            <h3 style="color: var(--text);">Lokasi Belum Diketahui</h3>
+            <p style="color: var(--muted);">Silakan izinkan akses lokasi atau pilih outlet untuk melihat menu.</p>
+            <a href="lokasi.html" class="btn-primary" style="display:inline-block; margin-top:10px; padding:10px 20px; text-decoration:none; color:white; border-radius:8px; background:var(--primary);">Pilih Lokasi</a>
+          </div>
+        `;
+        // [PERBAIKAN] Kosongkan ikon kategori jika lokasi belum ada
+        renderCategoryIcons([]);
+        return;
+      }
+
+      // [DIUBAH] Tampilkan indikator loading skeleton jika data dari server belum tiba
+      if (!isMenuLoaded) {
+        const skeletonCard = `
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton-body">
+              <div class="skeleton skeleton-text skeleton-title"></div>
+              <div class="skeleton skeleton-text" style="width: 60%;"></div>
+              <div class="skeleton skeleton-text skeleton-price"></div>
+            </div>
+          </div>
+        `;
+        const skeletonGroup = `
+          <div class="group-block">
+            <div class="skeleton skeleton-text" style="width: 120px; height: 24px; margin-bottom: 10px; border-radius: 6px;"></div>
+            <div class="h-scroll" style="overflow: hidden; gap: 10px; padding: 4px 4px 10px 4px;">${skeletonCard.repeat(3)}</div>
+          </div>
+        `;
+        container.innerHTML = skeletonGroup.repeat(2);
+        return;
+      }
+
+      let allItems = getAllItems();
+
+      // [PERBAIKAN] Normalisasi locationId agar tidak sensitif huruf besar/kecil
+      const normalizedLocationId = String(locationId).toLowerCase();
+
+      // Filter item berdasarkan lokasi
+      const items = normalizedLocationId === 'all' 
+        ? allItems 
+        : allItems.filter(item => item.locations && item.locations.includes(normalizedLocationId));
+
+      // [BARU] Tampilkan pesan jika menu kosong setelah loading selesai
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px;">
+            <p style="color: var(--muted);">Belum ada menu yang tersedia saat ini.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // [DIUBAH] groupOrder sekarang dinamis dari localStorage
+      // Menggunakan logika yang sama dengan Kasir: Hanya tampilkan kategori yang didefinisikan
+      let groupOrder = getStoredCategories().map(cat => ({
+          // [PERBAIKAN] Gunakan fallback aman jika cat.value kosong
+          key: normalizeKey(cat.value || cat.id || cat.name), // Normalisasi konsisten
+          title: cat.name,
+          icon: cat.emoji || '🍽️',
+          original: cat // [BARU] Simpan data asli untuk pencocokan ganda
+      }));
+
+      // [DIUBAH] Filter grup yang memiliki item (Hanya tampilkan kategori yang ada isinya)
+      const activeGroups = groupOrder.filter(group => {
+          const groupItems = items.filter(it => {
+            const itemCatNorm = normalizeKey(it.category);
+            if (itemCatNorm === group.key) return true;
+            if (group.original.name && normalizeKey(group.original.name) === itemCatNorm) return true;
+            return false;
+        });
+        return groupItems.length > 0;
+      });
+
+      // [BARU] Update ikon kategori HANYA untuk kategori yang aktif
+      renderCategoryIcons(activeGroups.map(g => ({
+          name: g.title,
+          emoji: g.icon,
+          value: g.key
+      })));
+
+      const html = activeGroups.map(group => {
+        // [DIUBAH] Filter kategori dibuat lebih pintar (mencocokkan ID atau Nama)
+        const groupItems = items.filter(it => {
+            const itemCatNorm = normalizeKey(it.category);
+            
+            // 1. Cek kecocokan dengan ID/Value kategori (misal: rice-bowl)
+            if (itemCatNorm === group.key) return true;
+            
+            // 2. Cek kecocokan dengan Nama kategori (misal: produk kategori "Burger", kategori nama "Burger")
+            if (group.original.name && normalizeKey(group.original.name) === itemCatNorm) return true;
+            
+            return false;
+        });
+        
+        // [PERBAIKAN] Definisi variabel dipindahkan ke atas sebelum digunakan
+        let titleHtml = `<h3 class="group-title">${group.icon} ${group.title}</h3>`;
+        let titleContainerStart = `<div class="group-title-container">`;
+        let titleContainerEnd = `</div>`;
+        if (group.key === 'rice-bowl') {
+            titleHtml = `
+                <h3 class="group-title">${group.icon} ${group.title}</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all" data-group="rice-bowl" title="Semua">🍽️</button>
+                    <button class="filter-btn" data-filter="beef" data-group="rice-bowl" title="Beef">🥩</button>
+                    <button class="filter-btn" data-filter="chicken" data-group="rice-bowl" title="Chicken">🐔</button>
+                </div>`;
+        }
+
+        // [DIUBAH] Sembunyikan kategori jika tidak ada item di dalamnya
+        // [DIUBAH] Pastikan kategori kosong benar-benar disembunyikan (Hapus pesan 'Belum ada menu')
+        if (groupItems.length === 0) return '';
+
+        const cards = groupItems.map(it => {
+          const bestSellerBadge = it.favorite ? '<div class="badge best-seller">★ Best Seller</div>' : '';
+          const spicyBadge = it.spicy ? '<div class="badge spicy">🌶️ Hot Pedas</div>' : '';
+          
+          // [BARU] Tambahkan data-sub-category untuk filter
+          let subCategory = 'all';
+          if (it.name.toLowerCase().includes('beef')) subCategory = 'beef';
+          if (it.name.toLowerCase().includes('chicken') || it.name.toLowerCase().includes('katsu')) subCategory = 'chicken';
+
+          return (
+          `<div class="h-card" data-item-name="${it.name}" data-sub-category="${subCategory}">` +
+            `${it.favorite ? '<div class="fav-badge">★ Best Seller</div>' : ''}` +
+            `<div class="card-content" data-menu='${JSON.stringify(it)}' style="cursor:pointer;"><img src="${it.img}" alt="${it.name}"></div>` +
+            `<div class="body">` +
+              `<h3>${it.name}</h3>` +
+              `<div class="price-and-controls">` +
+                `<div class="price">${it.price}</div>` +
+                (isOrderingEnabled ? `<div class="cart-controls">` +
+                  `<button class="quantity-btn minus-btn" data-name="${it.name}" data-change="-1" data-menu='${JSON.stringify(it)}' style="display:none;">-</button>` +
+                  `<span class="item-quantity" style="display:none;">0</span>` +
+                  `<button class="quantity-btn plus-btn" data-name="${it.name}" data-change="1" data-menu='${JSON.stringify(it)}'>+</button>` +
+                `</div>` : '') +
+              `</div>` +
+            `</div>` +
+          `</div>`
+          );
+        }).join('');
+
+        return `
+          <div class="group-block" id="group-${group.key}">
+            ${titleContainerStart}${titleHtml}${titleContainerEnd}
+            <div class="h-scroll">${cards}</div>
+            <div class="h-scroll-dots"></div> <!-- Elemen ini ditambahkan -->
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+      
+      // [PERBAIKAN] Panggil initMenuSliders SETELAH menu dirender ke DOM.
+      initMenuSliders();
+      
+      // [FIX] Panggil update kontrol untuk setiap item di keranjang SETELAH menu dirender
+      cart.forEach(item => updateItemControls(item.name));
+    }
+
+    function loadPendingPoints() {
+      const el = document.getElementById('pendingPoints');
+      if (!el) return;
+      const pending = parseInt(localStorage.getItem('rbm_pending_points') || '0', 10);
+      el.textContent = isNaN(pending) ? '0' : String(pending);
+    }
+
+    function displayUserData(user) {
+      const profileContainer = document.getElementById('user-profile-content');
+      if (!profileContainer) return; // [PERBAIKAN] Cek apakah elemen ada sebelum diisi
+      if (user && user.phone) {
+        // Tampilan jika user sudah login
+        profileContainer.innerHTML = `
+          <div class="welcome-card">
+            <div class="welcome-text">
+              <span class="hello-text">Hello, </span>
+              <span class="user-name" id="userName">${user.nama}</span>
+            </div>
+          </div>
+          <div class="actions-grid">
+            <div class="points-display welcome-card">
+              <div class="points-text-container">
+                <span class="points-label">Poin Anda:</span>
+                <span class="points-value" id="userPoints">${user.points >= 999999999 ? '∞' : (user.points || '0')}</span>
+              </div>
+              <img src="https://placehold.co/40x40/png?text=$" alt="Poin" class="points-icon" id="icon-points-display">
+            </div>
+            <a href="tukarpoint.html" class="exchange-card welcome-card" style="cursor: pointer;">
+              <span class="exchange-text">Tukar Poin</span>
+              <img src="https://placehold.co/40x40/png?text=TP" alt="Tukar Poin" class="points-icon" id="icon-exchange-display">
+            </a>
+          </div>
+        `;
+      } else {
+        // Tampilan default (guest) sudah ada di HTML, jadi tidak perlu melakukan apa-apa
+        // atau bisa dipastikan lagi di sini jika perlu.
+      }
+    }
+    
+    // ==========================================
+    // 7. USER DATA & SYNC
+    // ==========================================
+    async function syncUserDataFromSheets(phoneNumber) {
+      // [HIDDEN] Developer Account Protection (Unlimited Points)
+      // Mencegah data developer tertimpa oleh data server
+      if (phoneNumber === '85173350016') {
+          const devUser = {
+              nama: 'Puji Shohibul Burhan',
+              phone: '85173350016',
+              username: 'Burhan',
+              points: 999999999
+          };
+          localStorage.setItem('rbm_user', JSON.stringify(devUser));
+          displayUserData(devUser);
+          return true;
+      }
+
+      try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 8000);
+        
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST', cache: 'no-cache',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'getUserData', phone: phoneNumber }),
+          signal: controller.signal
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.user) {
+          localStorage.setItem('rbm_user', JSON.stringify(result.user));
+          displayUserData(result.user);
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.log('Sinkronisasi gagal, koneksi bermasalah.', error.message);
+        return false;
+      }
+    }
+
+    // ==========================================
+    // 8. EVENT LISTENERS & INTERACTION
+    // ==========================================
+    // FUNGSI BARU UNTUK HEADER SCROLL
+// GANTI FUNGSI LAMA DENGAN YANG INI
+// KODE YANG SUDAH DIPERBAIKI
+function handleHeaderScroll() {
+  const header = document.querySelector('.app-header');
+  const promoSection = document.querySelector('.promo-section');
+  if (!header || !promoSection) return;
+
+  const promoHeight = promoSection.offsetHeight;
+
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    const opacity = Math.min(scrollY / promoHeight, 1);
+    header.style.backgroundColor = `rgba(255, 255, 255, ${opacity})`;
+
+    // Bagian ini tetap ada untuk mengubah warna teks
+    if (scrollY > promoHeight / 2) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
+  // Header sekarang statis putih, tidak perlu efek scroll
+}
+
+
+    
+    // --- FUNGSI BARU UNTUK MENGELOLA SEMUA INTERAKSI ---
+    function setupEventListeners() {
+      // [DIUBAH] Event listener untuk klik pada kartu menu dan tombol tambah
+      document.body.addEventListener('click', (e) => {
+        const cardContent = e.target.closest('.card-content');
+        const quantityBtn = e.target.closest('.quantity-btn');
+
+        if (cardContent && cardContent.dataset.menu) {
+            e.preventDefault();
+            const menuData = JSON.parse(cardContent.dataset.menu);
+            showMenuDetail(menuData);
+        } else if (quantityBtn) {
+            e.preventDefault();
+            const itemName = quantityBtn.dataset.name;
+            const change = parseInt(quantityBtn.dataset.change, 10);
+            const menuData = quantityBtn.dataset.menu ? JSON.parse(quantityBtn.dataset.menu) : null;
+            updateCart(itemName, change, menuData);
+        }
+
+        // [BARU] Event listener untuk tombol filter
+        const filterBtn = e.target.closest('.filter-btn');
+        if (filterBtn) {
+            e.preventDefault();
+            const filter = filterBtn.dataset.filter;
+            const group = filterBtn.dataset.group;
+            applyFilter(group, filter);
+        }
+      });
+
+      // Listener untuk tombol keranjang melayang
+      document.getElementById('floatingCartBtn').addEventListener('click', goToCheckoutPage);
+
+      // Listener untuk tombol favorit di header
+      const favoritesHeaderBtn = document.getElementById('favoritesBtn');
+      if (favoritesHeaderBtn) favoritesHeaderBtn.addEventListener('click', showFavorites);
+    }
+
+    // ==========================================
+    // 9. FILTER & SLIDER LOGIC
+    // ==========================================
+    // [BARU] Fungsi untuk menerapkan filter pada item
+    function applyFilter(groupKey, subCategory) {
+      const groupBlock = document.getElementById(`group-${groupKey}`);
+      if (!groupBlock) return;
+      const filterButtons = groupBlock.querySelectorAll('.filter-btn');
+      const activeFilterButton = groupBlock.querySelector(`.filter-btn[data-filter="${subCategory}"]`);
+
+      // Toggle active class on buttons
+      filterButtons.forEach(btn => btn.classList.remove('active')); // Hapus kelas aktif dari semua tombol di grup ini
+      if (activeFilterButton) {
+        activeFilterButton.classList.add('active'); // Tambahkan kelas aktif ke tombol yang diklik
+      }
+
+      // Logika filter
+      const allCards = groupBlock.querySelectorAll('.h-card');
+      allCards.forEach(card => {
+        const cardSubCategory = card.dataset.subCategory;
+        const isVisible = subCategory === 'all' || cardSubCategory === subCategory;
+        if (isVisible) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+    // Tambahkan style untuk tombol filter aktif
+    const filterStyle = document.createElement('style');
+    filterStyle.textContent = `
+        .filter-btn.active, .menu-icon.active .menu-emoji {
+            background-color: var(--primary) !important;
+            color: var(--primary-text) !important;
+            border-color: var(--primary) !important;
+        }
+    `;
+    document.head.appendChild(filterStyle);
+    // --- FUNGSI BARU UNTUK SLIDER OUTLET UTAMA ---
+    function initOutletSlider() {
+      const container = document.getElementById('outletSlider');
+      if (!container) return;
+
+      const track = container.querySelector('.outlet-slider-track');
+      const slides = track.querySelectorAll('.outlet-slide');
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      // [BARU] Variabel untuk dots
+      const dotsContainer = document.getElementById('mainOutletDots');
+      let dots = [];
+      let userScrollTimeout;
+
+      // [BARU] Deklarasi variabel untuk fungsionalitas swipe
+      let isDragging = false;
+      let startX = 0;
+      let currentTranslate = 0;
+      let prevTranslate = 0;
+      let animationID;
+
+      if (totalSlides <= 1) return; // Tidak perlu slider jika hanya 1 outlet
+
+      // [BARU] Buat dots
+      for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.classList.add('main-dot');
+        dotsContainer.appendChild(dot);
+        dots.push(dot);
+      }
+
+      // [BARU] Fungsi untuk update dot aktif
+      function updateDots() {
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === currentIndex);
+        });
+      }
+
+      // Fungsi untuk menggeser ke slide tertentu
+      function goToSlide(index) {
+        track.style.transform = `translateX(-${index * 100}%)`;
+        currentIndex = index;
+        updateDots(); // [BARU] Panggil update dots saat slide berubah
+        prevTranslate = -index * container.offsetWidth; // Update posisi untuk swipe selanjutnya
+      }
+
+      // Fungsi untuk memulai auto-slide
+      function startAutoSlide() {
+        // [PERBAIKAN] Mengaktifkan kembali pergeseran otomatis
+        stopAutoSlide(); // Hentikan dulu jika sudah ada
+        window.mainOutletInterval = setInterval(() => {
+          const nextIndex = (currentIndex + 1) % totalSlides;
+          goToSlide(nextIndex);
+        }, 10000); // Geser setiap 10 detik
+      }
+
+      // Fungsi untuk menghentikan auto-slide
+      function stopAutoSlide() {
+        if (window.mainOutletInterval) clearInterval(window.mainOutletInterval);
+      }
+      // [PERBAIKAN] Mulai pergeseran otomatis saat halaman dimuat
+      startAutoSlide();
+
+      // Opsional: Hentikan auto-slide saat mouse hover, dan mulai lagi saat mouse leave
+      container.addEventListener('mouseenter', stopAutoSlide);
+      container.addEventListener('mouseleave', startAutoSlide);
+
+      // [BARU] Event listener untuk swipe manual
+      container.addEventListener('touchstart', touchStart, { passive: true });
+      container.addEventListener('touchmove', touchMove, { passive: true });
+      container.addEventListener('touchend', touchEnd);
+
+      function touchStart(event) {
+        isDragging = true;
+        startX = event.touches[0].clientX;
+        animationID = requestAnimationFrame(animation);
+        track.style.transition = 'none'; // Hapus transisi saat digeser manual
+      }
+
+      function touchMove(event) {
+        if (isDragging) {
+          const currentX = event.touches[0].clientX;
+          currentTranslate = prevTranslate + currentX - startX;
+        }
+      }
+
+      function touchEnd() {
+        isDragging = false;
+        cancelAnimationFrame(animationID);
+
+        const movedBy = currentTranslate - prevTranslate;
+
+        // Tentukan apakah akan pindah slide atau kembali
+        if (movedBy < -50 && currentIndex < totalSlides - 1) {
+          // Geser ke slide berikutnya
+          currentIndex++;
+        }
+
+        if (movedBy > 50 && currentIndex > 0) {
+          // Geser ke slide sebelumnya
+          currentIndex--;
+        }
+
+        // Posisikan ulang slider dengan transisi
+        track.style.transition = 'transform 0.5s ease-in-out';
+        goToSlide(currentIndex);
+      }
+
+      // Inisialisasi dot pertama
+      updateDots();
+
+      function animation() {
+        setSliderPosition();
+        if (isDragging) requestAnimationFrame(animation);
+      }
+
+      function setSliderPosition() {
+        // Batasi pergeseran agar tidak melebihi batas awal dan akhir
+        const maxTranslate = 0;
+        const minTranslate = -(totalSlides - 1) * container.offsetWidth;
+        if (currentTranslate > maxTranslate) {
+            currentTranslate = maxTranslate;
+        }
+        if (currentTranslate < minTranslate) {
+            currentTranslate = minTranslate;
+        }
+        track.style.transform = `translateX(${currentTranslate}px)`;
+      }
+    }
+
+    // --- FUNGSI BARU UNTUK SLIDER GAMBAR OUTLET ---
+    function initOutletImageSliders() {
+      // [PERBAIKAN] Logika untuk slider gambar di dalam kartu outlet
+      const sliders = document.querySelectorAll('.outlet-image-slider');
+      
+      // Bersihkan interval lama
+      window.outletImageIntervals.forEach(i => clearInterval(i));
+      window.outletImageIntervals = [];
+
+      sliders.forEach(slider => {
+        const track = slider.querySelector('.outlet-image-track');
+        const dotsContainer = slider.querySelector('.outlet-image-dots');
+        const images = track.querySelectorAll('img');
+        const totalImages = images.length;
+        let currentIndex = 0;
+        let autoSlideInterval;
+        let userInteractionTimeout;
+
+        // Jangan jalankan slider jika hanya ada 1 gambar atau kurang
+        if (totalImages <= 1) {
+          dotsContainer?.remove();
+          return;
+        }
+
+        // 1. Buat titik-titik (dots) penanda
+        dotsContainer.innerHTML = ''; // Kosongkan dulu
+        for (let i = 0; i < totalImages; i++) {
+          const dot = document.createElement('div');
+          dot.classList.add('dot');
+          dotsContainer.appendChild(dot);
+        }
+        const dots = dotsContainer.querySelectorAll('.dot');
+
+        // 2. Fungsi untuk update dot yang aktif
+        function updateDots(index) {
+          dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+          });
+        }
+
+        // 3. Fungsi untuk menggeser ke gambar tertentu
+        function goToImage(index) {
+          track.scrollTo({
+            left: track.clientWidth * index,
+            behavior: 'smooth'
+          });
+          currentIndex = index;
+          updateDots(currentIndex);
+        }
+
+        // 4. Fungsi untuk memulai pergeseran otomatis
+        function startAutoSlide() {
+          stopAutoSlide(); // Hentikan dulu jika sudah ada
+          autoSlideInterval = setInterval(() => {
+            const nextIndex = (currentIndex + 1) % totalImages;
+            goToImage(nextIndex);
+          }, 3000); // Geser setiap 3 detik
+          window.outletImageIntervals.push(autoSlideInterval);
+        }
+
+        // 5. Fungsi untuk menghentikan pergeseran otomatis
+        function stopAutoSlide() {
+          clearInterval(autoSlideInterval);
+        }
+
+        // 6. Reset timer saat ada interaksi (klik panah atau swipe)
+        function resetTimerOnInteraction() {
+          stopAutoSlide();
+          clearTimeout(userInteractionTimeout);
+          userInteractionTimeout = setTimeout(startAutoSlide, 5000); // Mulai lagi setelah 5 detik tidak ada interaksi
+        }
+
+        // 8. Event listener untuk swipe manual
+        track.addEventListener('scroll', () => {
+          // Hitung index saat di-scroll manual
+          const newIndex = Math.round(track.scrollLeft / track.clientWidth);
+          if (newIndex !== currentIndex) {
+            currentIndex = newIndex;
+            updateDots(currentIndex);
+            resetTimerOnInteraction();
+          }
+        });
+
+        // Inisialisasi awal
+        updateDots(0);
+        startAutoSlide();
+      });
+    }
+
+    // --- FUNGSI BARU UNTUK INDIKATOR SLIDER MENU ---
+    function initMenuSliders() {
+      // [DIUBAH] Menggunakan selektor yang lebih umum untuk mencakup semua slider
+      const sliders = document.querySelectorAll('.h-scroll');
+      sliders.forEach(scrollContainer => {
+        // Cari kontainer titik-titik yang merupakan saudara setelahnya
+        const dotsContainer = scrollContainer.nextElementSibling;
+        // Pastikan kontainer titik-titik ada dan memiliki kelas yang benar
+        if (!dotsContainer || !dotsContainer.classList.contains('h-scroll-dots')) return;
+
+        // Fungsi untuk membuat dan memperbarui dots
+        const setupDots = () => {
+          // [DIUBAH] Hapus kondisi agar indikator selalu dibuat,
+          // bahkan jika tidak bisa di-scroll.
+          const pageCount = Math.ceil(scrollContainer.scrollWidth / scrollContainer.clientWidth);
+          dotsContainer.innerHTML = ''; // Kosongkan dots sebelum membuat yang baru
+          for (let i = 0; i < pageCount; i++) {
+            const dot = document.createElement('span');
+            dot.classList.add('h-scroll-dot');
+            dotsContainer.appendChild(dot);
+          }
+          updateActiveDot(); // Set dot aktif pertama kali
+        };
+
+        // Fungsi untuk menandai dot yang aktif
+        const updateActiveDot = () => {
+          const dots = dotsContainer.querySelectorAll('.h-scroll-dot');
+          if (dots.length === 0) return;
+
+          const currentPage = Math.round(scrollContainer.scrollLeft / scrollContainer.clientWidth);
+          dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentPage);
+          });
+
+          // [BARU] Logika untuk menyembunyikan panah di ujung scroll
+          const groupBlock = scrollContainer.closest('.group-block');
+          if (groupBlock) {
+              const isAtEnd = scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 5; // Toleransi 5px
+              groupBlock.classList.toggle('scrolled-to-end', isAtEnd);
+          }
+        };
+
+        // Event listener saat di-scroll
+        scrollContainer.addEventListener('scroll', updateActiveDot);
+
+        // Panggil setupDots saat pertama kali dan saat ukuran window berubah
+        setupDots();
+        window.addEventListener('resize', setupDots);
+      });
+    }
+
+    // ==========================================
+    // 10. CART & CHECKOUT LOGIC
+    // ==========================================
+    function updateCartUI() {
+        const floatingCartBtn = document.getElementById('floatingCartBtn');
+        const cartItemCount = document.getElementById('cartItemCount');
+        const cartTotalPrice = document.getElementById('cartTotalPrice');
+        
+        if (!floatingCartBtn || !cartItemCount || !cartTotalPrice) return;
+
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+        if (totalItems > 0 && isOrderingEnabled) {
+            floatingCartBtn.classList.add('show');
+            cartItemCount.textContent = totalItems;
+            document.body.classList.add('has-cart'); // [BARU] Tambahkan class untuk animasi tombol lain
+        } else {
+            floatingCartBtn.classList.remove('show');
+            document.body.classList.remove('has-cart'); // [BARU] Hapus class
+        }
+
+        const totalPrice = cart.reduce((sum, item) => sum + (parsePrice(item.price) * item.quantity), 0);
+        cartTotalPrice.textContent = formatPrice(totalPrice);
+    }
+
+    // [BARU] Fungsi goToCheckoutPage dipindahkan ke scope global
+    window.goToCheckoutPage = function() {
+        if (!isOrderingEnabled) return; // Cegah checkout jika dinonaktifkan
+        localStorage.setItem('rbm_cart', JSON.stringify(cart));
+        window.location.href = 'checkout.html';
+    }
+
+    // [DIUBAH] Fungsi untuk update kontrol pada kartu item dipindahkan ke scope global
+    function updateItemControls(itemName) {
+        // Update semua kartu yang cocok dengan nama item
+        const cards = document.querySelectorAll(`.h-card[data-item-name="${itemName}"]`);
+        if (cards.length === 0) return;
+
+        // Hitung total kuantitas untuk item ini (termasuk semua varian)
+        const totalQuantity = cart
+            .filter(item => item.name === itemName)
+            .reduce((sum, item) => sum + item.quantity, 0);
+
+        cards.forEach(card => {
+            const minusBtn = card.querySelector('.minus-btn');
+            const quantitySpan = card.querySelector('.item-quantity');
+            const plusBtn = card.querySelector('.plus-btn');
+
+            if (minusBtn) minusBtn.style.display = totalQuantity > 0 ? 'inline-flex' : 'none';
+            if (quantitySpan) {
+                quantitySpan.style.display = totalQuantity > 0 ? 'inline' : 'none';
+                quantitySpan.textContent = totalQuantity;
+            }
+            if (plusBtn) plusBtn.style.marginLeft = totalQuantity > 0 ? '0' : 'auto';
+        });
+    }
+
+    function initCart() {
+        // [BARU] Muat keranjang dari localStorage jika ada
+        const savedCart = localStorage.getItem('rbm_cart');
+        if (savedCart) {
+            cart = JSON.parse(savedCart);
+            updateCartUI(); // Perbarui tombol keranjang melayang
+        }
+
+        window.updateCart = function(itemName, change, menuData) {
+            // Cek apakah fitur pesan aktif
+            if (!isOrderingEnabled) {
+                return; // Jangan lakukan apa-apa jika dinonaktifkan
+            }
+
+            // [DIUBAH] Logika untuk menampilkan pop-up varian mie
+            if (change < 0 && menuData && menuData.category === 'mie') {
+                const variantsInCart = cart.filter(item => item.name === itemName);
+                // Jika ada lebih dari satu varian di keranjang, atau hanya satu tapi kita tetap ingin konfirmasi
+                if (variantsInCart.length > 0) {
+                    showMieRemoveOptionPopup(itemName);
+                    return; // Hentikan eksekusi, tunggu input dari pop-up
+                }
+            }
+
+            if (change > 0 && menuData && menuData.category === 'mie') {
+                showMieOptionPopup(menuData, change);
+                return; // Hentikan eksekusi lebih lanjut, tunggu input dari pop-up
+            }
+
+            let item = cart.find(item => item.name === itemName);
+
+            if (item) {
+                item.quantity += change;
+            } else if (change > 0 && menuData && menuData.category === 'mie') {
+                // Ini menangani penambahan item mie yang sudah ada variannya
+                // Cari item yang namanya diawali dengan nama dasar mie
+                let existingMieVariant = cart.find(i => i.name.startsWith(itemName));
+                if (existingMieVariant) {
+                    existingMieVariant.quantity += change;
+                }
+            } else if (change > 0 && menuData) {
+                cart.push({ ...menuData, quantity: 1, note: '' });
+            }
+
+            // Hapus item jika jumlahnya 0 atau kurang
+            cart = cart.filter(item => item.quantity > 0);
+
+            // Simpan ke localStorage setiap ada perubahan
+            localStorage.setItem('rbm_cart', JSON.stringify(cart));
+
+            updateCartUI();
+            updateItemControls(itemName);
+        }
+
+    }
+
+    // [BARU] Fungsi untuk menampilkan pop-up pilihan varian mie
+    function showMieOptionPopup(menuData, quantityChange) {
+        const popup = document.getElementById('mieOptionPopup');
+        const titleEl = document.getElementById('mieOptionPopupTitle');
+        const optionBtns = popup.querySelectorAll('.option-btn');
+        const saveBtn = document.getElementById('saveMieOptionBtn');
+
+        titleEl.textContent = `Pilih Varian untuk ${menuData.name}`;
+        popup.classList.add('show');
+
+        // Event listener untuk memilih opsi
+        optionBtns.forEach(btn => {
+            btn.onclick = () => {
+                optionBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            };
+        });
+
+        // Event listener untuk tombol konfirmasi
+        saveBtn.onclick = () => {
+            const activeBtn = popup.querySelector('.option-btn.active');
+            const variant = activeBtn.dataset.variant;
+
+            // [DIUBAH] Cari item yang sama persis (nama dan varian) di keranjang
+            const noteText = `Varian: Mie ${variant}`;
+            let existingItem = cart.find(item => item.name === menuData.name && item.note === noteText);
+
+            if (existingItem) {
+                // Jika sudah ada, cukup tambahkan jumlahnya
+                existingItem.quantity += quantityChange;
+            } else {
+                // Jika belum ada, buat item baru
+                const newItem = {
+                    ...menuData,
+                    name: menuData.name,
+                    note: noteText,
+                    quantity: quantityChange,
+                };
+                cart.push(newItem);
+            }
+
+            localStorage.setItem('rbm_cart', JSON.stringify(cart));
+
+            // [DIUBAH] Update UI tanpa refresh halaman
+            updateCartUI();
+            // Perbarui kontrol (+/-) untuk semua kartu dengan nama item yang sama
+            updateItemControls(menuData.name);
+            popup.classList.remove('show');
+        };
+    }
+
+    // [BARU] Fungsi untuk menampilkan pop-up untuk mengurangi varian mie
+    function showMieRemoveOptionPopup(itemName) {
+        const popup = document.getElementById('mieRemoveOptionPopup');
+        const titleEl = document.getElementById('mieRemoveOptionPopupTitle');
+        const optionsContainer = document.getElementById('mieRemoveOptionsContainer');
+        const closeBtn = document.getElementById('closeMieRemoveBtn');
+        const confirmBtn = document.getElementById('confirmMieRemoveBtn');
+        let selectedItem = null;
+
+        titleEl.textContent = `Kurangi Varian untuk ${itemName}`;
+        optionsContainer.innerHTML = ''; // Kosongkan kontainer
+
+        // Cari semua varian dari item ini yang ada di keranjang
+        const variantsInCart = cart.filter(item => item.name === itemName);
+
+        if (variantsInCart.length === 0) return; // Seharusnya tidak terjadi
+
+        // Sembunyikan tombol konfirmasi pada awalnya
+        confirmBtn.style.display = 'none';
+        closeBtn.style.flex = '1'; // Pastikan tombol batal mengisi ruang
+        selectedItem = null; // Reset pilihan
+
+        // Buat tombol untuk setiap varian yang ada di keranjang
+        variantsInCart.forEach((item, index) => {
+            const btn = document.createElement('button');
+            btn.classList.add('option-btn');
+            
+            // [DIUBAH] Menambahkan deskripsi varian dan jumlah di keranjang
+            let description = 'Varian standar.';
+            if (item.note.includes('Goreng')) {
+                description = 'Mie yang digoreng dengan bumbu khas, disajikan kering tanpa kuah.';
+            } else if (item.note.includes('Basah')) {
+                description = 'Mie yang disajikan dengan kuah kaldu gurih yang melimpah.';
+            }
+
+            btn.onclick = () => {
+                // Logika pemilihan, bukan langsung mengurangi
+                selectedItem = item;
+                optionsContainer.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Tampilkan tombol konfirmasi
+                confirmBtn.style.display = 'block';
+                closeBtn.style.flex = '0.5'; // Perkecil tombol batal
+            };
+            btn.innerHTML = `
+                <strong>${item.note.replace('Varian: ', '')} <span style="font-weight:normal; color: var(--muted);">(${item.quantity})</span></strong>
+                <small>${description}</small>
+            `;
+            optionsContainer.appendChild(btn);
+        });
+
+        // [BARU] Otomatis pilih item pertama jika ada
+        const firstOptionButton = optionsContainer.querySelector('.option-btn');
+        if (firstOptionButton) {
+            firstOptionButton.click(); // Simulasikan klik untuk memilih item pertama
+        }
+
+        // Event listener untuk tombol konfirmasi
+        confirmBtn.onclick = () => {
+            if (!selectedItem) return;
+
+            selectedItem.quantity -= 1;
+            cart = cart.filter(i => i.quantity > 0);
+            localStorage.setItem('rbm_cart', JSON.stringify(cart));
+            updateCartUI();
+            updateItemControls(itemName);
+            popup.classList.remove('show');
+        };
+
+        closeBtn.onclick = () => popup.classList.remove('show');
+        popup.classList.add('show');
+    }
+
+    // ==========================================
+    // 11. ORDER TYPE & NOTIFICATIONS
+    // ==========================================
+    // [BARU] Fungsi untuk mengelola pop-up tipe pesanan
+    function setupOrderTypePopup() {
+        const popup = document.getElementById('orderTypePopup');
+        const floatingTableBtn = document.getElementById('floatingTableBtn'); // [DIUBAH] Pindahkan deklarasi ke atas
+        const floatingTableText = document.getElementById('floatingTableText'); // [DIUBAH] Pindahkan deklarasi ke atas
+        
+        // Muat data dari localStorage saat halaman dimuat
+        const savedOrderDetails = JSON.parse(localStorage.getItem('rbm_order_details')) || { type: 'Dine-in', tableNumber: '' };
+        updateOrderDetails(savedOrderDetails.type, savedOrderDetails.tableNumber);
+
+        if (!popup) return;
+
+        const optionBtns = popup.querySelectorAll('.option-btn');
+        const tableNumberContainer = document.getElementById('table-number-container');
+        const tableNumberInput = document.getElementById('table-number-input');
+        const saveBtn = document.getElementById('saveOrderTypeBtn');
+
+        // [BARU] Klik tombol melayang akan membuka pop-up
+        floatingTableBtn.addEventListener('click', () => {
+             popup.classList.add('show');
+            // Set nilai pop-up sesuai data yang tersimpan
+            const currentDetails = JSON.parse(localStorage.getItem('rbm_order_details')) || { type: 'Dine-in', tableNumber: '' };
+            optionBtns.forEach(b => b.classList.remove('active'));
+            popup.querySelector(`.option-btn[data-type="${currentDetails.type}"]`).classList.add('active');
+            tableNumberInput.value = currentDetails.tableNumber;
+            tableNumberContainer.style.display = currentDetails.type === 'Dine-in' ? 'block' : 'none';
+        });
+
+        optionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                optionBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                tableNumberContainer.style.display = btn.dataset.type === 'Dine-in' ? 'block' : 'none';
+            });
+        });
+
+        saveBtn.addEventListener('click', () => {
+            const activeBtn = popup.querySelector('.option-btn.active');
+            const type = activeBtn.dataset.type;
+            const tableNumber = type === 'Dine-in' ? tableNumberInput.value : '';
+            updateOrderDetails(type, tableNumber);
+            popup.classList.remove('show');
+        });
+
+        // [BARU] Tambahkan event listener untuk menutup popup saat area luar diklik
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                popup.classList.remove('show');
+            }
+        });
+
+
+        function updateOrderDetails(type, tableNumber) {
+            const details = { type, tableNumber };
+            localStorage.setItem('rbm_order_details', JSON.stringify(details));
+
+            // [BARU] Update tombol melayang
+            if (type === 'Dine-in' && tableNumber) {
+                document.getElementById('floatingTableNumber').textContent = tableNumber;
+                floatingTableBtn.classList.add('show');
+                document.body.classList.add('has-table'); // [BARU] Tambahkan class body
+            } else {
+                floatingTableBtn.classList.remove('show');
+                document.body.classList.remove('has-table'); // [BARU] Hapus class body
+            }
+        }
+    }
+
+    // [DIUBAH] Fungsi dipindahkan ke luar agar bisa diakses secara global
+    function showTablePopupOnLoad() {
+        // Cek jika parameter `meja` ada di URL, contoh: index.html?meja=7
+        // [DIUBAH] Tidak lagi menampilkan pop-up, tapi menyimpan data dan menampilkan tombol melayang
+        const tableNumberFromUrl = new URLSearchParams(window.location.search).get('meja');
+
+        // Hanya proses jika ada parameter meja di URL
+        if (tableNumberFromUrl) {
+            // Simpan detail pesanan dengan nomor meja dari URL
+            const details = { type: 'Dine-in', tableNumber: tableNumberFromUrl };
+            localStorage.setItem('rbm_order_details', JSON.stringify(details));
+
+            // Update tampilan tombol melayang
+            const floatingTableBtn = document.getElementById('floatingTableBtn');
+            document.getElementById('floatingTableNumber').textContent = tableNumberFromUrl;
+            if (isOrderingEnabled) {
+                floatingTableBtn.classList.add('show');
+                document.body.classList.add('has-table'); // [BARU] Tambahkan class body
+            }
+        } else {
+            // [BARU] Jika tidak ada nomor meja di URL, kosongkan/sembunyikan
+            const floatingTableBtn = document.getElementById('floatingTableBtn');
+            if (floatingTableBtn) {
+                floatingTableBtn.classList.remove('show');
+                document.body.classList.remove('has-table');
+            }
+            // Reset data di localStorage agar tidak muncul lagi saat refresh
+            const details = JSON.parse(localStorage.getItem('rbm_order_details')) || { type: 'Dine-in' };
+            details.tableNumber = '';
+            localStorage.setItem('rbm_order_details', JSON.stringify(details));
+        }
+    }
+
+    // [BARU] Fungsi untuk menampilkan notifikasi pop-up kustom
+    function showCustomNotification(title, message) {
+        const popup = document.getElementById('orderReadyPopup');
+        const titleEl = document.getElementById('notificationPopupTitle');
+        const messageEl = document.getElementById('notificationPopupMessage');
+        const closeBtn = document.getElementById('notificationPopupCloseBtn');
+
+        if (!popup) return;
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        popup.classList.add('show');
+
+        const closePopup = () => popup.classList.remove('show');
+        closeBtn.onclick = closePopup;
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) closePopup();
+        });
+    }
+
+    // [BARU] Fungsi untuk mendengarkan notifikasi dari kasir
+    function listenForCashierNotifications() {
+        window.addEventListener('storage', function(e) {
+            // Cek apakah ada notifikasi baru untuk user
+            if (e.key === 'rbm_user_notification' && e.newValue) {
+                try {
+                    const notification = JSON.parse(e.newValue);
+
+                    // [BARU] Mainkan suara notifikasi
+                    const sound = document.getElementById('cashier-notification-sound');
+                    if (sound) {
+                        // [BARU] Set src dinamis saat dibutuhkan
+                        if (!sound.src) sound.src = "notification_ready.mp3";
+                        sound.play().catch(error => console.log("Gagal memutar suara notifikasi:", error));
+                    }
+
+                    // [DIUBAH] Tampilkan notifikasi dengan pop-up kustom
+                    showCustomNotification(notification.title, notification.message);
+
+                    // Hapus notifikasi setelah ditampilkan agar tidak muncul lagi
+                    localStorage.removeItem('rbm_user_notification');
+                } catch (err) {
+                    console.error("Gagal memproses notifikasi:", err);
+                }
+            }
+        });
+
+        // [BARU] Listener Firebase (Realtime dari Server) untuk notifikasi pesanan siap
+        const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        if (user && user.phone && db) {
+            // Ambil daftar outlet untuk didengarkan
+            db.ref('customer_app_settings/outlets').once('value').then(snapshot => {
+                const outletsData = snapshot.val();
+                if (outletsData) {
+                    const outlets = Array.isArray(outletsData) ? outletsData : Object.values(outletsData);
+                    outlets.forEach(outlet => {
+                        if (outlet.id) {
+                            const ordersRef = db.ref(`orders/${outlet.id}`).orderByChild('user/phone').equalTo(user.phone);
+                            
+                            // Listen for changes (Dengarkan perubahan status pesanan)
+                            ordersRef.on('child_changed', (snapshot) => {
+                                const order = snapshot.val();
+                                // Cek jika status berubah jadi Siap Diambil
+                                if (order && order.status === 'Siap Diambil') {
+                                    // Play Sound (Bunyikan Suara)
+                                    const sound = document.getElementById('cashier-notification-sound');
+                                    if (sound) {
+                                        if (!sound.src) sound.src = "notification_ready.mp3";
+                                        sound.play().catch(e => console.log("Gagal memutar suara:", e));
+                                    }
+                                    
+                                    // Show Popup (Tampilkan Notifikasi)
+                                    showCustomNotification('Pesanan Siap!', `Pesanan Anda di ${outlet.name || outlet.id} sudah siap diambil.`);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    // ==========================================
+    // 12. APP SETTINGS & INITIALIZATION
+    // ==========================================
+    // [BARU] Fungsi Load Pengaturan dari Firebase (Logo, Promo, Running Text)
+    function loadAppSettings() {
+      if (!db) return;
+      
+      // 1. Definisi fungsi untuk menerapkan pengaturan ke UI
+      const applySettings = (settings) => {
+          if (!settings) return;
+
+          // [BARU] Update Logo Toko
+          if (settings.logo) {
+              const logoImg = document.querySelector('.logo img');
+              if (logoImg) logoImg.src = settings.logo;
+          }
+
+          // [BARU] Update Ikon Poin
+          if (settings.point_icon) {
+              const pointIcon = document.getElementById('icon-points-display');
+              if (pointIcon) pointIcon.src = settings.point_icon;
+          }
+
+          // [BARU] Update Ikon Tukar Poin
+          if (settings.exchange_icon) {
+              const exchangeIcon = document.getElementById('icon-exchange-display');
+              if (exchangeIcon) exchangeIcon.src = settings.exchange_icon;
+          }
+
+          // 1. Update Promo Popup
+          const promoData = settings.promo_popup || settings.promo;
+          if (promoData && promoData.image) {
+              const promoImg = document.querySelector('#promoPopup img');
+              if (promoImg) promoImg.src = promoData.image;
+          }
+
+          // 2. Update Promo Slider (Main)
+          if (settings.promo_slider && Array.isArray(settings.promo_slider)) {
+             const slider = document.getElementById('promoSlider');
+             if (slider && settings.promo_slider.length > 0) {
+                 slider.innerHTML = settings.promo_slider.map(img => 
+                   `<div class="promo-item"><img src="${img}" alt="Promo Utama"></div>`
+                 ).join('');
+                 initPromoSlider(); // Re-init slider
+             }
+          }
+
+          // 3. Update Special Offers
+          if (settings.special_offers && Array.isArray(settings.special_offers)) {
+             const grid = document.querySelector('.special-offer-grid');
+             if (grid && settings.special_offers.length > 0) {
+                 grid.innerHTML = settings.special_offers.map((offer, index) => `
+                    <a href="${offer.link || '#'}" data-default-link="${offer.link || '#'}" target="_blank" class="special-offer-card" data-position="${index + 1}" data-platform="${offer.platform || ''}">
+                        <div class="offer-image" style="height: 100%;">
+                            <img src="${offer.image}" alt="${offer.alt || 'Promo'}" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                        </div>
+                    </a>
+                 `).join('');
+             }
+          }
+
+          // 4. Update Outlets
+          if (settings.outlets && Array.isArray(settings.outlets)) {
+             const track = document.querySelector('#outletSlider .outlet-slider-track');
+             const dotsContainer = document.getElementById('mainOutletDots');
+             
+             if (track && settings.outlets.length > 0) {
+                 if(dotsContainer) dotsContainer.innerHTML = '';
+
+                 track.innerHTML = settings.outlets.map(outlet => {
+                     const images = outlet.images || [];
+                     const imgsHtml = images.map(src => `<img src="${src}" alt="${outlet.name}">`).join('');
+                     
+                     return `
+                     <div class="outlet-slide" data-outlet-id="${outlet.id || 'outlet'}">
+                        <div class="outlet-image-slider">
+                            <div class="outlet-image-track">${imgsHtml}</div>
+                            <div class="outlet-image-dots"></div>
+                        </div>
+                        <div class="outlet-info">
+                            <h3>${outlet.name}</h3>
+                            <div class="outlet-links">
+                                <p style="font-size: 14px;">Reservasi: <a href="https://wa.me/${outlet.phone}" target="_blank" style="display: inline; padding: 0; background: none;">${outlet.phone_display || outlet.phone}</a></p>
+                                <a class="map-link" href="${outlet.map_link}" target="_blank">Lihat di Google Maps 📍</a>
+                            </div>
+                        </div>
+                    </div>`;
+                 }).join('');
+                 
+                 setTimeout(() => {
+                     initOutletSlider(); 
+                     initOutletImageSliders();
+                 }, 100);
+             }
+          }
+          
+          // [BARU] Update Fitur ON/OFF (Game, AI Chat, Global Chat) dari Firebase
+          if (typeof settings.enable_ai_chat !== 'undefined') appFeatures.aiChat = settings.enable_ai_chat;
+          if (typeof settings.enable_game !== 'undefined') appFeatures.game = settings.enable_game;
+          if (typeof settings.enable_global_chat !== 'undefined') appFeatures.globalChat = settings.enable_global_chat;
+          
+          updateFeaturesUI();
+
+          // [BARU] Hapus style anti-flash setelah UI diupdate agar kontrol kembali ke JS
+          const antiFlashStyle = document.getElementById('anti-flash-style');
+          if (antiFlashStyle) antiFlashStyle.remove();
+      };
+
+      // 2. Coba load dari LocalStorage dulu (Cache) agar instan
+      const cachedSettings = localStorage.getItem('rbm_customer_app_settings');
+      if (cachedSettings) {
+          try {
+              applySettings(JSON.parse(cachedSettings));
+          } catch (e) {
+              console.error('Error parsing cached settings:', e);
+          }
+      }
+
+      // 3. Listen ke Firebase untuk update terbaru
+      db.ref('customer_app_settings').on('value', (snapshot) => {
+          const settings = snapshot.val();
+          if (!settings) return;
+
+          // Simpan ke cache untuk kunjungan berikutnya
+          localStorage.setItem('rbm_customer_app_settings', JSON.stringify(settings));
+          
+          // Terapkan pengaturan
+          applySettings(settings);
+      }, (error) => {
+          console.warn("Gagal memuat pengaturan aplikasi (Firebase):", error.message);
+      });
+    }
+
+    // [BARU] Fungsi untuk update elemen statis (Paket) dan banner
+    function updateAppModeUI() {
+        // 1. Update Paket Section (Hardcoded HTML)
+        const paketControls = document.querySelectorAll('#group-paket .cart-controls');
+        paketControls.forEach(el => {
+            el.style.display = isOrderingEnabled ? 'flex' : 'none';
+        });
+
+        // 2. Update Banner Mode Katalog
+        // [DIUBAH] Banner dihapus sesuai permintaan (Jangan ada tulisan Mode Katalog)
+        const existingBanner = document.getElementById('catalog-mode-banner');
+        if (existingBanner) existingBanner.remove();
+        
+        // 3. Update Keranjang UI (Sembunyikan jika disabled)
+        updateCartUI();
+
+        // 4. [BARU] Sembunyikan Tombol Meja jika fitur pesan dinonaktifkan
+        const floatingTableBtn = document.getElementById('floatingTableBtn');
+        if (floatingTableBtn) {
+            if (!isOrderingEnabled) {
+                floatingTableBtn.classList.remove('show');
+                document.body.classList.remove('has-table'); // [BARU] Hapus class body
+            } else {
+                // Kembalikan logika tampilan tombol meja jika diaktifkan kembali
+                const savedOrderDetails = JSON.parse(localStorage.getItem('rbm_order_details')) || {};
+                if (savedOrderDetails.type === 'Dine-in' && savedOrderDetails.tableNumber) {
+                    floatingTableBtn.classList.add('show');
+                    document.body.classList.add('has-table'); // [BARU] Tambahkan class body
+                }
+            }
+        }
+
+        // 5. [BARU] Sembunyikan Link Riwayat di Bottom Nav jika fitur pesan mati
+        const riwayatLink = document.querySelector('.bottom-link[href="riwayat.html"]');
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (riwayatLink) {
+            if (!isOrderingEnabled) {
+                riwayatLink.style.display = 'none';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(5, 1fr)';
+            } else {
+                riwayatLink.style.display = 'flex';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(6, 1fr)';
+            }
+        }
+    }
+
+    // [BARU] Fungsi untuk mengambil pengaturan aplikasi dari server
+    async function fetchAppSettings() {
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'getAppSettings' })
+            });
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                // Mengambil status fitur pesan (misal key: isOrderEnabled)
+                if (typeof result.data.isOrderEnabled !== 'undefined') {
+                    isOrderingEnabled = result.data.isOrderEnabled === true || result.data.isOrderEnabled === 'true';
+                }
+                updateAppModeUI(); // [OPTIMASI] Update UI segera setelah data diterima
+            }
+        } catch (error) {
+            console.log('Gagal memuat pengaturan, menggunakan default (Aktif).');
+            isOrderingEnabled = true; // Fallback ke aktif jika gagal memuat
+            updateAppModeUI();
+        }
+    }
+
+    // [BARU] Fungsi backup ambil setting dari Firebase
+    function fetchFirebaseSettings() {
+        if (!db) return;
+        db.ref('customer_app_settings').on('value', (snapshot) => {
+            const settings = snapshot.val();
+            if (settings) {
+                // [FIX] Cek ordering_enabled (sesuai customer-settings.html)
+                if (typeof settings.ordering_enabled !== 'undefined') {
+                    isOrderingEnabled = settings.ordering_enabled === true;
+                }
+                // Refresh UI saat setting berubah realtime
+                updateAppModeUI();
+                
+                const locationId = currentSessionOutletId;
+                renderGroupedMenus(locationId);
+            }
+        });
+    }
+
+    async function init() {
+      handlePromoPopup();
+      
+      // [OPTIMASI] Hapus 'await' agar tidak memblokir tampilan. Biarkan berjalan di background.
+      fetchAppSettings(); 
+      fetchFirebaseSettings(); // Listen perubahan realtime dari Firebase
+      
+      // Pastikan user sudah login; jika belum, arahkan ke login
+      initPromoSlider();
+      loadPendingPoints();
+      handleHeaderScroll(); // <-- Panggil fungsi header scroll
+      findNearestStore(); // <-- TAMBAHKAN PANGGILAN FUNGSI INI
+      // Check if stored outlet is stale and prompt user
+      // setTimeout(checkSavedOutletFreshness, 800); // [DIUBAH] Nonaktifkan banner, gunakan popup
+      // If geolocation permission is denied, show manual selection overlay
+      setTimeout(checkGeolocationPermissionAndEnforce, 900);
+      initCart(); // <-- PANGGIL FUNGSI KERANJANG DULU
+      
+      // [DIUBAH] Tampilkan loading state manual (Cache dimatikan, load dari Firebase)
+      const container = document.getElementById('groupedMenuContainer');
+      if (container) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+              <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
+              <h3 style="color: var(--text);">Sedang Memuat Menu...</h3>
+              <p style="color: var(--muted);">Mengambil data terbaru dari server.</p>
+            </div>
+          `;
+      }
+
+      if (db) {
+          initFirebaseMenu(); // <-- Ambil data menu dari Firebase (Lebih Cepat)
+          loadAppSettings(); // <-- [BARU] Ambil pengaturan tampilan dari Firebase
+      } else {
+          console.error("Firebase tidak terinisialisasi. Cek koneksi internet atau konfigurasi.");
+      }
+
+      setupEventListeners(); // <-- BARU PANGGIL EVENT LISTENER SETELAHNYA
+      initOutletSlider(); // <-- PANGGIL FUNGSI SLIDER OUTLET
+      initOutletImageSliders(); // <-- PANGGIL FUNGSI BARU UNTUK SLIDER GAMB
+      setupOrderTypePopup(); // <-- PANGGIL FUNGSI POPUP TIPE PESANAN
+      showTablePopupOnLoad(); // <-- [BARU] Panggil fungsi untuk menampilkan pop-up meja
+      listenForCashierNotifications(); // <-- [BARU] Panggil fungsi untuk mendengarkan notifikasi
+      initGlobalChatListener(); // <-- [BARU] Init Global Chat
+
+      // Logika untuk menu kategori (scroll & highlight aktif)
+      const categoryLinks = document.querySelectorAll('.menu-icon');
+      const menuGroups = document.querySelectorAll('.group-block');
+
+      // Smooth scroll saat ikon kategori diklik
+      categoryLinks.forEach(anchor => {
+          anchor.addEventListener('click', function (e) {
+              // [FIX] Tambahkan logika untuk mengubah kelas 'active' saat diklik
+              categoryLinks.forEach(link => link.classList.remove('active'));
+              this.classList.add('active');
+
+              e.preventDefault();
+              const targetId = this.getAttribute('href');
+              const targetElement = document.querySelector(targetId);
+              if (targetElement) {
+                  const headerOffset = 150; // Sesuaikan offset untuk header dan menu kategori
+                  const elementPosition = targetElement.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                  window.scrollTo({
+                      top: offsetPosition,
+                      behavior: 'smooth'
+                  });
+              }
+          });
+      });
+
+      // Highlight kategori aktif saat scroll menggunakan Intersection Observer
+      const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                  const id = entry.target.getAttribute('id');
+                  const correspondingLink = document.querySelector(`.menu-icon[href="#${id}"]`);
+                  categoryLinks.forEach(link => link.classList.remove('active'));
+                  if (correspondingLink) {
+                      correspondingLink.classList.add('active');
+                  }
+              }
+          });
+      }, { rootMargin: "-150px 0px -50% 0px" }); // Opsi untuk trigger di bagian atas layar
+
+      menuGroups.forEach(group => {
+          observer.observe(group);
+      });
+
+      const cachedUserData = JSON.parse(localStorage.getItem('rbm_user') || 'null');
+      initCart(); // Panggil initCart untuk memuat keranjang dari localStorage
+      if (!cachedUserData || !cachedUserData.phone) {
+        console.log('User belum login. Menampilkan halaman sebagai tamu.');
+        displayUserData(null); // Tampilkan UI untuk tamu
+      } else {
+        console.log('User ditemukan di cache. Menampilkan data user.');
+        displayUserData(cachedUserData); // Tampilkan UI untuk user yang login
+        // Lakukan sinkronisasi data dengan server di latar belakang
+        await syncUserDataFromSheets(cachedUserData.phone);
+      }
+
+      updateAppModeUI(); // Terapkan UI mode katalog
+    }
+
+    // ==========================================
+    // 13. CHAT FEATURES (AI & GLOBAL)
+    // ==========================================
+    // [BARU] Logic AI Chat
+    function toggleChat() {
+        const modal = document.getElementById('ai-chat-modal');
+        const btn = document.getElementById('ai-chat-btn');
+        
+        if(modal.classList.contains('show')) {
+            modal.classList.remove('show');
+            btn.style.display = 'flex';
+        } else {
+            modal.classList.add('show');
+            btn.style.display = 'none';
+            document.getElementById('ai-input').focus();
+            updateAIGreeting();
+        }
+    }
+
+    function updateAIGreeting() {
+        const messagesContainer = document.getElementById('ai-chat-messages');
+        const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        // Ambil nama depan saja agar lebih akrab, fallback ke 'Kak'
+        let userName = user.nama || user.name || user.username || 'Kak';
+        if (userName !== 'Kak' && userName.includes(' ')) {
+            userName = userName.split(' ')[0];
+        }
+        
+        const firstMsg = messagesContainer.firstElementChild;
+        // Update hanya jika pesan pertama belum dipersonalisasi
+        if (firstMsg && firstMsg.classList.contains('bot') && !firstMsg.dataset.personalized) {
+            firstMsg.innerHTML = `Halo <b>${userName}</b>! 👋 Saya AI Rice Bowl Monster. 🤖<br>Mau tanya rekomendasi menu, promo, atau lokasi?`;
+            firstMsg.dataset.personalized = "true";
+        }
+    }
+
+    function handleChatInput(e) {
+        if(e.key === 'Enter') sendUserMessage();
+    }
+
+    function sendUserMessage() {
+        const input = document.getElementById('ai-input');
+        const text = input.value.trim();
+        if(!text) return;
+
+        addMessage(text, 'user');
+        input.value = '';
+
+        // Efek mengetik
+        setTimeout(() => {
+            const response = getAIResponse(text);
+            addMessage(response, 'bot');
+        }, 600);
+    }
+
+    function addMessage(text, sender) {
+        const container = document.getElementById('ai-chat-messages');
+        const div = document.createElement('div');
+        div.className = `ai-message ${sender}`;
+        div.innerHTML = text; // Allow HTML for line breaks
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // [BARU] Variabel untuk menyimpan respon AI dinamis dari Firebase
+    let dynamicAIResponses = [];
+    if (db) {
+        db.ref('ai_responses').on('value', (snapshot) => {
+            dynamicAIResponses = snapshot.val() ? Object.values(snapshot.val()) : [];
+        });
+    }
+
+    function getAIResponse(input) {
+        input = input.toLowerCase().trim();
+        const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        const userName = user.nama ? user.nama.split(' ')[0] : 'Kak';
+        
+        // [BARU] Cek Menu Spesifik dari Data Global (Prioritas Tinggi)
+        if (typeof globalMenuData !== 'undefined' && globalMenuData.length > 0) {
+            // Urutkan berdasarkan panjang nama agar pencocokan lebih akurat (misal: "Chicken Katsu Curry" vs "Chicken Katsu")
+            const sortedMenu = [...globalMenuData].sort((a, b) => b.name.length - a.name.length);
+            const foundMenu = sortedMenu.find(item => input.includes(item.name.toLowerCase()));
+            
+            if (foundMenu) {
+                 return `
+                    Ini dia <b>${foundMenu.name}</b>! 😋<br>
+                    Harga: ${foundMenu.price}<br>
+                    ${foundMenu.description ? `<i>${foundMenu.description}</i><br>` : ''}
+                    <img src="${foundMenu.img}" style="width:100%; max-width:200px; border-radius:8px; margin-top:8px; object-fit: cover; border: 1px solid #eee;">
+                `;
+            }
+        }
+
+        // [BARU] Cek Respon Dinamis dari Pengaturan Kasir
+        if (dynamicAIResponses.length > 0) {
+            for (const item of dynamicAIResponses) {
+                const keywords = item.keywords.split(',').map(k => k.trim().toLowerCase());
+                if (keywords.some(k => input.includes(k))) {
+                    return item.response.replace(/{name}/g, userName).replace(/\n/g, '<br>');
+                }
+            }
+        }
+
+        // Fallback
+        return "Waduh, maaf saya kurang paham kak 😅. Saya Monster Bot 🤖 yang bisa bantu info seputar <b>Menu, Promo, Jam Buka, Lokasi, atau Reservasi</b>. Coba tanya itu ya!";
+    }
+
+    // [BARU] Variabel Global untuk Chat
+    let globalChatUnread = 0;
+    let currentGlobalReply = null;
+    let globalChatMessagesData = {};
+    let globalTypingTimeout = null; // [BARU] Timeout untuk typing
+    let globalPinnedKey = null;
+
+    // [BARU] Logic Global Chat
+    function toggleGlobalChat() {
+        const modal = document.getElementById('global-chat-modal');
+        const btn = document.getElementById('global-chat-btn');
+        
+        if(modal.classList.contains('show')) {
+            modal.classList.remove('show');
+            btn.style.display = 'flex';
+        } else {
+            // Close AI chat if open
+            const aiModal = document.getElementById('ai-chat-modal');
+            if(aiModal.classList.contains('show')) {
+                aiModal.classList.remove('show');
+                document.getElementById('ai-chat-btn').style.display = 'flex';
+            }
+
+            modal.classList.add('show');
+            btn.style.display = 'none';
+            
+            // [BARU] Reset Badge
+            globalChatUnread = 0;
+            const badge = document.getElementById('global-chat-badge');
+            if (badge) {
+                badge.style.display = 'none';
+                badge.textContent = '0';
+            }
+
+            // [BARU] Cek Login untuk Chat
+            const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            if (user && user.phone) {
+                document.getElementById('global-chat-input-area').style.display = 'flex';
+                document.getElementById('global-chat-login-warning').style.display = 'none';
+                document.getElementById('global-chat-input').focus();
+            } else {
+                document.getElementById('global-chat-input-area').style.display = 'none';
+                document.getElementById('global-chat-login-warning').style.display = 'block';
+            }
+            
+            const container = document.getElementById('global-chat-messages');
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    function handleGlobalChatInput(e) {
+        if(e.key === 'Enter') sendGlobalMessage();
+    }
+
+    function sendGlobalMessage() {
+        const input = document.getElementById('global-chat-input');
+        const text = input.value.trim();
+        if(!text) return;
+        
+        const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        if (!user || !user.phone) return; // Cegah kirim jika belum login
+
+        const userName = user.nama || user.name || user.username || 'Guest';
+        const userPhone = user.phone || 'guest';
+
+        const messageData = {
+            text: text,
+            sender: userName,
+            phone: userPhone,
+            replyTo: currentGlobalReply, // [BARU] Sertakan data reply
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        db.ref('global_chat').push(messageData);
+        input.value = '';
+        cancelGlobalReply(); // [BARU] Reset reply setelah kirim
+        
+        // [BARU] Hapus status mengetik saat kirim
+        if (userPhone && userPhone !== 'guest') {
+            db.ref('global_chat_typing/' + userPhone).remove();
+            if (globalTypingTimeout) clearTimeout(globalTypingTimeout);
+        }
+    }
+
+    // [BARU] Fungsi Balas Pesan
+    window.replyToGlobalMessage = function(key) {
+        const msg = globalChatMessagesData[key];
+        if (!msg) return;
+        
+        currentGlobalReply = { key: key, sender: msg.sender, text: msg.text };
+        
+        document.getElementById('global-chat-reply-name').textContent = msg.sender;
+        document.getElementById('global-chat-reply-text').textContent = msg.text;
+        document.getElementById('global-chat-reply-indicator').style.display = 'block';
+        
+        const input = document.getElementById('global-chat-input');
+        input.focus();
+        input.placeholder = `Balas ${msg.sender}...`;
+    }
+
+    window.cancelGlobalReply = function() {
+        currentGlobalReply = null;
+        document.getElementById('global-chat-reply-indicator').style.display = 'none';
+        document.getElementById('global-chat-input').placeholder = "Tulis pesan...";
+    }
+
+    // [BARU] Fungsi Handle Typing
+    window.handleGlobalChatTyping = function() {
+        const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        if (!user || !user.phone) return;
+        
+        const typingRef = db.ref('global_chat_typing/' + user.phone);
+        typingRef.set({
+            name: user.nama || user.username || 'Seseorang',
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        typingRef.onDisconnect().remove();
+
+        if (globalTypingTimeout) clearTimeout(globalTypingTimeout);
+        globalTypingTimeout = setTimeout(() => {
+            typingRef.remove();
+        }, 3000);
+    }
+
+    // [BARU] Listener Typing
+    function initTypingListener() {
+        const indicator = document.getElementById('global-chat-typing-indicator');
+        const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        const myPhone = user.phone;
+
+        db.ref('global_chat_typing').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (!data) {
+                indicator.style.display = 'none';
+                return;
+            }
+            
+            const now = Date.now();
+            const activeTypers = Object.entries(data).filter(([phone, info]) => {
+                // Filter diri sendiri dan yang sudah lama (lebih dari 10 detik dianggap stale)
+                return phone !== myPhone && (now - info.timestamp < 10000);
+            }).map(([phone, info]) => info.name.split(' ')[0]); // Ambil nama depan saja
+
+            if (activeTypers.length > 0) {
+                let text = activeTypers[0];
+                if (activeTypers.length > 1) text += ` dan ${activeTypers.length - 1} lainnya`;
+                indicator.textContent = text + ' sedang mengetik...';
+                indicator.style.display = 'block';
+            } else {
+                indicator.style.display = 'none';
+            }
+        });
+    }
+
+    function initGlobalChatListener() {
+        const container = document.getElementById('global-chat-messages');
+        const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        const myPhone = user.phone || 'guest';
+        const badge = document.getElementById('global-chat-badge');
+        
+        // [BARU] Init Typing Listener
+        initTypingListener();
+
+        // [BARU] Listen Pinned Message
+        db.ref('global_chat').orderByChild('isPinned').equalTo(true).limitToLast(1).on('value', (snapshot) => {
+            const data = snapshot.val();
+            const pinnedEl = document.getElementById('global-chat-pinned');
+            if (data) {
+                const key = Object.keys(data)[0];
+                const msg = data[key];
+                globalPinnedKey = key;
+                const pinnedElText = document.getElementById('global-chat-pinned-text');
+                pinnedElText.innerHTML = '<span class="pin-icon">📌</span> ';
+                pinnedElText.append(`${msg.sender}: ${msg.text}`);
+                pinnedEl.style.display = 'block';
+            } else {
+                pinnedEl.style.display = 'none';
+                globalPinnedKey = null;
+            }
+        });
+
+        // Listen for new messages
+        db.ref('global_chat').limitToLast(50).on('child_added', (snapshot) => {
+            const msg = snapshot.val();
+            const key = snapshot.key;
+            if(!msg) return;
+            
+            globalChatMessagesData[key] = msg; // [BARU] Simpan data pesan
+
+            const isMe = msg.phone === myPhone;
+            
+            // [BARU] Handle Unread Badge
+            const modal = document.getElementById('global-chat-modal');
+            if (!modal.classList.contains('show') && !isMe) {
+                globalChatUnread++;
+                if (badge) {
+                    badge.textContent = globalChatUnread;
+                    badge.style.display = 'block';
+                }
+            }
+
+            const div = document.createElement('div');
+            
+            // [BARU] Reply Context HTML
+            let replyHtml = '';
+            if (msg.replyTo) {
+                replyHtml = `
+                    <div style="margin-bottom:4px; padding:4px; background:rgba(0,0,0,0.05); border-left:3px solid #ccc; border-radius:4px; font-size:11px; color:#666;">
+                        <strong>${msg.replyTo.sender}</strong>: ${msg.replyTo.text}
+                    </div>
+                `;
+            }
+
+            // [BARU] Reply Button
+            const replyBtnHtml = `<span onclick="replyToGlobalMessage('${key}')" style="cursor:pointer; font-size:12px; margin-left:6px; color:#aaa; font-weight:bold;" title="Balas">↩</span>`;
+
+            div.className = `ai-message ${isMe ? 'user' : 'bot'}`;
+            
+            if (!isMe) {
+                // Style for other users (termasuk pengumuman admin)
+                // Jika pengumuman, beri sedikit highlight kuning tapi layout sama
+                div.style.background = msg.isAnnouncement ? '#fffbeb' : '#f3f4f6';
+                if (msg.isAnnouncement) div.style.border = '1px solid #fcd34d';
+                
+                div.style.color = '#374151';
+                div.innerHTML = `
+                    ${replyHtml}
+                    <div style="font-size:10px;color:${msg.isAnnouncement ? '#d97706' : '#6b7280'};margin-bottom:2px;font-weight:bold; display:flex; justify-content:space-between;">
+                        <span>${msg.isAnnouncement ? '📢 ' : ''}${msg.sender}</span>
+                        ${replyBtnHtml}
+                    </div>
+                    ${msg.text}
+                `;
+            } else {
+                // Style for me (reuse existing .user class)
+                div.style.background = '#10b981'; // Green for global chat user
+                div.innerHTML = `${replyHtml}${msg.text}`;
+            }
+            
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        });
+    }
+    
+    window.scrollToGlobalPinned = function() {
+        if (globalPinnedKey) {
+            const el = document.getElementById(`global-msg-${globalPinnedKey}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.style.background = '#fff3cd';
+                setTimeout(() => el.style.background = '', 1000);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
-</html>
+</html> 

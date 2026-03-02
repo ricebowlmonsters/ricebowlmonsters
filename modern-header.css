@@ -1,0 +1,118 @@
+/* Modern Header Styles - Rice Bowl Monster Customer App */
+
+:root {
+  --rbm-primary: #4C2A85;
+  --rbm-secondary: #6d28d9;
+  --rbm-white: #ffffff;
+  --rbm-bg: #f8f9fa;
+  --rbm-text: #1f2937;
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Container Header Utama */
+.app-header {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Bagian Kiri: Brand/Logo */
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.brand-text {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--rbm-primary), var(--rbm-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+/* Bagian Kanan: Poin & Menu */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Tampilan Poin yang Elegan */
+.points-pill {
+  background: linear-gradient(135deg, var(--rbm-primary), var(--rbm-secondary));
+  padding: 6px 14px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(76, 42, 133, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.points-pill:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(76, 42, 133, 0.2);
+}
+
+.points-icon {
+  font-size: 1.1rem;
+}
+
+/* Tombol Profil/Menu */
+.profile-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: #f3f4f6;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-btn:hover {
+  border-color: var(--rbm-primary);
+  background-color: #e5e7eb;
+}
+
+.profile-btn:active {
+  transform: scale(0.95);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 12px 16px;
+  }
+  
+  .brand-text {
+    font-size: 1.1rem;
+  }
+}

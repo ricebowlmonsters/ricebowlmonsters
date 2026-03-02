@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // [ANTI-FLASH] Cek status fitur pesan sebelum render
+      try {
+        var _s = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+        if (_s.ordering_enabled === false || _s.ordering_enabled === 'false') {
+          window.location.replace('index.html');
+        }
+      } catch(e){}
+    </script>
+    <title>Detail Riwayat - Rice Bowl Monster</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f3f4f6; --card: #ffffff; --text: #374151; --muted: #6b7280;
+            --primary: #4C2A85; --primary-text: #ffffff; --border: #e5e7eb;
+            --status-unpaid: #ef4444; --status-paid: #10b981; --status-process: #f97316;
+            --status-ready: #3b82f6; --status-done: #8b5cf6; --status-inactive: #e5e7eb;
+            --timeline-inactive: #d1d5db; --timeline-active: #4C2A85;
+        }
+        body { visibility: hidden; opacity: 0; transition: opacity 0.2s; } /* [ANTI-FLASH] Sembunyikan body awal */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg); font-family: Segoe UI, Roboto, Arial, sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
+        main { padding: 16px; padding-bottom: 100px; max-width: 600px; margin: 0 auto; }
+        
+        .detail-card {
+            background: var(--card);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .detail-card-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+        }
+        
+        .detail-card-body {
+            padding: 20px;
+        }
+        
+        .order-id-block .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+        .order-id-block .value { font-family: 'Courier New', monospace; font-size: 16px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+        .order-date { font-size: 12px; color: var(--muted); text-align: right; font-weight: 500; line-height: 1.4; }
+
+        /* [BARU] Desain Timeline Status */
+        .timeline {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 10px 0;
+            position: relative;
+        }
+        .timeline-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .timeline-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 2px solid var(--timeline-inactive);
+            color: var(--timeline-inactive);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            z-index: 2;
+            position: relative;
+        }
+        .timeline-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            transition: color 0.3s;
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        .timeline-step.active .timeline-icon {
+            background-color: var(--timeline-active);
+            border-color: var(--timeline-active);
+            color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(76, 42, 133, 0.15);
+        }
+        .timeline-step.active .timeline-label {
+            color: var(--timeline-active);
+        }
+        .timeline-line {
+            position: absolute;
+            top: 16px;
+            left: -50%;
+            width: 100%;
+            height: 3px;
+            background-color: var(--timeline-inactive);
+            z-index: -1;
+            transition: background-color 0.3s ease;
+        }
+        .timeline-step:first-child .timeline-line { display: none; }
+        .timeline-line.active {
+            background-color: var(--timeline-active);
+        }
+
+        /* [BARU] Style untuk QRIS di atas struk */
+        .qris-container {
+            text-align: center; padding: 20px; margin-bottom: 16px;
+            background: white; border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+        .qris-container img { max-width: 200px; border-radius: 8px; }
+        
+        .item-list-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted);
+        }
+        
+        /* [DIUBAH] Item Entry dengan Gambar */
+        .item-entry {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+        .item-entry:last-child { border-bottom: none; }
+        
+        .item-thumb {
+            width: 50px; height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            background-color: #f3f4f6;
+            flex-shrink: 0;
+        }
+        
+        .item-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .item-row-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+        
+        .item-entry .name { 
+            font-weight: 600; 
+            color: var(--text); 
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .item-entry .price { 
+            font-weight: 700; 
+            color: var(--text); 
+            font-size: 14px;
+            white-space: nowrap;
+            margin-left: 8px;
+        }
+        
+        .item-note { 
+            font-size: 11px; 
+            color: var(--muted); 
+            background-color: #f9fafb;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            align-self: flex-start;
+            margin-top: 2px;
+        }
+        
+        .summary-divider { border: none; border-top: 2px solid var(--border); margin: 16px 0; }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .summary-row .label { color: var(--muted); }
+        .summary-row.total { 
+            font-size: 18px; font-weight: 800; margin-top: 12px; padding-top: 12px; 
+            border-top: 1px solid var(--border); color: var(--primary);
+        }
+        
+        .btn-action {
+            display: block;
+            width: 100%;
+            background: var(--primary);
+            color: var(--primary-text);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(76, 42, 133, 0.2);
+            transition: transform 0.2s;
+        }
+        .btn-action:active { transform: scale(0.98); }
+        
+        /* [BARU] Style untuk grup tombol aksi */
+        .action-buttons-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .btn-secondary {
+            flex: 1;
+            background-color: #e5e7eb;
+            color: var(--text);
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+        }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+        
+        /* [BARU] Override Bottom Nav untuk 6 item */
+        .bottom-nav {
+            position: fixed; bottom: 16px; left: 16px; right: 16px;
+            background: white; border-radius: 50px;
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            padding: 6px 8px; z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .bottom-link {
+            display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; color: #888; padding: 6px 4px;
+            font-size: 10px; gap: 4px;
+            font-family: serif;
+        }
+        .bottom-link .icon { font-size: 18px; }
+        .bottom-link.active { color: #4C2A85; font-weight: 600; }
+
+        /* [BARU] Header Fixed Style */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+        padding: 10px 16px;
+            display: flex; align-items: center; gap: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .back-btn { text-decoration: none; font-size: 24px; font-weight: bold; color: #333; }
+        .page-title { font-size: 18px; font-weight: 700; margin: 0; flex-grow: 1; text-align: center; padding-right: 24px; }
+    </style>
+</head>
+<body>
+
+    <header class="app-header simple">
+        <a href="riwayat.html" class="back-btn" aria-label="Kembali">❮</a>
+        <h1 class="page-title">Detail Pesanan</h1>
+    </header>
+
+    <main class="content with-bottom-nav">
+        <div id="detail-container">
+            <!-- Konten detail akan dirender di sini -->
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a class="bottom-link" href="index.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+        <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar Poin</span> </a>
+        <a class="bottom-link" href="diskon.html"> <span class="icon">🏷️</span> <span>Diskon</span> </a>
+        <a class="bottom-link active" href="riwayat.html"> <span class="icon">🧾</span> <span>Riwayat</span> </a>
+        <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+        <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
+    </nav>
+
+    <!-- [BARU] Elemen audio untuk notifikasi pesanan siap -->
+    <audio id="order-ready-sound" src="notification_ready.mp3" preload="auto"></audio>
+
+    <!-- [BARU] Tambahkan Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        function formatPrice(price) {
+            return `Rp ${Math.round(price).toLocaleString('id-ID')}`;
+        }
+
+        // Fungsi ini tidak digunakan di halaman ini, tapi kita biarkan saja
+        function orderAgain(order) {
+            localStorage.setItem('rbm_cart', JSON.stringify(order.items));
+            localStorage.setItem('rbm_payment_info', JSON.stringify(order.payment));
+            localStorage.setItem('rbm_order_details', JSON.stringify(order.details));
+            window.location.href = 'payment.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // [ANTI-FLASH] Cek ulang sebelum menampilkan body
+            try {
+              var _s = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+              if (_s.ordering_enabled === false || _s.ordering_enabled === 'false') {
+                 return; // STOP! Jangan tampilkan body
+              }
+            } catch(e){}
+
+            // Tampilkan body HANYA jika fitur aktif
+            document.body.style.visibility = 'visible';
+            document.body.style.opacity = '1';
+
+            let history = JSON.parse(localStorage.getItem('rbm_order_history') || '[]');
+            const userInfo = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            const container = document.getElementById('detail-container');
+            const params = new URLSearchParams(window.location.search);
+            const orderId = params.get('id');
+
+            // [BARU] Cek Status Fitur Pesan (Mode Katalog)
+            function checkAppMode() {
+                const cachedSettings = localStorage.getItem('rbm_customer_app_settings');
+                if (cachedSettings) {
+                    try {
+                        const settings = JSON.parse(cachedSettings);
+                        if (settings.ordering_enabled === false) {
+                            window.location.replace('index.html');
+                        }
+                    } catch (e) { console.error(e); }
+                }
+            }
+            checkAppMode();
+
+            if (!orderId) {
+                container.innerHTML = `<div class="detail-card empty-state"><h3>ID Pesanan tidak ditemukan.</h3></div>`;
+                return;
+            }
+
+            // [DIUBAH] Fungsi untuk merender detail pesanan, sekarang menerima objek 'order'
+            function renderOrderDetail(order) {
+                // const order = history.find(o => o.id === orderId); // Tidak lagi mencari dari history
+
+                if (!order) {
+                    container.innerHTML = `<div class="detail-card empty-state"><h3>Pesanan dengan ID ${orderId} tidak ditemukan.</h3></div>`;
+                    return;
+                }
+                
+                // [DIUBAH] Menyamakan alur status dengan aplikasi kasir
+                const status = (order.status || 'Baru').toLowerCase();
+                const allStatuses = [
+                    { key: 'baru', icon: '📝', label: 'Dipesan' },
+                    { key: 'sudah dibayar', icon: '💳', label: 'Dibayar' },
+                    { key: 'diproses', icon: '👨‍🍳', label: 'Diproses' },
+                    { key: 'siap diambil', icon: '🍜', label: 'Siap' },
+                    { key: 'selesai', icon: '✅', label: 'Selesai' }
+                ];
+                const currentStatusIndex = allStatuses.findIndex(s => s.key === status || (s.key === 'baru' && status === 'belum dibayar'));
+                
+                const statusTrackerHtml = allStatuses.map((step, index) => {
+                    const isActive = index <= currentStatusIndex;
+                    const isLineActive = index < currentStatusIndex;
+                    return `
+                        <div class="timeline-step ${isActive ? 'active' : ''}">
+                            <div class="timeline-icon">${step.icon}</div>
+                            <div class="timeline-label">${step.label}</div>
+                            <div class="timeline-line ${isLineActive ? 'active' : ''}"></div>
+                        </div>
+                    `;
+                }).join('');
+
+                const orderDate = new Date(order.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                const orderTime = new Date(order.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+                let qrisDisplayHtml = '';
+                if (order.payment?.method === 'QRIS' && (status.toLowerCase() === 'baru' || status.toLowerCase() === 'belum dibayar')) {
+                    qrisDisplayHtml = `
+                        <div class="qris-container">
+                            <img src="qris.png" alt="QRIS Code">
+                        </div>`;
+                }
+
+                const { subtotal, discountAmount, ppn, total } = order.payment;
+                const tableNumber = order.details.tableNumber || 'N/A';
+                let billItemsHtml = '';
+                order.items.forEach(item => {
+                    // [FIX] Konversi ke String dulu sebelum replace untuk mencegah error jika data berupa number
+                    const itemPrice = parseFloat(String(item.price).replace(/[^0-9]/g, '')) * item.quantity;
+                    billItemsHtml += `<div class="item-entry">
+                            <span class="name">${item.quantity}x ${item.name}</span>
+                            <span class="price">${formatPrice(itemPrice)}</span>
+                        </div>`;
+                    // [BARU] Tambahkan baris untuk catatan jika ada
+                    if (item.note && item.note.trim() !== '') {
+                        billItemsHtml += `<div class="item-note">↳ ${item.note}</div>`;
+                    }
+                });
+
+                let actionButtonsHtml = '';
+                if (status.toLowerCase() === 'baru' || status.toLowerCase() === 'belum dibayar') {
+                    actionButtonsHtml = `<button class="btn-action" id="changePaymentBtn" style="margin-top: 16px;">Ubah Metode</button>`;
+                }
+
+                // [BARU] Tombol Game jika pesanan belum selesai
+                let gameButtonHtml = '';
+                if (status.toLowerCase() !== 'selesai' && status.toLowerCase() !== 'dibatalkan') {
+                    gameButtonHtml = `
+                        <a href="game.html" class="btn-action" style="margin-top: 12px; background: linear-gradient(135deg, #f59e0b, #d97706); text-decoration: none; display: block; text-align: center; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                            🎮 Main Game Sambil Nunggu
+                        </a>
+                    `;
+                }
+
+                container.innerHTML = `
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            <div class="order-id-block">
+                                <div class="label">ID PESANAN</div>
+                                <div class="value">${order.id}</div>
+                            </div>
+                            <div class="order-date">
+                                ${orderDate}<br>${orderTime}
+                            </div>
+                        </div>
+                        <div class="detail-card-body">
+                            <div class="timeline">${statusTrackerHtml}</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-card-body">
+                            <div class="item-list-title">Detail Pesanan</div>
+                            <div class="summary-row"><span class="label">Outlet</span> <span>${order.outlet?.name || 'N/A'}</span></div>
+                            <div class="summary-row"><span class="label">Tipe</span> <span>${order.details.type === 'Dine-in' ? `Makan di Tempat (Meja ${tableNumber})` : 'Bawa Pulang'}</span></div>
+                            <div class="summary-row"><span class="label">Pembayaran</span> <span>${order.payment?.method || 'N/A'}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-card-body">
+                            <div class="item-list-title">Rincian Item</div>
+                            ${billItemsHtml}
+                            <hr class="summary-divider">
+                            <div class="summary-row"><span class="label">Subtotal</span> <span>${formatPrice(subtotal)}</span></div>
+                            <div class="summary-row"><span class="label">Diskon</span> <span>- ${formatPrice(discountAmount)}</span></div>
+                            <div class="summary-row"><span class="label">PPN 10%</span> <span>${formatPrice(ppn)}</span></div>
+                            <div class="summary-row total"><span>Total</span> <span>${formatPrice(total)}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card" style="background: transparent; box-shadow: none;">
+                        ${qrisDisplayHtml}
+                        ${actionButtonsHtml}
+                        ${gameButtonHtml}
+                    </div>
+                `;
+
+                const changePaymentBtn = document.getElementById('changePaymentBtn');
+                if (changePaymentBtn) {
+                    changePaymentBtn.addEventListener('click', () => {
+                        orderAgain(order);
+                    });
+                }
+            }
+
+            // Logika untuk mengambil data dari Firebase atau localStorage
+            if (userInfo && userInfo.phone) {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+                    authDomain: "ricebowlmonst.firebaseapp.com",
+                    databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+                    projectId: "ricebowlmonst",
+                    storageBucket: "ricebowlmonst.firebasestorage.app",
+                    messagingSenderId: "723669558962",
+                    appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+                };
+                // [DIUBAH] Hanya inisialisasi Firebase jika belum ada
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                const database = firebase.database();
+
+                // [BARU] Listen perubahan status fitur pesan
+                database.ref('customer_app_settings/ordering_enabled').on('value', (snapshot) => {
+                    const isEnabled = snapshot.val();
+                    if (isEnabled === false) {
+                        alert("Fitur Detail Riwayat dinonaktifkan (Mode Katalog).");
+                        window.location.href = 'index.html';
+                    }
+                });
+
+                // [DIUBAH TOTAL] Logika untuk mengambil dan mendengarkan data dari Firebase
+                // 1. Cari pesanan di riwayat lokal HANYA untuk mendapatkan ID outlet.
+                const orderFromHistory = history.find(o => o.id === orderId);
+                
+                // [FIX] Tampilkan data dari localStorage dulu agar halaman tidak blank saat loading Firebase
+                if (orderFromHistory) {
+                    renderOrderDetail(orderFromHistory);
+                }
+
+                if (!orderFromHistory || !orderFromHistory.outlet?.id) {
+                    container.innerHTML = `<div class="detail-card empty-state"><h3>Informasi outlet untuk pesanan ini tidak ditemukan. Tidak dapat sinkronisasi.</h3></div>`;
+                    // Coba render dari history jika ada, meskipun tidak akan real-time
+                    if(orderFromHistory) renderOrderDetail(orderFromHistory);
+                    return;
+                }
+
+                const outletId = orderFromHistory.outlet.id;
+                const orderRef = database.ref(`orders/${outletId}/${orderId}`);
+
+                // 2. Pasang listener real-time. 'value' akan dipanggil sekali saat pertama kali
+                //    dan setiap kali data di path tersebut berubah.
+                orderRef.on('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        const orderDataFromFirebase = snapshot.val();
+                        
+                        // Render tampilan dengan data terbaru dari Firebase
+                        renderOrderDetail(orderDataFromFirebase);
+
+                        // Update juga data di localStorage agar daftar riwayat tetap sinkron
+                        const orderIndex = history.findIndex(o => o.id === orderId);
+                        if (orderIndex > -1) {
+                            const oldStatus = history[orderIndex].status;
+                            const newStatus = orderDataFromFirebase.status;
+
+                            // Perbarui seluruh objek pesanan di history
+                            history[orderIndex] = { ...history[orderIndex], ...orderDataFromFirebase };
+                            localStorage.setItem('rbm_order_history', JSON.stringify(history));
+
+                            // Mainkan suara notifikasi jika status berubah menjadi "Siap Diambil"
+                            if (newStatus.toLowerCase() === 'siap diambil' && oldStatus.toLowerCase() !== 'siap diambil') {
+                                document.getElementById('order-ready-sound')?.play().catch(e => console.warn("Gagal memutar notifikasi:", e));
+                            }
+                        }
+                    } else {
+                        // Jika data tidak ada di Firebase (misal: sudah dihapus)
+                        renderOrderDetail(null); // Tampilkan pesan 'tidak ditemukan'
+                    }
+                }, (error) => {
+                    console.error("Firebase read failed: " + error.code);
+                    container.innerHTML = `<div class="detail-card empty-state"><h3>Gagal terhubung ke server untuk sinkronisasi status.</h3></div>`;
+                });
+            } else {
+                // [BARU] Fallback jika pengguna tidak login, ambil data dari localStorage
+                const orderFromHistory = history.find(o => o.id === orderId);
+                // Render detail menggunakan data dari riwayat lokal
+                renderOrderDetail(orderFromHistory);
+            }
+        });
+    </script>
+
+</body>
+</html>

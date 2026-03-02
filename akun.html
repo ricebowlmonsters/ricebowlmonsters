@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // [ANTI-FLASH] Sembunyikan link riwayat jika fitur pesan mati
+    try {
+      var _s = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+      if (_s.ordering_enabled === false || _s.ordering_enabled === 'false') {
+        var style = document.createElement('style');
+        style.innerHTML = '.bottom-link[href="riwayat.html"] { display: none !important; } .bottom-nav { grid-template-columns: repeat(5, 1fr) !important; }';
+        document.head.appendChild(style);
+      }
+    } catch(e){}
+  </script>
   <title>Akun - Rice Bowl Monster</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,6 +22,7 @@
 
   <style>
     /* === PENGATURAN DASAR & FONT === */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       margin: 0;
       padding-bottom: 80px;
@@ -21,13 +33,10 @@
 
     /* === HEADER === */
     .app-header {
-      display: flex;
-      align-items: center;
-      padding: 16px;
-      background-color: transparent;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+        position: sticky; top: 0; z-index: 100;
+        background: white; padding: 10px 16px;
+        display: flex; align-items: center; gap: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .back-btn {
@@ -98,39 +107,20 @@
 
     /* === NAVIGASI BAWAH (BOTTOM NAV) === */
     .bottom-nav {
-      position: fixed;
-      bottom: 16px; /* Memberi jarak dari bawah layar */
-      left: 16px; /* Memberi jarak dari kiri layar */
-      right: 16px; /* Memberi jarak dari kanan layar */
-      background: var(--card, white);
-      border-top: none; /* Menghapus garis di bagian atas */
-      border-radius: 50px; /* Membuat ujungnya melengkung seperti pil */
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      padding: 6px 8px;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Menambah bayangan agar terlihat melayang */
+      position: fixed; bottom: 16px; left: 16px; right: 16px;
+      background: white; border-radius: 50px;
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      padding: 6px 8px; z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-
     .bottom-link {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-decoration: none;
-      color: #888;
-      padding: 6px 4px;
-      font-size: 11px;
-      gap: 4px;
+      display: flex; flex-direction: column; align-items: center;
+      text-decoration: none; color: #888; padding: 6px 4px;
+      font-size: 10px; gap: 4px;
+      font-family: serif;
     }
-
-    .bottom-link .icon {
-      font-size: 18px;
-    }
-
-    .bottom-link.active {
-      color: var(--primary, #d32f2f);
-      font-weight: 600;
-    }
+    .bottom-link .icon { font-size: 18px; }
+    .bottom-link.active { color: #4C2A85; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -154,14 +144,23 @@
         <div class="profile-content">
           <div class="profile-left">
             <div class="logo-container">
-              <img src="logo-rbm.png" alt="Rice Bowl Monster Logo" style="width:56px; height:56px;">
+              <img id="account-logo" src="logo-rbm.png" alt="Rice Bowl Monster Logo" style="width:56px; height:56px; object-fit: contain;">
             </div>
             <div>
-              <p class="form-title" style="margin:0; font-size:23px; color: var(--primary, #d32f2f);">Rice Bowl Monsters</p>
-              <div class="welcome-text" style="margin-top:4px">
-                <span class="hello-text" style="font-size:14px;">Hallo, </span>
-                <span class="user-name" id="userName" style="font-size:14px;">Monsters Lovers</span>
-              </div>
+              <p id="account-title" class="form-title" style="margin:0; font-size:23px; color: var(--primary, #d32f2f);">Rice Bowl Monsters</p>
+              <!-- [DIUBAH] Menambahkan fitur Edit Nama -->
+              <div class="welcome-text" style="margin-top:4px; display: flex; align-items: center; gap: 8px;">
+                  <span id="account-greeting" class="hello-text" style="font-size:14px;">Hallo, </span>
+                  <div id="name-container" style="position: relative;">
+                      <span class="user-name" id="userName" style="font-size:14px;">Monsters Lovers</span>
+                      <input type="text" id="userNameInput" style="display: none; font-size: 14px; padding: 4px 8px; border-radius: 6px; border: 1px solid #ccc; min-width: 150px;">
+                  </div>
+                  <div id="edit-actions" style="display: none; gap: 8px;">
+                      <button id="editNameBtn" title="Edit Nama" style="background:none; border:none; cursor:pointer; font-size: 16px; padding: 0;">✏️</button>
+                      <button id="saveNameBtn" style="display: none; background: #16a34a; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;">Simpan</button>
+                      <button id="cancelEditBtn" style="display: none; background: #6b7280; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;">Batal</button>
+                  </div>
+              </div>              
             </div>
           </div>
         </div>
@@ -171,15 +170,15 @@
     <section class="section">
       <h3 class="section-title">Aksi Akun</h3>
       <div class="action-list">
-        <a class="action-row" href="https://wa.me/6285173350016" target="_blank" rel="noopener" aria-label="WhatsApp">
+        <a class="action-row" href="#" id="action-wa" target="_blank" rel="noopener" aria-label="WhatsApp">
           <div class="action-icon">💬</div>
           <div class="action-label">Chat WhatsApp</div>
         </a>
-        <a class="action-row" href="faq.html" aria-label="Pertanyaan Umum">
+        <a class="action-row" href="faq.html" id="action-faq" aria-label="Pertanyaan Umum">
             <div class="action-icon">❓</div>
             <div class="action-label">Pertanyaan Umum</div>
         </a>
-        <a class="action-row" href="ketentuan.html" aria-label="Ketentuan Layanan">
+        <a class="action-row" href="ketentuan.html" id="action-terms" aria-label="Ketentuan Layanan">
             <div class="action-icon">📜</div>
             <div class="action-label">Ketentuan Layanan</div>
         </a>
@@ -196,27 +195,17 @@
   </main>
 
   <nav class="bottom-nav">
-    <a class="bottom-link" href="home.html">
-      <span class="icon">🏠</span>
-      <span>Home</span>
-    </a>
-    <a class="bottom-link" href="tukarpoint.html">
-      <span class="icon">🎁</span>
-      <span>Tukar</span>
-    </a>
-    <a class="bottom-link" href="klaim.html">
-      <span class="icon">🎫</span>
-      <span>Vcr Klaim</span>
-    </a>
-    <a class="bottom-link" href="lokasi.html">
-      <span class="icon">📍</span>
-      <span>Lokasi</span>
-    </a>
-    <a class="bottom-link active" href="akun.html">
-      <span class="icon">👤</span>
-      <span>Akun</span>
-    </a>
+    <a class="bottom-link" href="index.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar Poin</span> </a>
+    <a class="bottom-link" href="diskon.html"> <span class="icon">🏷️</span> <span>Diskon</span> </a>
+    <a class="bottom-link" href="riwayat.html"> <span class="icon">🧾</span> <span>Riwayat</span> </a>
+    <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+    <a class="bottom-link active" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
   </nav>
+
+  <!-- [BARU] Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
   <script>
     // Toggle Login/Logout di halaman Akun
@@ -224,18 +213,35 @@
     const logoutBtn = document.getElementById('btnLogout');
     const deleteBtn = document.getElementById('btnDeleteAccount');
 
+    // [BARU] Variabel untuk fitur edit nama
+    let defaultGuestName = 'Monsters Lovers'; // Default fallback
+    const editNameBtn = document.getElementById('editNameBtn');
+    const saveNameBtn = document.getElementById('saveNameBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const userNameInput = document.getElementById('userNameInput');
+
     function getUser() {
       try { return JSON.parse(localStorage.getItem('rbm_user') || 'null'); } catch(_) { return null; }
     }
 
     function setLoggedOutView() {
-      if (nameEl) nameEl.textContent = 'Monsters Lovers';
+      if (nameEl) nameEl.textContent = defaultGuestName;
       if (logoutBtn) logoutBtn.querySelector('.action-label').textContent = 'Login';
+      // [BARU] Sembunyikan tombol edit jika logout
+      if (document.getElementById('edit-actions')) {
+        document.getElementById('edit-actions').style.display = 'none';
+      }
     }
 
     function setLoggedInView(user) {
-      if (user && user.nama && nameEl) nameEl.textContent = user.nama;
+      // [DIHAPUS] Fallback ke user.phone dihapus dan diganti dengan 'Monsters Lovers'.
+      const displayName = user.name || user.nama || user.username || defaultGuestName;
+      if (displayName && nameEl) nameEl.textContent = displayName;
       if (logoutBtn) logoutBtn.querySelector('.action-label').textContent = 'Logout';
+      // [BARU] Tampilkan tombol edit jika login
+      if (document.getElementById('edit-actions')) {
+        document.getElementById('edit-actions').style.display = 'flex';
+      }
     }
 
     (function initAccountPage(){
@@ -247,6 +253,73 @@
       }
     })();
 
+    // [BARU] Logika untuk fitur Edit Nama
+    function toggleEditMode(isEditing) {
+        if (isEditing) {
+            nameEl.style.display = 'none';
+            userNameInput.style.display = 'inline-block';
+            userNameInput.value = nameEl.textContent;
+            userNameInput.focus();
+
+            editNameBtn.style.display = 'none';
+            saveNameBtn.style.display = 'inline-block';
+            cancelEditBtn.style.display = 'inline-block';
+        } else {
+            nameEl.style.display = 'inline-block';
+            userNameInput.style.display = 'none';
+
+            editNameBtn.style.display = 'inline-block';
+            saveNameBtn.style.display = 'none';
+            cancelEditBtn.style.display = 'none';
+        }
+    }
+
+    if (editNameBtn) {
+        editNameBtn.addEventListener('click', () => toggleEditMode(true));
+    }
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', () => toggleEditMode(false));
+    }
+    if (saveNameBtn) {
+        saveNameBtn.addEventListener('click', async () => {
+            const newName = userNameInput.value.trim();
+            const user = getUser();
+
+            if (!newName) { return alert('Nama tidak boleh kosong.'); }
+            if (!user || !user.phone) { return alert('Gagal menyimpan. Silakan login ulang.'); }
+
+            saveNameBtn.disabled = true;
+            saveNameBtn.textContent = '...';
+
+            try {
+                const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5xRkvhJSsgGvq6tYeKc4VBwzTyw6bpZgexRYtIYCTgXiGtN1wahPhSijnH5h3VHez/exec';
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'updateUserData', phone: user.phone, newName: newName })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    user.name = newName;
+                    user.nama = newName;
+                    localStorage.setItem('rbm_user', JSON.stringify(user));
+                    nameEl.textContent = newName;
+                    toggleEditMode(false);
+                    alert('Nama berhasil diperbarui!');
+                } else {
+                    alert(`Gagal: ${result.message || 'Terjadi kesalahan.'}`);
+                }
+            } catch (error) {
+                console.error('Error updating name:', error);
+                alert('Gagal memperbarui nama. Periksa koneksi internet Anda.');
+            } finally {
+                saveNameBtn.disabled = false;
+                saveNameBtn.textContent = 'Simpan';
+            }
+        });
+    }
+
     // Hapus Akun: bersihkan semua data lokal termasuk sesi, lalu ke login
     deleteBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -255,7 +328,7 @@
         localStorage.removeItem('rbm_claimed_points');
         localStorage.removeItem('rbm_user_name');
         localStorage.removeItem('rbm_user');
-        alert('Akun lokal berhasil dihapus.');
+        alert('Akun lokal berhasil dihapus.');_
         window.location.href = 'index.html';
       }
     });
@@ -273,8 +346,93 @@
       localStorage.removeItem('rbm_user');
       // Tidak menghapus data lain di sini; gunakan "Hapus Akun" untuk bersih total
       setLoggedOutView();
-      window.location.href = 'home.html';
+      window.location.href = 'index.html';
     });
+
+    // [BARU] Load Pengaturan Halaman Akun dari Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+        authDomain: "ricebowlmonst.firebaseapp.com",
+        databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+        projectId: "ricebowlmonst",
+        storageBucket: "ricebowlmonst.firebasestorage.app",
+        messagingSenderId: "723669558962",
+        appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // [BARU] Update Bottom Nav berdasarkan status fitur pesan
+    function updateBottomNav(isEnabled) {
+        const riwayatLink = document.querySelector('.bottom-link[href="riwayat.html"]');
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (riwayatLink) {
+            if (isEnabled === false) {
+                riwayatLink.style.display = 'none';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(5, 1fr)';
+            } else {
+                riwayatLink.style.display = 'flex';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(6, 1fr)';
+            }
+        }
+    }
+    // Listen dari Firebase
+    db.ref('customer_app_settings/ordering_enabled').on('value', (snapshot) => {
+        updateBottomNav(snapshot.val());
+    });
+
+    db.ref('customer_app_settings/account_page').on('value', (snapshot) => {
+        const settings = snapshot.val() || {};
+        
+        // Update Branding
+        if (settings.logo) {
+            const logoEl = document.getElementById('account-logo');
+            if (logoEl) logoEl.src = settings.logo;
+        }
+        if (settings.title) {
+            const titleEl = document.getElementById('account-title');
+            if (titleEl) titleEl.textContent = settings.title;
+        }
+        if (settings.greeting) {
+            const greetingEl = document.getElementById('account-greeting');
+            if (greetingEl) greetingEl.textContent = settings.greeting;
+        }
+        if (settings.guest_name) {
+            defaultGuestName = settings.guest_name;
+            // Refresh view if logged out or if name matches previous default
+            const user = getUser();
+            if (!user || !user.phone) setLoggedOutView();
+        }
+
+        // Update WhatsApp Link
+        const waBtn = document.getElementById('action-wa');
+        const waNumber = settings.whatsapp || '6285173350016'; // Default number
+        if (waBtn) waBtn.href = `https://wa.me/${waNumber}`;
+
+        // Update Visibility FAQ
+        const faqBtn = document.getElementById('action-faq');
+        if (faqBtn) {
+            faqBtn.style.display = (settings.show_faq !== false) ? 'flex' : 'none';
+            const labelEl = faqBtn.querySelector('.action-label');
+            if (labelEl) labelEl.textContent = settings.faq_label || 'Pertanyaan Umum';
+        }
+
+        // Update Visibility Terms
+        const termsBtn = document.getElementById('action-terms');
+        if (termsBtn) {
+            termsBtn.style.display = (settings.show_terms !== false) ? 'flex' : 'none';
+            const labelEl = termsBtn.querySelector('.action-label');
+            if (labelEl) labelEl.textContent = settings.terms_label || 'Ketentuan Layanan';
+        }
+    });
+
+    // Cek dari LocalStorage saat load
+    try {
+        const cachedSettings = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+        if (cachedSettings.ordering_enabled !== undefined) {
+            updateBottomNav(cachedSettings.ordering_enabled);
+        }
+    } catch (e) {}
   </script>
 </body>
 </html>

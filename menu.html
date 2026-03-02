@@ -8,13 +8,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .bottom-link { font-family: serif; }
+  </style>
 </head>
 <body>
   <script>
     (function(){
       try{
         var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-        var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
+        var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);_
         if(isReload){ window.location.replace('home.html'); }
       }catch(e){}
     })();
@@ -301,7 +304,7 @@
   </main>
 
   <nav class="bottom-nav">
-    <a class="bottom-link" href="home.html">
+    <a class="bottom-link" href="index.html">
       <span class="icon">🏠</span>
       <span>Home</span>
     </a>
@@ -334,7 +337,7 @@
     // Fungsi untuk mengambil data menu dari Google Sheets
     async function loadMenuData() {
       try {
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxlPGEih-uNcZ1AJmVDgLbAk1k9M0ctDX-j_hgRob5aMEoXFH-qjf7FcSis7xSKQ_G3/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMPdwTqhkFN1Zc_Onj8v1aPAq0Sa9dRJNyN9hsvKI46cn0rJJH4Jq2NeWsg97IM-FJ/exec';
         const favoriteNames = new Set([
           'Special Monsters Beef (Free Ice Tea)',
           'Chicken Teriyaki (Free Ice Tea)',

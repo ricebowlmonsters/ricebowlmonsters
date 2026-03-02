@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Community Chat - Rice Bowl Monster</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: #e5ddd5; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Header */
+        .chat-header {
+            background-color: #075E54; color: white; padding: 10px 16px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2); z-index: 10;
+        }
+        .back-btn { color: white; text-decoration: none; font-size: 24px; line-height: 1; }
+        .header-info h1 { margin: 0; font-size: 18px; font-weight: 600; }
+        .header-info p { margin: 0; font-size: 12px; opacity: 0.8; }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1; overflow-y: auto; padding: 16px;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-repeat: repeat; background-size: 400px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        /* Message Bubbles */
+        .message {
+            max-width: 80%; padding: 6px 8px 8px 8px; border-radius: 8px;
+            position: relative; font-size: 14px; line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word;
+        }
+        .message.me {
+            align-self: flex-end; background-color: #dcf8c6;
+            border-top-right-radius: 0;
+        }
+        .message.other {
+            align-self: flex-start; background-color: #ffffff;
+            border-top-left-radius: 0;
+        }
+        .message.admin {
+            background-color: #fffbeb; border: 1px solid #fcd34d;
+        }
+
+        .msg-sender { font-size: 11px; font-weight: 700; margin-bottom: 2px; color: #e542a3; }
+        .message.me .msg-sender { display: none; } /* Hide sender name for me */
+        .message.admin .msg-sender { color: #d97706; }
+
+        .msg-text { color: #111827; white-space: pre-wrap; }
+        .msg-time { font-size: 10px; color: #9ca3af; text-align: right; margin-top: 2px; float: right; margin-left: 8px; }
+
+        /* Reply Context inside Bubble */
+        .reply-context {
+            background: rgba(0,0,0,0.05); border-left: 4px solid #075E54;
+            padding: 4px 6px; border-radius: 4px; margin-bottom: 4px;
+            font-size: 12px; cursor: pointer;
+        }
+        .reply-sender { font-weight: 700; color: #075E54; font-size: 11px; }
+        .reply-preview { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555; }
+
+        /* Input Area */
+        .input-area {
+            background: #f0f0f0; padding: 8px;
+            display: flex; flex-direction: column; gap: 8px;
+            border-top: 1px solid #ddd;
+        }
+        
+        /* Reply Indicator (Above Input) */
+        .reply-indicator {
+            background: #ffffff; padding: 8px 12px; border-left: 4px solid #075E54;
+            border-radius: 8px; display: none; position: relative;
+            animation: slideUp 0.2s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .reply-indicator-content { font-size: 12px; color: #4b5563; }
+        .reply-indicator strong { color: #075E54; display: block; margin-bottom: 2px; }
+        .close-reply {
+            position: absolute; top: 8px; right: 8px;
+            background: none; border: none; font-size: 18px; color: #666; cursor: pointer;
+        }
+
+        .input-wrapper { display: flex; gap: 8px; align-items: flex-end; }
+        .chat-input {
+            flex: 1; padding: 10px 14px; border-radius: 24px; border: none;
+            font-family: inherit; font-size: 15px; max-height: 100px;
+            resize: none; outline: none; background: white;
+        }
+        .send-btn {
+            background: #075E54; color: white; border: none;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .send-btn svg { width: 20px; height: 20px; fill: currentColor; margin-left: 2px; }
+
+        /* Login Warning */
+        .login-warning {
+            background: #fff3cd; color: #856404; padding: 12px;
+            text-align: center; font-size: 13px; border-top: 1px solid #ffeeba;
+        }
+        .login-link { color: #856404; font-weight: 700; text-decoration: underline; }
+
+        /* Swipe Action (Simple implementation) */
+        .swipe-reply-btn {
+            display: inline-block; font-size: 10px; color: #075E54;
+            margin-top: 4px; cursor: pointer; font-weight: 600;
+        }
+
+        /* [BARU] Animasi Pin */
+        @keyframes blink-pin { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+        .pin-icon { display: inline-block; animation: blink-pin 2s infinite; margin-right: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="chat-header">
+        <a href="index.html" class="back-btn">←</a>
+        <div class="header-info">
+            <h1>Community Chat</h1>
+            <p>Rice Bowl Monster Family 👥</p>
+        </div>
+    </div>
+
+    <!-- Pinned Message -->
+    <div id="pinnedMessage" style="display:none; background:#fffbeb; padding:10px 16px; border-bottom:1px solid #fcd34d; position:sticky; top:0; z-index:5; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="scrollToPinned()">
+        <div id="pinnedText" style="font-size:13px; color:#374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;"></div>
+    </div>
+
+    <div id="chatContainer" class="chat-container">
+        <div style="text-align:center; padding:20px; color:#666; font-size:13px;">Memuat pesan...</div>
+    </div>
+
+    <!-- Reply Indicator -->
+    <div id="replyIndicator" class="reply-indicator">
+        <div class="reply-indicator-content">
+            <strong id="replyToName">Nama Pengirim</strong>
+            <span id="replyToText">Isi pesan...</span>
+        </div>
+        <button class="close-reply" onclick="cancelReply()">×</button>
+    </div>
+
+    <!-- Input Area (Hidden if not logged in) -->
+    <div id="inputArea" class="input-area" style="display:none;">
+        <div class="input-wrapper">
+            <textarea id="messageInput" class="chat-input" rows="1" placeholder="Ketik pesan..."></textarea>
+            <button class="send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Login Warning (Shown if not logged in) -->
+    <div id="loginWarning" class="login-warning" style="display:none;">
+        🔒 Silakan <a href="login.html" class="login-link">Login</a> untuk ikut mengobrol.
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+            authDomain: "ricebowlmonst.firebaseapp.com",
+            databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+            projectId: "ricebowlmonst",
+            storageBucket: "ricebowlmonst.firebasestorage.app",
+            messagingSenderId: "723669558962",
+            appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+        };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const chatRef = db.ref('global_chat');
+
+        let currentUser = null;
+        let currentReply = null;
+        let allChatMessages = {};
+        let pinnedMessageKey = null;
+
+        // Cek Login (Support rbm_user dari Kasir atau rbm_customer_user dari Customer App)
+        const storedUser = localStorage.getItem('rbm_user') || localStorage.getItem('rbm_customer_user');
+        if (storedUser) {
+            currentUser = JSON.parse(storedUser);
+            document.getElementById('inputArea').style.display = 'flex';
+        } else {
+            document.getElementById('loginWarning').style.display = 'block';
+        }
+
+        // Load Pesan
+        chatRef.limitToLast(50).on('value', (snapshot) => {
+            const data = snapshot.val();
+            allChatMessages = data || {};
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = '';
+
+            if (!data) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#888; font-size:13px; background:rgba(255,255,255,0.6); border-radius:10px; margin:20px;">Belum ada pesan. Jadilah yang pertama menyapa! 👋</div>';
+                return;
+            }
+
+            Object.entries(data).forEach(([key, msg]) => {
+                const isMe = currentUser && (msg.sender === (currentUser.nama || currentUser.username));
+                const isAdmin = msg.phone === 'admin' || msg.sender === 'Admin' || msg.isAnnouncement;
+                
+                const div = document.createElement('div');
+                div.className = `message ${isMe ? 'me' : 'other'} ${isAdmin ? 'admin' : ''}`;
+                div.id = `msg-${key}`;
+
+                // Format Waktu
+                const time = new Date(msg.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+                // Reply Context
+                let replyHtml = '';
+                if (msg.replyTo) {
+                    replyHtml = `
+                        <div class="reply-context" onclick="scrollToMessage('${msg.replyTo.key}')">
+                            <div class="reply-sender">${msg.replyTo.sender}</div>
+                            <div class="reply-preview">${msg.replyTo.text}</div>
+                        </div>
+                    `;
+                }
+
+                // Tombol Balas (Hanya jika login)
+                const replyBtn = currentUser ? `<div class="swipe-reply-btn" onclick="replyTo('${key}')">↩ Balas</div>` : '';
+
+                div.innerHTML = `
+                    ${replyHtml}
+                    <div class="msg-sender">${msg.isAnnouncement ? '📢 ' : ''}${msg.sender}</div>
+                    <div class="msg-text">${msg.text}</div>
+                    <div class="msg-time">${time}</div>
+                    ${!isMe ? replyBtn : ''}
+                `;
+
+                container.appendChild(div);
+            });
+
+            // Auto scroll ke bawah
+            container.scrollTop = container.scrollHeight;
+        });
+
+        // Listen for Pinned Message
+        db.ref('global_chat').orderByChild('isPinned').equalTo(true).limitToLast(1).on('value', (snapshot) => {
+            const data = snapshot.val();
+            const pinnedContainer = document.getElementById('pinnedMessage');
+            if (data) {
+                const key = Object.keys(data)[0];
+                const msg = data[key];
+                pinnedMessageKey = key;
+                const pinnedTextEl = document.getElementById('pinnedText');
+                pinnedTextEl.innerHTML = '<span class="pin-icon">📌</span> ';
+                pinnedTextEl.append(`${msg.sender}: ${msg.text}`);
+                pinnedContainer.style.display = 'block';
+            } else {
+                pinnedContainer.style.display = 'none';
+                pinnedMessageKey = null;
+            }
+        });
+
+        function sendMessage() {
+            if (!currentUser) return;
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const messageData = {
+                text: text,
+                sender: currentUser.nama || currentUser.username || 'User',
+                phone: currentUser.phone || currentUser.hp || 'user',
+                isAnnouncement: false,
+                replyTo: currentReply,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            chatRef.push(messageData);
+            input.value = '';
+            cancelReply();
+        }
+
+        function replyTo(key) {
+            const msg = allChatMessages[key];
+            if (!msg) return;
+
+            currentReply = { key, sender: msg.sender, text: msg.text };
+            document.getElementById('replyToName').textContent = msg.sender;
+            document.getElementById('replyToText').textContent = msg.text;
+            
+            const indicator = document.getElementById('replyIndicator');
+            indicator.style.display = 'block';
+            
+            const input = document.getElementById('messageInput');
+            input.focus();
+            input.placeholder = `Balas ${msg.sender}...`;
+        }
+
+        function cancelReply() {
+            currentReply = null;
+            document.getElementById('replyIndicator').style.display = 'none';
+            document.getElementById('messageInput').placeholder = "Ketik pesan...";
+        }
+
+        function scrollToPinned() {
+            if (pinnedMessageKey) {
+                scrollToMessage(pinnedMessageKey);
+            }
+        }
+
+        function scrollToMessage(key) {
+            const el = document.getElementById(`msg-${key}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.style.background = '#fff3cd'; // Highlight sebentar
+                setTimeout(() => el.style.background = '', 1000);
+            }
+        }
+
+        // Enter to send (Desktop friendly)
+        document.getElementById('messageInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

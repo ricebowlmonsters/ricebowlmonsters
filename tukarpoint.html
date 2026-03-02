@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // [ANTI-FLASH] Sembunyikan link riwayat jika fitur pesan mati
+    try {
+      var _s = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+      if (_s.ordering_enabled === false || _s.ordering_enabled === 'false') {
+        var style = document.createElement('style');
+        style.innerHTML = '.bottom-link[href="riwayat.html"] { display: none !important; } .bottom-nav { grid-template-columns: repeat(5, 1fr) !important; }';
+        document.head.appendChild(style);
+      }
+    } catch(e){}
+  </script>
   <title>Tukar Poin - Rice Bowl Monster</title>
   
   <link rel="stylesheet" href="styles.css">
@@ -12,6 +23,100 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   
   <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #374151;
+      --muted: #6b7280;
+      --primary: #4C2A85;
+      --primary-text: #ffffff;
+      --border: #e5e7eb;
+    }
+    /* [BARU] Reset & Base Styles (Fallback jika styles.css gagal dimuat) */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+    a { text-decoration: none; color: inherit; }
+    .app-container { min-height: 100vh; }
+    
+    /* Header Styles */
+    .app-header {
+      background: white; padding: 10px 16px; display: flex; align-items: center; gap: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
+    }
+    .back-btn { font-size: 24px; font-weight: bold; color: #333; }
+    .page-title { font-size: 18px; font-weight: 700; margin: 0; flex-grow: 1; text-align: center; padding-right: 24px; }
+    .content { padding: 16px; }
+
+    .tabs {
+      display: flex;
+      background: #e5e7eb;
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .tab-btn.active {
+      background-color: var(--card);
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .reward-content { display: none; }
+    .reward-content.active { display: block; }
+    .reward-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding-bottom: 80px;
+    }
+    .reward-card {
+      background: var(--card);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+    }
+    .reward-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+    .card-body { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
+    .card-body h3 { margin: 0 0 8px; font-size: 14px; color: var(--text); }
+    .points-cost { font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+    .btn-tukar {
+      margin-top: auto;
+      background: var(--primary);
+      color: var(--primary-text);
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    .points-summary {
+      background: linear-gradient(135deg, var(--primary), #6d28d9);
+      color: white;
+      padding: 20px;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(76, 42, 133, 0.2);
+    }
+    .points-label { font-size: 14px; opacity: 0.9; margin-bottom: 4px; }
+    .points-value { font-size: 32px; font-weight: 800; }
     .popup-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: rgba(0, 0, 0, 0.6); display: flex;
@@ -19,6 +124,8 @@
       opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease;
     }
     .popup-overlay.show { opacity: 1; visibility: visible; }
+    /* [BARU] Pastikan popup konfirmasi (customPopup) muncul di atas popup QR (qrPopup) */
+    #customPopup { z-index: 1100; }
     .popup-box {
       background: white; padding: 24px; border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 85%;
@@ -32,6 +139,51 @@
     .popup-buttons button { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; flex-grow: 1; }
     .popup-buttons .btn-primary { background-color: #E32827; color: white; }
     .popup-buttons .btn-secondary { background-color: #e0e0e0; color: #333; }
+    /* Gaya dari klaim.html */
+    .reward-card .btn-claim { width: 100%; margin-top: 12px; }
+    .empty-state { padding: 40px 20px; text-align: center; color: #888; }
+    #qrCodeContainer { margin: 16px 0; display: flex; justify-content: center; }
+    #qrCodeContainer img { border: 5px solid #eee; border-radius: 8px; }
+    .popup-caption { font-size: 0.8rem; color: #888; margin-top: 12px; margin-bottom: 0; }
+    /* [BARU] Gaya untuk tombol aksi cepat */
+    .quick-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .quick-action-btn {
+      flex: 1;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid var(--primary);
+      background-color: var(--card);
+      color: var(--primary);
+      transition: all 0.3s ease;
+    }
+    .quick-action-btn.active {
+      background-color: var(--primary);
+      color: var(--primary-text);
+    }
+    /* [BARU] Override Bottom Nav untuk 6 item */
+    .bottom-nav {
+      position: fixed; bottom: 16px; left: 16px; right: 16px;
+      background: white; border-radius: 50px;
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      padding: 6px 8px; z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .bottom-link {
+      display: flex; flex-direction: column; align-items: center;
+      text-decoration: none; color: #888; padding: 6px 4px;
+      font-size: 10px; gap: 4px;
+      font-family: serif;
+      white-space: nowrap;
+    }
+    .bottom-link .icon { font-size: 18px; }
+    .bottom-link.active { color: #4C2A85; font-weight: 600; }
   </style>
 
 </head>
@@ -41,16 +193,20 @@
     try{
       var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
       var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
-      if(isReload){ window.location.replace('home.html'); }
+      if(isReload){ window.location.replace('index.html'); }
     }catch(e){}
   })();
 </script>
 <div class="app-container">
-  <header class="app-header simple">
+  <header class="app-header">
     <a href="home.html" class="back-btn" aria-label="Kembali">❮</a>
-    <h1 class="page-title">Tukar Poin</h1>
+    <h1 class="page-title">Tukar Poin & Klaim</h1>
   </header>
   <main class="content with-bottom-nav">
+    <section class="quick-actions">
+        <button id="btnTukarVcr" class="quick-action-btn">TUKAR VCR</button>
+        <button id="btnKlaimVcr" class="quick-action-btn">KLAIM VCR</button>
+    </section>
     <section class="points-summary">
       <div class="points-label">Poin Anda Saat Ini</div>
       <div class="points-value" id="userPoints">...</div>
@@ -58,6 +214,8 @@
     <nav class="tabs">
       <button class="tab-btn active" data-target="merchandise">Merchandise</button>
       <button class="tab-btn" data-target="voucher">Voucher</button>
+      <button class="tab-btn" data-target="klaim">Klaim Hadiah</button>
+      <button class="tab-btn" data-target="riwayat">Riwayat</button>
     </nav>
     <div id="merchandise" class="reward-content active">
       <div class="reward-grid"></div>
@@ -65,16 +223,24 @@
     <div id="voucher" class="reward-content">
       <div class="reward-grid"></div>
     </div>
+    <div id="klaim" class="reward-content">
+      <div class="reward-grid"></div>
+    </div>
+    <div id="riwayat" class="reward-content">
+      <div class="reward-grid"></div>
+    </div>
   </main>
   <nav class="bottom-nav">
-    <a class="bottom-link" href="home.html"> <span class="icon">🏠</span> <span>Home</span> </a>
-    <a class="bottom-link active" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar</span> </a>
-    <a class="bottom-link" href="klaim.html"> <span class="icon">🎫</span> <span>Vcr Klaim</span> </a>
+    <a class="bottom-link" href="index.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link active" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar Poin</span> </a>
+    <a class="bottom-link" href="diskon.html"> <span class="icon">🏷️</span> <span>Diskon</span> </a>
+    <a class="bottom-link" href="riwayat.html"> <span class="icon">🧾</span> <span>Riwayat</span> </a>
     <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
     <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
   </nav>
 </div>
 
+<!-- Popup Konfirmasi -->
 <div id="customPopup" class="popup-overlay">
   <div class="popup-box">
     <h3 id="popupTitle">Judul Popup</h3>
@@ -86,28 +252,120 @@
   </div>
 </div>
 
-<script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5xRkvhJSsgGvq6tYeKc4VBwzTyw6bpZgexRYtIYCTgXiGtN1wahPhSijnH5h3VHez/exec';
+<!-- Popup Kode Klaim -->
+<div id="qrPopup" class="popup-overlay">
+  <div class="popup-box">
+    <h3 id="qrPopupTitle">Kode Klaim Hadiah</h3>
+    <div id="qrCodeContainer" style="margin: 16px 0; display: flex; justify-content: center; flex-direction: column; align-items: center;">
+      <div style="font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 600;">Tunjukkan kode ini ke kasir:</div>
+      <div id="claimCodeDisplay" style="font-size: 48px; font-weight: 700; letter-spacing: 8px; color: #075E54; background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%); padding: 20px 40px; border-radius: 12px; border: 3px solid #075E54; font-family: 'Courier New', monospace; margin: 16px 0; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">---</div>
+      <div style="font-size: 12px; color: #888; margin-top: 12px; text-align: center;">Kode valid selama 30 hari</div>
+    </div>
+    <div class="popup-buttons">
+      <button id="closePopupButton" class="btn-secondary">Tutup</button>
+      <button id="deletePopupButton" class="btn-primary" style="background-color: #c62828;">Hapus</button>
+    </div>
+    <p class="popup-caption">Klik "Hapus" jika hadiah sudah Anda terima di resto.</p>
+  </div>
+</div>
 
-    const merchandise = [
-      { nama: 'Topi Monsters', point: 300, foto: 'topi.png', type: 'merchandise' },
-      { nama: 'Tote Bag Monsters', point: 400, foto: 'totebag.png', type: 'merchandise' },
-    ];
-    const vouchers = [
-      { nama: 'Voucher Diskon 10%', point: 300, foto: '10%.png', type: 'voucher' },
-      { nama: 'Gratis Es Teh', point: 200, foto: 'teh.png', type: 'voucher' },
-      { nama: 'Potongan Rp 5.000', point: 150, foto: '5k.png', type: 'voucher' },
-      { nama: 'Gorengan 3pcs', point: 150, foto: 'gorengan.png', type: 'voucher' },
-    ];
-    const allRewards = [...merchandise, ...vouchers];
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMPdwTqhkFN1Zc_Onj8v1aPAq0Sa9dRJNyN9hsvKI46cn0rJJH4Jq2NeWsg97IM-FJ/exec';
+
+    // [BARU] Inisialisasi Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+        authDomain: "ricebowlmonst.firebaseapp.com",
+        databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+        projectId: "ricebowlmonst",
+        storageBucket: "ricebowlmonst.firebasestorage.app",
+        messagingSenderId: "723669558962",
+        appId: "1:723669558962:web:c17a1a4683a86cc5a88bab",
+        measurementId: "G-1G3JF6ZFRP"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
+    // [BARU] Update Bottom Nav berdasarkan status fitur pesan
+    function updateBottomNav(isEnabled) {
+        const riwayatLink = document.querySelector('.bottom-link[href="riwayat.html"]');
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (riwayatLink) {
+            if (isEnabled === false) {
+                riwayatLink.style.display = 'none';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(5, 1fr)';
+            } else {
+                riwayatLink.style.display = 'flex';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(6, 1fr)';
+            }
+        }
+    }
+    // Listen dari Firebase
+    db.ref('customer_app_settings/ordering_enabled').on('value', (snapshot) => {
+        updateBottomNav(snapshot.val());
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       loadUserPoints();
-      renderRewards(merchandise, 'merchandise');
-      renderRewards(vouchers, 'voucher');
+      
+      // [BARU] Ambil data hadiah dari Firebase
+      db.ref('rewards').on('value', (snapshot) => {
+          const data = snapshot.val();
+          merchandise = [];
+          vouchers = [];
+          
+          if (data) {
+              Object.values(data).forEach(item => {
+                  if (item.type === 'merchandise') merchandise.push(item);
+                  else if (item.type === 'voucher') vouchers.push(item);
+              });
+          }
+          
+          // Update variabel global allRewards
+          allRewards = [...merchandise, ...vouchers];
+
+          // Render ulang tampilan
+          renderRewards(merchandise, 'merchandise');
+          renderRewards(vouchers, 'voucher');
+      });
+
+      // Cek dari LocalStorage saat load
+      try {
+          const cachedSettings = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+          if (cachedSettings.ordering_enabled !== undefined) {
+              updateBottomNav(cachedSettings.ordering_enabled);
+          }
+      } catch (e) {}
+
+      renderUnclaimedRewards(); // Render item yang bisa diklaim di tab
+      renderUsedRewards(); // [BARU] Render riwayat voucher
       setupTabs();
       activateTabFromUrl();
-      setupTukarListener();
+      
+      // [BARU] Set status awal tombol aksi cepat berdasarkan tab aktif
+      const activeTab = document.querySelector('.tab-btn.active');
+      if (activeTab) {
+          updateQuickActionButtons(activeTab.getAttribute('data-target'));
+      }
+      
+      setupEventListeners();
+    });
+
+    document.getElementById('btnKlaimVcr').addEventListener('click', () => {
+        document.querySelector('.tab-btn[data-target="klaim"]').click();
+    });
+
+    document.getElementById('btnTukarVcr').addEventListener('click', () => {
+        // Arahkan ke tab voucher sebagai contoh, atau bisa diubah sesuai kebutuhan
+        document.querySelector('.tab-btn[data-target="voucher"]').click();
     });
 
     function showCustomPopup({ title, message, type = 'alert' }) {
@@ -129,44 +387,58 @@
     function renderRewards(dataArray, containerId) {
       const grid = document.querySelector(`#${containerId} .reward-grid`);
       if (grid) {
-        grid.innerHTML = dataArray.map(item => `
-          <div class="reward-card">
-            <img src="${item.foto}" alt="${item.nama}">
+        grid.innerHTML = dataArray.length ? dataArray.map(item => `
+          <div class="reward-card" data-cost="${item.point}">
+            <img src="${item.foto}" alt="${item.nama}" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
             <div class="card-body">
               <h3>${item.nama}</h3>
               <div class="points-cost">${item.point} Poin</div>
               <button class="btn-tukar">Tukar</button>
             </div>
           </div>
-        `).join('');
+        `).join('') : '<div class="empty-state">Belum ada item tersedia.</div>';
       }
     }
-    
+
     function loadUserPoints() {
-      const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
-      document.getElementById('userPoints').textContent = userData.points || '0';
+        const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        const pointsEl = document.getElementById('userPoints');
+        if (pointsEl) {
+            pointsEl.textContent = userData.points || 0;
+        }
     }
-    
-    function setupTukarListener() {
+
+    function setupEventListeners() {
       const mainContent = document.querySelector('.content');
       mainContent.addEventListener('click', async (event) => {
-        if (event.target.classList.contains('btn-tukar')) {
-          const button = event.target;
+        const button = event.target;
+
+        // --- Ltikan ini HANYA berjalan untuk tombol tukar, BUKAN tombol klaim.
+        if (button.classList.contains('btn-tukar') && !button.classList.contains('btn-claim')) {
           if (button.disabled) return;
 
           const card = button.closest('.reward-card');
           const itemName = card.querySelector('h3').textContent;
-          const costText = card.querySelector('.points-cost').textContent;
-          const cost = parseInt(costText, 10);
+          // [FIX] Mengambil poin dari data-cost untuk menghindari error NaN.
+          const cost = parseInt(card.dataset.cost, 10);
           
           let userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+          // FIX: Ambil nama dengan berbagai kemungkinan key agar tidak kosong
+          const userName = userData.name || userData.nama || userData.username || '';
+
           if (!userData.phone) {
             await showCustomPopup({ title: 'Gagal', message: 'Data user tidak ditemukan. Silakan login ulang.' });
             return;
           }
+
+          if (!userName) {
+            await showCustomPopup({ title: 'Data Tidak Lengkap', message: 'Nama user tidak ditemukan. Silakan Logout dan Login kembali agar nama tercatat.' });
+            return;
+          }
+
           const currentPoints = parseInt(userData.points || '0', 10);
           
-          if (currentPoints < cost) {
+          if (isNaN(cost) || currentPoints < cost) {
             await showCustomPopup({ title: 'Poin Tidak Cukup', message: `Poin Anda ${currentPoints}, butuh ${cost} poin untuk menukar ini.` });
             return;
           }
@@ -182,10 +454,23 @@
           button.textContent = 'Memproses...';
           button.disabled = true;
 
+          // [FIX] Cari item lengkap untuk mendapatkan 'itemType'
+          const redeemedItemDetails = allRewards.find(item => item.nama === itemName);
+          const itemType = redeemedItemDetails ? redeemedItemDetails.type : 'unknown';
+
           try {
             const response = await fetch(SCRIPT_URL, {
               method: 'POST',
-              body: JSON.stringify({ action: 'redeemReward', phone: userData.phone, reward: itemName, cost: cost })
+              // [FIX] Mengubah payload agar sesuai dengan backend.
+              body: JSON.stringify({ 
+                action: 'redeemReward', // Diubah dari 'exchangePoints'
+                phone: userData.phone,
+                nama: userName,        // Kirim nama yang sudah divalidasi
+                name: userName,        // Kirim sebagai 'name' juga
+                username: userName,    // Kirim sebagai 'username' juga
+                reward: itemName,      // Diubah dari 'itemName'
+                cost: cost             // Diubah dari 'points'
+              })
             });
             const result = await response.json();
             
@@ -203,17 +488,19 @@
                 const itemToClaim = { ...redeemedItem, id: Date.now(), status: 'unclaimed' };
 
                 // 3. Ambil data klaim yang sudah ada, atau buat array baru
-                const unclaimed = JSON.parse(localStorage.getItem('rbm_unclaimed_rewards') || '[]');
+                const storageKey = `rbm_unclaimed_rewards_${userData.phone}`;
+                const unclaimed = JSON.parse(localStorage.getItem(storageKey) || '[]');
                 
                 // 4. Tambahkan item baru ke dalamnya
                 unclaimed.push(itemToClaim);
                 
                 // 5. Simpan kembali ke localStorage
-                localStorage.setItem('rbm_unclaimed_rewards', JSON.stringify(unclaimed));
+                localStorage.setItem(storageKey, JSON.stringify(unclaimed));
+                renderUnclaimedRewards(); // Perbarui tampilan tab klaim
               }
               // --- PERUBAHAN SELESAI ---
               
-              await showCustomPopup({ title: 'Berhasil!', message: `Penukaran berhasil!\nSilakan cek halaman 'Vcr Klaim' untuk mengambil hadiah Anda di resto.` });
+              await showCustomPopup({ title: 'Berhasil!', message: `Penukaran berhasil!\nSilakan cek tab 'Klaim Hadiah' untuk mengambil hadiah Anda di resto.` });
             
             } else {
               await showCustomPopup({ title: 'Gagal', message: `Gagal menukar poin: ${result.message || 'Silakan coba lagi.'}` });
@@ -226,6 +513,22 @@
             button.disabled = false;
           }
         }
+
+        // --- LOGIKA TOMBOL KLAIM (dari klaim.html) ---
+        if (button.classList.contains('btn-claim')) {
+          const itemId = button.dataset.id;
+          const itemName = button.dataset.name;
+          const activeClaims = getActiveClaims();
+          
+          // Jika sudah ada kode, tampilkan kode yang sama
+          if (activeClaims[itemId] && activeClaims[itemId].code) {
+            showCodePopup(activeClaims[itemId].code, itemName, itemId);
+            return;
+          }
+          
+          // Generate kode baru
+          generateClaimCode(itemId, itemName);
+        }
       });
     }
 
@@ -237,6 +540,9 @@
           document.querySelectorAll('.reward-content').forEach(content => content.classList.remove('active'));
           button.classList.add('active');
           document.getElementById(button.getAttribute('data-target')).classList.add('active');
+          
+          // [BARU] Update status tombol aksi cepat saat tab berubah
+          updateQuickActionButtons(button.getAttribute('data-target'));
         });
       });
     }
@@ -246,6 +552,277 @@
       if (activeTab) {
         document.querySelector(`.tab-btn[data-target="${activeTab}"]`)?.click();
       }
+    }
+
+    // [BARU] Fungsi untuk update visual tombol TUKAR/KLAIM
+    function updateQuickActionButtons(target) {
+        const btnTukar = document.getElementById('btnTukarVcr');
+        const btnKlaim = document.getElementById('btnKlaimVcr');
+        
+        if (btnTukar) btnTukar.classList.remove('active');
+        if (btnKlaim) btnKlaim.classList.remove('active');
+        
+        if (target === 'klaim') {
+            if (btnKlaim) btnKlaim.classList.add('active');
+        } else if (target === 'riwayat') {
+            // Tidak ada tombol aksi cepat yang aktif untuk riwayat
+        } else {
+            // Tab merchandise atau voucher dianggap sebagai bagian dari "TUKAR"
+            if (btnTukar) btnTukar.classList.add('active');
+        }
+    }
+
+    // --- FUNGSI-FUNGSI DARI klaim.html ---
+
+    function getUserPhone() {
+      try {
+        const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        return userData.phone;
+      } catch (e) { return null; }
+    }
+
+    function getActiveClaims() { 
+      const phone = getUserPhone();
+      if (!phone) return {};
+      return JSON.parse(localStorage.getItem(`rbm_active_claims_${phone}`) || '{}'); 
+    }
+
+    function setActiveClaim(itemId, qrData) {
+      const phone = getUserPhone();
+      if (!phone) return;
+      const claims = getActiveClaims();
+      claims[itemId] = qrData;
+      localStorage.setItem(`rbm_active_claims_${phone}`, JSON.stringify(claims));
+    }
+
+    function removeActiveClaim(itemId) {
+      const phone = getUserPhone();
+      if (!phone) return;
+      const claims = getActiveClaims();
+      delete claims[itemId];
+      localStorage.setItem(`rbm_active_claims_${phone}`, JSON.stringify(claims));
+    }
+
+    function renderUnclaimedRewards() {
+      const phone = getUserPhone();
+      if (!phone) return;
+      const allRewards = JSON.parse(localStorage.getItem(`rbm_unclaimed_rewards_${phone}`) || '[]');
+      // [DIUBAH] Filter hanya yang belum terpakai
+      const unclaimed = allRewards.filter(item => item.status !== 'used');
+      
+      const container = document.querySelector('#klaim .reward-grid');
+      if (!container) return;
+
+      if (unclaimed.length > 0) {
+        container.innerHTML = unclaimed.map(createClaimCard).join('');
+      } else {
+        container.innerHTML = '<div class="empty-state">Tidak ada hadiah yang perlu diklaim.</div>';
+      }
+    }
+
+    // [BARU] Fungsi render riwayat voucher terpakai
+    function renderUsedRewards() {
+      const phone = getUserPhone();
+      if (!phone) return;
+      const allRewards = JSON.parse(localStorage.getItem(`rbm_unclaimed_rewards_${phone}`) || '[]');
+      // Filter yang sudah terpakai
+      const used = allRewards.filter(item => item.status === 'used');
+      
+      const container = document.querySelector('#riwayat .reward-grid');
+      if (!container) return;
+
+      if (used.length > 0) {
+        container.innerHTML = used.map(createUsedCard).join('');
+      } else {
+        container.innerHTML = '<div class="empty-state">Belum ada riwayat penggunaan voucher.</div>';
+      }
+    }
+
+    function createClaimCard(item) {
+      return `
+        <div class="reward-card" data-cost="${item.point}" style="position: relative;">
+          <button class="btn-delete-card" onclick="event.stopPropagation(); deleteRewardItem('${item.id}', 'unclaimed')" style="position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.9); color: #ef4444; border: 1px solid #fee2e2; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" title="Hapus">🗑️</button>
+          <img src="${item.foto}" alt="${item.nama}">
+          <div class="card-body">
+            <h3>${item.nama}</h3>
+            <div class="points-cost">Ditukar dengan ${item.point} Poin</div>
+            <button class="btn-tukar btn-claim" data-id="${item.id}" data-name="${item.nama}">Klaim</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // [BARU] Card untuk item yang sudah terpakai
+    function createUsedCard(item) {
+      const date = item.usedDate ? new Date(item.usedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+      return `
+        <div class="reward-card used" style="opacity: 0.7; background: #f9fafb; border-color: #e5e7eb; position: relative;">
+          <button class="btn-delete-card" onclick="event.stopPropagation(); deleteRewardItem('${item.id}', 'used')" style="position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.9); color: #ef4444; border: 1px solid #fee2e2; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" title="Hapus Riwayat">🗑️</button>
+          <img src="${item.foto}" alt="${item.nama}" style="filter: grayscale(100%); opacity: 0.8;">
+          <div class="card-body">
+            <h3 style="color: #6b7280;">${item.nama}</h3>
+            <div class="points-cost" style="color: #9ca3af; font-size: 12px; font-weight: 500;">Terpakai: ${date}</div>
+            <button class="btn-tukar" disabled style="background: #e5e7eb; color: #9ca3af; cursor: default; border: 1px solid #d1d5db;">Sudah Dipakai</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // [BARU] Fungsi hapus item reward
+    window.deleteRewardItem = async function(itemId, type) {
+        const message = type === 'unclaimed' 
+            ? 'Apakah Anda yakin ingin menghapus hadiah ini? Poin yang sudah ditukar tidak akan kembali.' 
+            : 'Hapus riwayat penggunaan voucher ini?';
+            
+        const confirmed = await showCustomPopup({ 
+            title: 'Hapus Item', 
+            message: message, 
+            type: 'confirm' 
+        });
+
+        if (confirmed) {
+            const phone = getUserPhone();
+            if (!phone) return;
+            
+            const storageKey = `rbm_unclaimed_rewards_${phone}`;
+            let allRewards = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            
+            // Filter out the item to delete
+            const updatedRewards = allRewards.filter(item => String(item.id) !== String(itemId));
+            
+            localStorage.setItem(storageKey, JSON.stringify(updatedRewards));
+            
+            if (type === 'unclaimed') {
+                removeActiveClaim(itemId);
+                renderUnclaimedRewards();
+            } else {
+                renderUsedRewards();
+            }
+        }
+    };
+
+    const CONFIG = {
+      SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzMPdwTqhkFN1Zc_Onj8v1aPAq0Sa9dRJNyN9hsvKI46cn0rJJH4Jq2NeWsg97IM-FJ/exec'
+    };
+
+    async function generateClaimCode(itemId, itemName) {
+      const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+      const userPhone = userData.phone;
+      const userName = userData.name || userData.nama || userData.username || '';
+      
+      if (!userPhone) {
+        showCustomPopup({ title: 'Error', message: 'Nomor telepon tidak ditemukan. Silakan login ulang.' });
+        return;
+      }
+
+      if (!userName) {
+        showCustomPopup({ title: 'Data Tidak Lengkap', message: 'Nama user tidak ditemukan. Silakan Logout dan Login kembali agar nama tercatat.' });
+        return;
+      }
+      
+      try {
+        console.log('Generating claim code for:', { phone: userPhone, itemId, itemName });
+        console.log('API URL:', CONFIG.SCRIPT_URL);
+        
+        const payload = {
+          action: 'generateClaimCode',
+          phone: userPhone,
+          nama: userName,
+          name: userName,
+          username: userName,
+          itemId: itemId,
+          itemName: itemName
+        };
+        
+        console.log('Request payload:', payload);
+        
+        const response = await fetch(CONFIG.SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        console.log('Response status:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('Response not OK. Status:', response.status, 'Body:', text);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Response result:', result);
+        
+        if (result.status === 'success' && result.data) {
+          const code = result.data.code;
+          // Simpan kode ke activeClaims
+          const claimData = {
+            code: code,
+            itemId: itemId,
+            itemName: itemName,
+            claimTime: result.data.claimTime
+          };
+          setActiveClaim(itemId, claimData);
+          
+          // Tampilkan popup dengan kode
+          showCodePopup(code, itemName, itemId);
+        } else {
+          const errorMsg = result.message || 'Terjadi kesalahan';
+          console.error('API returned error:', result);
+          showCustomPopup({ title: 'Error', message: 'Gagal generate kode: ' + errorMsg });
+        }
+      } catch (error) {
+        console.error('Error generating code:', error);
+        console.error('Error details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+        
+        let errorMessage = 'Gagal generate kode. ';
+        if (error.message && error.message.includes('Failed to fetch')) {
+          errorMessage += 'Tidak dapat terhubung ke server. ';
+          errorMessage += 'Pastikan koneksi internet aktif dan Google Apps Script URL benar.';
+        } else if (error.message && error.message.includes('CORS')) {
+          errorMessage += 'Masalah CORS. Silakan gunakan server lokal atau deploy aplikasi.';
+        } else {
+          errorMessage += error.message || 'Pastikan koneksi internet aktif.';
+        }
+        
+        showCustomPopup({ title: 'Error', message: errorMessage });
+      }
+    }
+
+    function showCodePopup(code, itemName, itemId) {
+      const popup = document.getElementById('qrPopup');
+      const titleEl = document.getElementById('qrPopupTitle');
+      const codeDisplay = document.getElementById('claimCodeDisplay');
+      const closeButton = document.getElementById('closePopupButton');
+      const deleteButton = document.getElementById('deletePopupButton');
+
+      titleEl.textContent = `Klaim "${itemName}"`;
+      codeDisplay.textContent = code;
+      popup.classList.add('show');
+
+      closeButton.onclick = () => popup.classList.remove('show');
+
+      deleteButton.onclick = async () => {
+        const confirmed = await showCustomPopup({ title: 'Konfirmasi', message: `Apakah Anda yakin ingin menghapus "${itemName}"? Tindakan ini disarankan setelah Anda menerima hadiah.`, type: 'confirm' });
+        if (confirmed) {
+          const phone = getUserPhone();
+          const storageKey = `rbm_unclaimed_rewards_${phone}`;
+          let unclaimed = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          const updatedUnclaimed = unclaimed.filter(item => String(item.id) !== String(itemId));
+          localStorage.setItem(storageKey, JSON.stringify(updatedUnclaimed));
+          removeActiveClaim(itemId);
+          renderUnclaimedRewards(); // Perbarui daftar di tab klaim
+          renderUsedRewards(); // Perbarui daftar riwayat jika perlu (meski hapus biasanya hilang permanen)
+          popup.classList.remove('show');
+        }
+      };
     }
 </script>
 </body>

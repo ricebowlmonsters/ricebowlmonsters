@@ -38,6 +38,12 @@ function doPost(e) {
         return handleGetPointsHistory(data);
       case 'getVouchersHistory':
         return handleGetVouchersHistory(data);
+      case 'validateClaimVoucher':
+        return handleValidateClaimVoucher(data);
+      case 'generateClaimCode':
+        return handleGenerateClaimCode(data);
+      case 'validateClaimCode':
+        return handleValidateClaimCode(data);
       default:
         return ContentService.createTextOutput(JSON.stringify({
           status: 'error',
@@ -472,5 +478,388 @@ function getVoucherValue(voucherId) {
   };
   
   return voucherValues[voucherId] || 0;
+}
+
+/**
+ * Generate kode unik 5 karakter untuk klaim voucher
+ */
+function generateUniqueCode(length = 5) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Hapus I, O, 0, 1 untuk menghindari kebingungan
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+/**
+ * Generate dan simpan kode klaim unik
+ */
+function handleGenerateClaimCode(data) {
+  try {
+    const phoneNumber = data.phone;
+    const itemId = data.itemId;
+    const itemName = data.itemName;
+    
+    if (!phoneNumber || !itemId || !itemName) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Data tidak lengkap. Phone, itemId, dan itemName wajib diisi.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const sheet = getSheet();
+    const values = sheet.getDataRange().getValues();
+    
+    // Cari atau buat sheet untuk menyimpan kode klaim
+    const spreadsheet = SpreadsheetApp.openById('1LCtVFEpN9lT5LYCqbxo-RXF94YZPwuKm_TQbc6rxm68');
+    let claimCodesSheet = spreadsheet.getSheetByName('ClaimCodes');
+    
+    if (!claimCodesSheet) {
+      claimCodesSheet = spreadsheet.insertSheet('ClaimCodes');
+      claimCodesSheet.getRange(1, 1, 1, 7).setValues([[
+        'Kode', 'Phone', 'ItemId', 'ItemName', 'ClaimTime', 'Status', 'ValidatedAt'
+      ]]);
+      claimCodesSheet.getRange(1, 1, 1, 7).setFontWeight('bold');
+    }
+    
+    // Generate kode unik (cek duplikasi)
+    let code = generateUniqueCode(5);
+    let codeValues = claimCodesSheet.getDataRange().getValues();
+    let attempts = 0;
+    const maxAttempts = 50;
+    
+    while (attempts < maxAttempts) {
+      let isDuplicate = false;
+      for (let i = 1; i < codeValues.length; i++) {
+        if (codeValues[i][0] === code && codeValues[i][5] !== 'used') {
+          isDuplicate = true;
+          break;
+        }
+      }
+      if (!isDuplicate) break;
+      code = generateUniqueCode(5);
+      attempts++;
+    }
+    
+    if (attempts >= maxAttempts) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Gagal generate kode unik. Silakan coba lagi.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Simpan kode ke sheet
+    const claimTime = new Date().toISOString();
+    claimCodesSheet.appendRow([
+      code,           // Kolom A: Kode
+      phoneNumber,    // Kolom B: Phone
+      itemId,         // Kolom C: ItemId
+      itemName,       // Kolom D: ItemName
+      claimTime,      // Kolom E: ClaimTime
+      'active',       // Kolom F: Status
+      ''              // Kolom G: ValidatedAt
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      message: 'Kode berhasil digenerate',
+      data: {
+        code: code,
+        phone: phoneNumber,
+        itemId: itemId,
+        itemName: itemName,
+        claimTime: claimTime
+      }
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Terjadi kesalahan: ' + error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Validasi kode klaim 5 karakter
+ */
+function handleValidateClaimCode(data) {
+  try {
+    const code = (data.code || '').trim().toUpperCase();
+    const operator = data.operator || 'unknown';
+    
+    if (!code || code.length !== 5) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Kode harus 5 karakter',
+        code: 'INVALID_LENGTH'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Akses sheet ClaimCodes
+    const spreadsheet = SpreadsheetApp.openById('1LCtVFEpN9lT5LYCqbxo-RXF94YZPwuKm_TQbc6rxm68');
+    let claimCodesSheet = spreadsheet.getSheetByName('ClaimCodes');
+    
+    if (!claimCodesSheet) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Kode tidak ditemukan',
+        code: 'CODE_NOT_FOUND'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const values = claimCodesSheet.getDataRange().getValues();
+    
+    // Cari kode
+    let foundRow = null;
+    for (let i = 1; i < values.length; i++) {
+      if (values[i][0] === code) { // Kolom A: Kode
+        foundRow = i;
+        break;
+      }
+    }
+    
+    if (!foundRow) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Kode tidak ditemukan atau tidak valid',
+        code: 'CODE_NOT_FOUND'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const row = values[foundRow];
+    const status = row[5]; // Kolom F: Status
+    const claimTime = row[4]; // Kolom E: ClaimTime
+    
+    // Cek apakah sudah digunakan
+    if (status === 'used') {
+      const validatedAt = row[6]; // Kolom G: ValidatedAt
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Kode sudah pernah digunakan',
+        code: 'ALREADY_USED',
+        firstValidation: validatedAt
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Cek apakah sudah kadaluarsa (30 hari)
+    if (claimTime) {
+      const claimDate = new Date(claimTime);
+      const now = new Date();
+      const daysDiff = (now - claimDate) / (1000 * 60 * 60 * 24);
+      
+      if (daysDiff > 30) {
+        return ContentService.createTextOutput(JSON.stringify({
+          status: 'error',
+          message: `Kode sudah kadaluarsa. Diklaim ${Math.floor(daysDiff)} hari yang lalu.`,
+          code: 'EXPIRED',
+          daysExpired: Math.floor(daysDiff)
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    // Cari data user
+    const phoneNumber = row[1]; // Kolom B: Phone
+    const sheet = getSheet();
+    const userValues = sheet.getDataRange().getValues();
+    let userData = null;
+    
+    for (let i = 1; i < userValues.length; i++) {
+      if (userValues[i][1] === phoneNumber) {
+        userData = {
+          nama: userValues[i][0],
+          phone: userValues[i][1],
+          points: userValues[i][4] || 0
+        };
+        break;
+      }
+    }
+    
+    // Update status menjadi 'used' dan simpan waktu validasi
+    const validatedAt = new Date().toISOString();
+    claimCodesSheet.getRange(foundRow + 1, 6).setValue('used'); // Status
+    claimCodesSheet.getRange(foundRow + 1, 7).setValue(validatedAt); // ValidatedAt
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      message: 'Kode valid. Voucher dapat digunakan.',
+      code: 'VALID',
+      data: {
+        code: code,
+        itemId: row[2], // Kolom C: ItemId
+        itemName: row[3], // Kolom D: ItemName
+        userPhone: phoneNumber,
+        userName: userData ? userData.nama : null,
+        claimTime: claimTime,
+        validatedAt: validatedAt,
+        validatedBy: operator
+      }
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Terjadi kesalahan: ' + error.toString(),
+      code: 'SYSTEM_ERROR'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Validasi Claim Voucher (untuk kasir)
+ * Validasi QR code klaim hadiah dari pelanggan (legacy - untuk backward compatibility)
+ */
+function handleValidateClaimVoucher(data) {
+  try {
+    const claimData = data.claimData; // Data dari QR code (JSON string atau object)
+    const operator = data.operator || 'unknown'; // Nama kasir yang melakukan validasi
+    
+    // Parse claimData jika berupa string
+    let claim;
+    if (typeof claimData === 'string') {
+      try {
+        claim = JSON.parse(claimData);
+      } catch (e) {
+        return ContentService.createTextOutput(JSON.stringify({
+          status: 'error',
+          message: 'Format QR Code tidak valid (bukan JSON)',
+          code: 'INVALID_FORMAT'
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    } else {
+      claim = claimData;
+    }
+    
+    // 1. Validasi format data wajib
+    if (!claim.claimId || !claim.itemName) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Data QR Code tidak lengkap. Pastikan claimId dan itemName tersedia.',
+        code: 'INCOMPLETE_DATA'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // 2. Validasi timestamp (cek apakah voucher sudah kadaluarsa - 30 hari)
+    if (claim.claimTime) {
+      const claimDate = new Date(claim.claimTime);
+      const now = new Date();
+      const daysDiff = (now - claimDate) / (1000 * 60 * 60 * 24);
+      
+      if (daysDiff > 30) {
+        return ContentService.createTextOutput(JSON.stringify({
+          status: 'error',
+          message: `Voucher sudah kadaluarsa. Diklaim ${Math.floor(daysDiff)} hari yang lalu.`,
+          code: 'EXPIRED',
+          daysExpired: Math.floor(daysDiff)
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    // 3. Validasi dengan database - cek apakah claimId sudah pernah digunakan
+    const sheet = getSheet();
+    const values = sheet.getDataRange().getValues();
+    
+    // Cek di semua user apakah claimId sudah pernah digunakan
+    let isClaimed = false;
+    let firstClaimInfo = null;
+    
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      const vouchersHistory = JSON.parse(row[8] || '[]'); // Kolom I: Riwayat Voucher
+      
+      // Cek di riwayat voucher
+      for (let voucher of vouchersHistory) {
+        if (voucher.claimedVoucherId === claim.claimId || voucher.claimId === claim.claimId) {
+          isClaimed = true;
+          firstClaimInfo = {
+            claimedAt: voucher.validatedAt || voucher.timestamp,
+            validatedBy: voucher.validatedBy || 'Sistem',
+            userPhone: row[1] // Nomor telepon user yang mengklaim
+          };
+          break;
+        }
+      }
+      
+      // Cek di kolom Claimed Vouchers (jika ada kolom tambahan)
+      // Kita akan menambahkan sheet terpisah untuk claimed vouchers atau menggunakan kolom baru
+    }
+    
+    if (isClaimed) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'QR Code ini sudah pernah digunakan sebelumnya.',
+        code: 'ALREADY_USED',
+        firstClaim: firstClaimInfo
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // 4. Validasi user phone (jika ada)
+    let userData = null;
+    if (claim.userPhone) {
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (row[1] === claim.userPhone || 
+            row[1] === claim.userPhone.replace(/^\+62/, '0') ||
+            row[1] === claim.userPhone.replace(/^62/, '0')) {
+          userData = {
+            nama: row[0],
+            phone: row[1],
+            points: row[4] || 0
+          };
+          break;
+        }
+      }
+      
+      // Jika userPhone ada di QR tapi tidak ditemukan di database
+      // Ini bukan error fatal, bisa jadi user sudah dihapus, tapi tetap warning
+    }
+    
+    // 5. Simpan ke riwayat validasi (kolom baru atau sheet terpisah)
+    // Untuk saat ini, kita simpan di kolom I (Riwayat Voucher) dengan format khusus
+    // Jika userPhone ditemukan, update riwayat user tersebut
+    if (userData && claim.userPhone) {
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (row[1] === userData.phone) {
+          const vouchersHistory = JSON.parse(row[8] || '[]');
+          const validationRecord = {
+            id: Date.now(),
+            claimId: claim.claimId,
+            itemName: claim.itemName,
+            validatedAt: new Date().toISOString(),
+            validatedBy: operator,
+            status: 'validated',
+            userPhone: claim.userPhone
+          };
+          vouchersHistory.unshift(validationRecord);
+          sheet.getRange(i + 1, 9).setValue(JSON.stringify(vouchersHistory));
+          break;
+        }
+      }
+    }
+    
+    // 6. Validasi berhasil
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      message: 'Validasi berhasil. Voucher dapat digunakan.',
+      code: 'VALID',
+      data: {
+        claimId: claim.claimId,
+        itemName: claim.itemName,
+        userPhone: claim.userPhone || null,
+        userName: userData ? userData.nama : null,
+        validatedAt: new Date().toISOString(),
+        validatedBy: operator
+      }
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Terjadi kesalahan saat validasi: ' + error.toString(),
+      code: 'SYSTEM_ERROR'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 

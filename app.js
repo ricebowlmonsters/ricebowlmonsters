@@ -1,4 +1,6 @@
 (function () {
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMPdwTqhkFN1Zc_Onj8v1aPAq0Sa9dRJNyN9hsvKI46cn0rJJH4Jq2NeWsg97IM-FJ/exec';
+
   const defaultLocations = [
     { name: 'Ruas Sudirman', lat: -6.2146, lng: 106.8451 },
     { name: 'Setiabudi', lat: -6.2087, lng: 106.8219 },
@@ -38,7 +40,7 @@
       () => {
         // abaikan jika ditolak
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
     );
   }
 
@@ -71,11 +73,32 @@
     });
   }
 
+  // [BARU] Fungsi untuk mengambil lokasi dari Google Sheets (Script)
+  async function fetchLocationsFromServer() {
+    try {
+      const response = await fetch(`${SCRIPT_URL}?action=getLocations`);
+      const result = await response.json();
+      
+      if (result.status === 'success' && Array.isArray(result.data)) {
+        // Pertahankan lokasi "Dekat Anda" jika sudah ada
+        const current = JSON.parse(localStorage.getItem('rbm_locations') || '[]');
+        const userLoc = current.find(l => l.name === 'Dekat Anda');
+        
+        const newLocations = userLoc ? [userLoc, ...result.data] : result.data;
+        saveLocations(newLocations);
+        renderLocations();
+      }
+    } catch (e) {
+      console.warn('Gagal mengambil lokasi dari server, menggunakan data offline.', e);
+    }
+  }
+
   function init() {
     renderLocations();
     wireAddLocation();
     wireNotifications();
     requestGeolocation();
+    fetchLocationsFromServer(); // Panggil data dari server
   }
 
   if (document.readyState === 'loading') {
@@ -84,5 +107,3 @@
     init();
   }
 })();
-
-

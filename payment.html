@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran - Rice Bowl Monster</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f3f4f6; --card: #ffffff; --text: #374151; --muted: #6b7280;
+            --primary: #4C2A85; --primary-text: #ffffff; --border: #e5e7eb;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+        .checkout-header {
+            background: var(--card); padding: 16px; display: flex; align-items: center;
+            gap: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10;
+        }
+        .checkout-header .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+        .checkout-header h1 { margin: 0; font-size: 18px; }
+        main { padding: 16px; }
+        .payment-container {
+            background: white; padding: 24px; border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%;
+            max-width: 480px; margin: 0 auto; text-align: left;
+        }
+        .payment-container h3 { margin-top: 0; margin-bottom: 8px; font-size: 20px; color: var(--text); }
+        .payment-container .bill-info { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+        .payment-container .bill-details {
+            background-color: #f9fafb; border: 1px solid var(--border);
+            border-radius: 8px; padding: 12px; margin-bottom: 20px;
+            max-height: 150px; overflow-y: auto; font-size: 13px;
+        }
+        .payment-container .confirmation-warning {
+            font-size: 13px; color: var(--muted); text-align: center;
+            padding: 10px; background-color: #fffbe6; border: 1px solid #fde68a;
+            border-radius: 8px; margin-bottom: 20px;
+        }
+        .payment-container .payment-methods { display: grid; gap: 12px; }
+        .payment-method-btn {
+            display: flex; align-items: center; gap: 12px; padding: 14px;
+            border: 1px solid var(--border); border-radius: 10px;
+            font-weight: 600; cursor: pointer; background-color: var(--card);
+            text-align: left; font-size: 16px; transition: all 0.2s ease;
+        }
+        .payment-method-btn:hover { background-color: #f3f4f6; }
+        .payment-method-btn .icon { font-size: 24px; }
+        #qris-display, #cashier-display { text-align: center; }
+        #qris-display img { max-width: 250px; width: 100%; margin: 12px auto; border: 4px solid var(--border); border-radius: 8px; }
+        #qris-display p, #cashier-display p { font-size: 14px; color: var(--muted); }
+        #cashier-display .icon { font-size: 48px; margin-bottom: 12px; }
+        #qris-timer { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+        .payment-summary-popup { text-align: center; margin-top: 16px; }
+        .payment-summary-popup .total-label { font-size: 14px; color: var(--muted); }
+        .payment-summary-popup .total-amount { font-size: 22px; font-weight: 700; color: var(--text); }
+        #cashier-display .bill-details { text-align: left; }
+        /* [BARU] Style untuk struk pembayaran di kasir */
+        .receipt-box {
+            background: #ffffff;
+            border: 1px dashed var(--muted);
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            color: #333;
+        }
+        .receipt-box .header { text-align: center; margin-bottom: 15px; }
+        .receipt-box .header h4 { margin: 0 0 4px 0; font-size: 16px; }
+        .receipt-box .header p { margin: 0; font-size: 12px; }
+        .receipt-box .item-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+        .receipt-box .item-name { flex-grow: 1; }
+        .receipt-box .item-price { white-space: nowrap; }
+        .receipt-box .totals-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; }
+        .receipt-box hr { border: none; border-top: 1px dashed #ccc; margin: 15px 0; }
+        .receipt-box .footer { text-align: center; margin-top: 15px; font-size: 12px; }
+
+        /* [BARU] Style untuk grup tombol aksi */
+        .action-buttons-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .btn-secondary-action {
+            background-color: #e5e7eb;
+            color: var(--text);
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .btn-back { background: none; border: none; color: var(--muted); font-weight: 600; cursor: pointer; margin-top: 20px; } /* Tombol kembali yang lama */
+
+        /* [BARU] Tombol Aksi Utama (Cek Status) */
+        .btn-action {
+            display: block;
+            width: 100%;
+            background: var(--primary);
+            color: var(--primary-text); flex-grow: 1;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 24px;
+            text-align: center; margin-top: 0;
+            text-decoration: none;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <header class="checkout-header">
+        <button class="back-btn" onclick="history.back()">‹</button>
+        <h1>Konfirmasi & Pembayaran</h1>
+    </header>
+
+    <main>
+        <div id="payment-container" class="payment-container">
+            <!-- Konten akan di-render oleh JavaScript -->
+        </div>
+    </main>
+
+    <!-- [BARU] Tambahkan Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Akhir dari Firebase SDK -->
+
+    <script>
+        let cart = [];
+        let orderDetails = {};
+        let paymentInfo = {};
+        let userInfo = {};
+
+        function parsePrice(priceString) {
+            if (priceString === undefined || priceString === null) return 0;
+            if (typeof priceString === 'number') return priceString;
+            return parseFloat(String(priceString).replace(/[^0-9]/g, ''));
+        }
+
+        function formatPrice(price) {
+            return `Rp ${Math.round(price).toLocaleString('id-ID')}`;
+        }
+
+        // [BARU] Inisialisasi Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+            authDomain: "ricebowlmonst.firebaseapp.com",
+            databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+            projectId: "ricebowlmonst",
+            storageBucket: "ricebowlmonst.firebasestorage.app",
+            messagingSenderId: "723669558962",
+            appId: "1:723669558962:web:c17a1a4683a86cc5a88bab",
+            measurementId: "G-1G3JF6ZFRP"
+        };
+
+        // Inisialisasi Firebase
+        // [DIUBAH] Hanya inisialisasi Firebase jika belum ada
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // [DIUBAH] Pindahkan orderId ke scope yang lebih tinggi agar bisa diakses bersama
+        // [DIUBAH] Ambil ID dari URL jika ada (mode edit), jika tidak, buat baru.
+        const urlParams = new URLSearchParams(window.location.search);
+        const editOrderId = urlParams.get('editOrderId');
+        let sharedOrderId = editOrderId || null;
+
+        function saveOrderAndRedirect() {
+            let history = JSON.parse(localStorage.getItem('rbm_order_history') || '[]');
+
+            // [DIUBAH] Ambil info outlet dari localStorage
+            let outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
+
+            // 2. Buat objek pesanan baru
+            // [DIUBAH] Gunakan sharedOrderId yang sudah dibuat sebelumnya
+            const orderData = {
+                id: sharedOrderId,
+                date: new Date().toISOString(),
+                items: cart,
+                status: 'Baru',
+                details: orderDetails,
+                outlet: outletInfo, // [BARU] Tambahkan info outlet
+                source: 'webapp', // [BARU] Penanda pesanan dari Web App Customer
+                payment: paymentInfo,
+                user: userInfo
+            };
+            
+            // [DIUBAH] Logika untuk edit atau tambah baru
+            if (editOrderId) {
+                // Mode Edit: Cari dan perbarui pesanan yang ada
+                const orderIndex = history.findIndex(o => o.id === editOrderId);
+                if (orderIndex > -1) {
+                    // Gabungkan data lama dengan data baru (terutama metode pembayaran)
+                    history[orderIndex] = { ...history[orderIndex], ...orderData, payment: paymentInfo };
+                } else {
+                    // Jika tidak ditemukan di riwayat (kasus jarang), tambahkan sebagai baru
+                    history.unshift(orderData);
+                }
+            } else {
+                // Mode Baru: Tambahkan pesanan baru ke awal riwayat
+                history.unshift(orderData);
+            }
+
+            // [BARU] Tandai voucher pribadi sebagai terpakai jika ada
+            if (paymentInfo.usedPromo && paymentInfo.usedPromo.source === 'personal') {
+                const userPhone = userInfo.phone;
+                if (userPhone) {
+                    const storageKey = `rbm_unclaimed_rewards_${userPhone}`;
+                    let claimedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                    
+                    // Cari item berdasarkan ID dan ubah statusnya
+                    const promoId = paymentInfo.usedPromo.id;
+                    claimedItems = claimedItems.map(item => {
+                        // Pastikan membandingkan ID dengan tipe yang sama (string/number)
+                        if (String(item.id) === String(promoId)) {
+                            return { ...item, status: 'used', usedDate: new Date().toISOString() };
+                        }
+                        return item;
+                    });
+                    
+                    localStorage.setItem(storageKey, JSON.stringify(claimedItems));
+                }
+            }
+
+            // 4. Simpan kembali ke localStorage
+            localStorage.setItem('rbm_order_history', JSON.stringify(history));
+
+            // 5. Hapus data keranjang dan info pembayaran
+            localStorage.removeItem('rbm_cart');
+            localStorage.removeItem('rbm_payment_info');
+            localStorage.removeItem('rbm_outlet_info'); // [BARU] Hapus juga info outlet
+
+            window.location.href = 'riwayat.html';
+        }
+
+        // [BARU] Fungsi untuk mengirim pesanan ke Firebase
+        function sendOrderToFirebase() {
+            let outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
+            const outletId = outletInfo.id;
+
+            // [DIUBAH] Hanya buat ID baru jika tidak dalam mode edit
+            if (!sharedOrderId) {
+                sharedOrderId = `RBM-${Date.now()}`;
+            }
+
+            const newOrder = {
+                id: sharedOrderId,
+                date: new Date().toISOString(),
+                items: cart,
+                status: 'Baru', // Status awal pesanan
+                details: orderDetails,
+                outlet: outletInfo,
+                source: 'webapp', // [BARU] Penanda pesanan dari Web App Customer
+                payment: paymentInfo,
+                user: userInfo
+            };
+
+            // [DIUBAH] Gunakan update() untuk mode edit, dan set() untuk mode baru
+            const orderRef = database.ref(`orders/${outletId}/${sharedOrderId}`);
+            if (editOrderId) {
+                // Hanya perbarui metode pembayaran dan status
+                orderRef.update({ payment: paymentInfo, status: 'Baru' });
+            } else {
+                orderRef.set(newOrder);
+            }
+        }
+
+        function sendOrderToWhatsApp() {
+            const { subtotal, discountAmount, ppn, total, overallNote } = paymentInfo;
+
+            let orderTypeString = orderDetails.type === 'Dine-in' ? 'Makan di Tempat' : 'Bawa Pulang';
+            if (orderDetails.type === 'Dine-in' && orderDetails.tableNumber) {
+                orderTypeString += ` (Meja No. ${orderDetails.tableNumber})`;
+            }
+
+            let message = `Halo Rice Bowl Monster, saya mau pesan (${orderTypeString}):\n\n`;
+            cart.forEach(item => {
+                message += `*${item.name}* (${item.quantity}x)\n`;
+                if (item.note) {
+                    message += `  - Catatan: _${item.note}_\n`;
+                }
+            });
+            if (overallNote) {
+                message += `\n*Catatan Pesanan:* ${overallNote}\n`;
+            }
+            message += `\nSubtotal: ${formatPrice(subtotal)}\n`;
+            if (discountAmount > 0) {
+                message += `Diskon: -${formatPrice(discountAmount)}\n`;
+            }
+            message += `PPN (10%): ${formatPrice(ppn)}\n`;
+            message += `*Total: ${formatPrice(total)}*\n\n`;
+            message += 'Mohon diproses, terima kasih!';
+
+            const whatsappUrl = `https://wa.me/6282246666651?text=${encodeURIComponent(message)}`;
+            
+            localStorage.removeItem('rbm_cart');
+            localStorage.removeItem('rbm_payment_info');
+            return whatsappUrl;
+        }
+
+        function openWhatsApp(whatsappUrl) {
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function startQrisTimer(duration, display) {
+            let timer = duration, minutes, seconds;
+            const interval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    display.textContent = "Waktu Habis";
+                }
+            }, 1000);
+        }
+
+        function renderPaymentSelection() {
+            const container = document.getElementById('payment-container');
+            const total = formatPrice(paymentInfo.total);
+            let billDetailsHtml = '';
+            cart.forEach(item => {
+                billDetailsHtml += `<div>- ${item.name} (${item.quantity}x)</div>`;
+            });
+
+            container.innerHTML = `
+                <h3>Konfirmasi & Pembayaran</h3>
+                <div class="bill-info">
+                    Meja: <strong>${orderDetails.tableNumber || 'N/A'}</strong> | Total: <strong>${total}</strong>
+                </div>
+                <div class="bill-details">${billDetailsHtml}</div>
+                <div class="confirmation-warning">
+                    Pesanan Anda tidak dapat dibatalkan setelah pembayaran dilakukan.
+                </div>
+                <h4>Pilih Metode Pembayaran</h4>
+                <div class="payment-methods">
+                    <button class="payment-method-btn" id="pay-with-qris">
+                        <span class="icon">📱</span> QRIS
+                    </button>
+                    <button class="payment-method-btn" id="pay-at-cashier">
+                        <span class="icon">🏪</span> Bayar di Kasir
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('pay-with-qris').addEventListener('click', renderQrisView);
+            document.getElementById('pay-at-cashier').addEventListener('click', renderCashierView);
+        }
+
+        function renderQrisView() {
+            const container = document.getElementById('payment-container');
+            const total = formatPrice(paymentInfo.total);
+            paymentInfo = { ...paymentInfo, method: 'QRIS' }; // [DIUBAH] Pastikan metode pembayaran tersimpan dengan membuat objek baru
+            const whatsappUrl = sendOrderToWhatsApp();
+            
+            try {
+                sendOrderToFirebase(); // [BARU] Kirim pesanan ke Firebase
+            } catch (e) {
+                console.error("Gagal kirim ke firebase:", e);
+            }
+            container.innerHTML = `
+                <div id="qris-display">
+                    <h3>Pembayaran QRIS</h3>
+                    <p>Selesaikan pembayaran dalam waktu:</p>
+                    <div id="qris-timer">10:00</div>
+                    <img src="qris.png" alt="QRIS Code">
+                    <div class="payment-summary-popup">
+                        <div class="total-label">Total Pembayaran</div>
+                        <div class="total-amount">${total}</div>
+                    </div>
+                    <div class="action-buttons-group">
+                        <a href="qris.png" download="qris-payment.png" class="btn-secondary-action" title="Download QRIS">Download</a>
+                        <button class="btn-action" onclick="saveOrderAndRedirect()">Lihat Riwayat Pesanan</button>
+                    </div>
+                </div>
+            `;
+            startQrisTimer(600, document.getElementById('qris-timer'));
+        }
+
+        function renderCashierView() {
+            const container = document.getElementById('payment-container');
+            const { subtotal, discountAmount, ppn, total } = paymentInfo;
+            const tableNumber = orderDetails.tableNumber || 'N/A';
+            let billDetailsHtml = '';
+            cart.forEach(item => {
+                billDetailsHtml += `
+                    <div class="item-row">
+                        <span class="item-name">${item.quantity}x ${item.name}</span>
+                        <span class="item-price">${formatPrice(parsePrice(item.price) * item.quantity)}</span>
+                    </div>
+                `;
+            });
+            paymentInfo.method = 'Bayar di Kasir'; // [DIUBAH] Simpan metode pembayaran SEBELUM memanggil fungsi lain
+            
+            try {
+                sendOrderToFirebase(); // [BARU] Kirim pesanan ke Firebase
+            } catch (e) {
+                console.error("Gagal kirim ke firebase:", e);
+            }
+
+            container.innerHTML = `
+                <div id="cashier-display">
+                    <h3>Pembayaran di Kasir</h3>
+                    <p>Silahkan tunjukan struk di bawah ini ke staff kasir.</p>
+                    
+                    <div class="receipt-box">
+                        <div class="header">
+                            <h4>RICE BOWL MONSTER</h4>
+                            <p>${new Date().toLocaleString('id-ID')}</p>
+                            <p>Meja: ${tableNumber}</p>
+                        </div>
+                        <hr>
+                        ${billDetailsHtml}
+                        <hr>
+                        <div class="totals-row"><span>Subtotal</span><span>${formatPrice(subtotal)}</span></div>
+                        <div class="totals-row"><span>Diskon</span><span>- ${formatPrice(discountAmount)}</span></div>
+                        <div class="totals-row"><span>PPN 10%</span><span>${formatPrice(ppn)}</span></div>
+                        <hr>
+                        <div class="totals-row" style="font-size: 16px;"><span>TOTAL</span><span>${formatPrice(total)}</span></div>
+                        <div class="footer">** Terima Kasih **</div>
+                    </div>
+
+                    <button class="btn-action" onclick="saveOrderAndRedirect()">Lihat Riwayat Pesanan</button>
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cart = JSON.parse(localStorage.getItem('rbm_cart') || '[]');
+            orderDetails = JSON.parse(localStorage.getItem('rbm_order_details') || '{}');
+            paymentInfo = JSON.parse(localStorage.getItem('rbm_payment_info') || '{}');
+            userInfo = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+
+            if (cart.length === 0 || !paymentInfo.total) {
+                const container = document.getElementById('payment-container');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--muted);">
+                        <h3>Data Pesanan Tidak Ditemukan</h3>
+                        <p>Silakan kembali ke halaman checkout untuk melanjutkan.</p>
+                        <a href="checkout.html" style="text-decoration: none; color: var(--primary); font-weight: 600;">Kembali ke Checkout</a>
+                    </div>
+                `;
+                return;
+            }
+
+            renderPaymentSelection();
+        });
+    </script>
+
+</body>
+</html>

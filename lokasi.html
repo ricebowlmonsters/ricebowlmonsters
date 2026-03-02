@@ -3,29 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // [ANTI-FLASH] Sembunyikan link riwayat jika fitur pesan mati
+    try {
+      var _s = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+      if (_s.ordering_enabled === false || _s.ordering_enabled === 'false') {
+        var style = document.createElement('style');
+        style.innerHTML = '.bottom-link[href="riwayat.html"] { display: none !important; } .bottom-nav { grid-template-columns: repeat(5, 1fr) !important; }';
+        document.head.appendChild(style);
+      }
+    } catch(e){}
+  </script>
   <title>Lokasi - Rice Bowl Monster</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* --- PENGATURAN SPASI FINAL --- */
-    /* 1. Reset semua spasi yang mungkin mengganggu dari styles.css */
-    .app-header.simple {
-      margin-bottom: 70px !important;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    .app-header {
+        position: sticky; top: 0; z-index: 100;
+        background: white; padding: 10px 16px;
+        display: flex; align-items: center; gap: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
+    .back-btn { font-size: 24px; font-weight: bold; color: #333; }
+    .page-title { font-size: 18px; font-weight: 700; margin: 0; flex-grow: 1; text-align: center; padding-right: 24px; }
     .location-header {
-      margin-top: 70px !important;
+      margin-top: 0;
+      padding: 0 4px;
+      margin-bottom: 20px;
+      text-align: center;
     }
 
-    /* 2. Atur jarak yang kita inginkan HANYA dengan padding-top di sini */
     .content.with-bottom-nav {
-      padding-top: 16px !important; /* <-- UBAH ANGKA INI UNTUK MENGATUR JARAK */
+      padding: 20px 16px 100px;
     }
     /* ------------------------------ */
 
     body {
-      background-color: #f8f9fa;
+      background-color: #f3f4f6;
     }
     .location-card {
       background-color: white;
@@ -35,21 +52,100 @@
       margin-bottom: 24px;
     }
     .loc-body {
-      padding: 16px;
+      padding: 2px 6px;
+      background: transparent;
+      line-height: 1.06;
     }
     .loc-title {
       margin-top: 0;
-      margin-bottom: 8px;
+      margin-bottom: 2px;
+      font-size: 13px;
+      line-height: 1.06;
     }
     .location-card iframe {
       width: 100%;
-      height: 220px;
+      height: 140px;
       border: none;
+      display: block;
+    }
+    .location-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
       display: block;
     }
     .form-title {
       font-size: 20px;
       margin-bottom: 4px;
+      color: #4C2A85;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+    }
+    .text-accent {
+      color: #dc2626;
+      font-size: 14px;
+      font-weight: 400;
+      font-family: 'Inter', sans-serif;
+    }
+    /* [BARU] Override Bottom Nav untuk 6 item */
+    .bottom-nav {
+      position: fixed; bottom: 16px; left: 16px; right: 16px;
+      background: white; border-radius: 50px;
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      padding: 6px 8px; z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .bottom-link {
+      display: flex; flex-direction: column; align-items: center;
+      text-decoration: none; color: #888; padding: 6px 4px;
+      font-size: 10px; gap: 4px;
+      font-family: serif;
+    }
+    .bottom-link .icon { font-size: 18px; }
+    .bottom-link.active { color: #4C2A85; font-weight: 600; }
+
+    /* [BARU] Styles untuk indikator lokasi */
+    .location-card {
+      position: relative;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      padding-top: 4px; /* reduce top space for compact layout */
+    }
+    .location-card:hover {
+        transform: translateY(-2px);
+    }
+    .location-card.nearest {
+        border-color: #10b981; /* Hijau untuk terdekat */
+    }
+    .location-card.selected {
+        border-color: #4C2A85; /* Ungu untuk dipilih manual */
+        background-color: #f9f7ff;
+    }
+    /* Inline badge (diletakkan setelah link) untuk menandai outlet terdekat */
+    .nearest-inline {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 0 4px;
+      border-radius: 8px;
+      background: transparent; /* no background as requested */
+      color: #10b981; /* green text to indicate nearest */
+      font-weight: 700;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+    /* Pastikan konten teks dan checkbox berada di atas peta */
+    .loc-body {
+      position: relative;
+      z-index: 3;
+      padding: 2px 6px;
+      background: transparent;
+      line-height: 1.06;
+    }
+    /* Jarak antara teks dan peta */
+    .location-card iframe,
+    .location-card img {
+      margin-top: 6px; /* reduce gap between header and map */
     }
   </style>
 </head>
@@ -63,7 +159,7 @@
       }catch(e){}
     })();
   </script>
-  <header class="app-header simple">
+  <header class="app-header">
     <a href="home.html" class="back-btn" aria-label="Kembali">❮</a>
     <h1 class="page-title">Lokasi</h1>
   </header>
@@ -74,42 +170,259 @@
       <p class="text-accent" style="margin:0">Pilih lokasi favorit untuk klaim atau pesan</p>
     </div>
 
-    <div class="location-grid">
-
-      <div class="location-card">
-        <div class="loc-body">
-          <h3 class="loc-title">Rice Bowl Monsters - Ponti, Sidoarjo</h3>
-          <a class="loc-link" target="_blank" rel="noopener" href="https://maps.app.goo.gl/XxnrfTmpg6pZnAAe6">Lihat di Google Maps</a>
-        </div>
-        <iframe 
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3956.165063491737!2d112.70156920557315!3d-7.446982931155137!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7e1f39e373077%3A0x5806b47c62d4d036!2sRice%20Bowl%20Monsters%20-%20Ponti!5e0!3m2!1sen!2sid!4v1760433310415!5m2!1sen!2sid"
-          width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" 
-          referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
+    <!-- Notice shown when geolocation is denied or unavailable -->
+    <div id="manualLocationNotice" style="display:none; padding:12px 16px; text-align:center;">
+      <div style="background:#fff7f3; border:1px solid #ffd6cc; padding:12px; border-radius:10px; display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap;">
+        <div style="color:#b45309; font-weight:700;">Lokasi tidak diizinkan</div>
+        <div style="color:#6b7280;">Silakan pilih lokasi secara manual.</div>
+        <button id="openManualLocationBtn" style="background:#4C2A85; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">Pilih Lokasi</button>
       </div>
+    </div>
 
-      <div class="location-card">
-        <div class="loc-body">
-          <h3 class="loc-title">Rice Bowl Monsters - Darmokali, Surabaya</h3>
-          <a class="loc-link" target="_blank" rel="noopener" href="https://maps.app.goo.gl/L8ZfX5kU64RcVCjw9">Lihat di Google Maps</a>
-        </div>
-        <iframe 
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.569791283041!2d112.7428305!3d-7.289688699999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fb00104bf403%3A0x7015e7bff6734f76!2sRice%20bowl%20Monsters%20-%20Darmokali!5e0!3m2!1sen!2sid!4v1760433154468!5m2!1sen!2sid" 
-          width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" 
-          referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
-      </div>
-
+    <div class="location-grid" id="locationContainer">
+      <div style="text-align: center; padding: 40px; color: #888;">Memuat lokasi...</div>
     </div>
   </main>
 
 
   <nav class="bottom-nav">
-    <a class="bottom-link" href="home.html"><span class="icon">🏠</span><span>Home</span></a>
-    <a class="bottom-link" href="tukarpoint.html"><span class="icon">🎁</span><span>Tukar</span></a>
-    <a class="bottom-link" href="klaim.html"><span class="icon">🎫</span><span>Vcr Klaim</span></a>
-    <a class="bottom-link active" href="lokasi.html"><span class="icon">📍</span><span>Lokasi</span></a>
-    <a class="bottom-link" href="akun.html"><span class="icon">👤</span><span>Akun</span></a>
+    <a class="bottom-link" href="index.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar Poin</span> </a>
+    <a class="bottom-link" href="diskon.html"> <span class="icon">🏷️</span> <span>Diskon</span> </a>
+    <a class="bottom-link" href="riwayat.html"> <span class="icon">🧾</span> <span>Riwayat</span> </a>
+    <a class="bottom-link active" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+    <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
   </nav>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+        authDomain: "ricebowlmonst.firebaseapp.com",
+        databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+        projectId: "ricebowlmonst",
+        storageBucket: "ricebowlmonst.firebasestorage.app",
+        messagingSenderId: "723669558962",
+        appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
+    // [BARU] Update Bottom Nav berdasarkan status fitur pesan
+    function updateBottomNav(isEnabled) {
+        const riwayatLink = document.querySelector('.bottom-link[href="riwayat.html"]');
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (riwayatLink) {
+            if (isEnabled === false) {
+                riwayatLink.style.display = 'none';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(5, 1fr)';
+            } else {
+                riwayatLink.style.display = 'flex';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(6, 1fr)';
+            }
+        }
+    }
+    // Listen dari Firebase
+    db.ref('customer_app_settings/ordering_enabled').on('value', (snapshot) => {
+        updateBottomNav(snapshot.val());
+    });
+
+    // [BARU] Variabel Global untuk Lokasi
+    let globalOutlets = [];
+    let currentNearestId = null;
+    let currentSelectedId = null;
+
+    // JANGAN load selected dari storage - lokasi tidak disimpan
+    // try {
+    //   const saved = JSON.parse(localStorage.getItem('rbm_outlet_info'));
+    //   if (saved && saved.id) currentSelectedId = saved.id;
+    // } catch(e) {}
+
+    // If Geolocation API is not present, prompt manual selection
+    if (!navigator.geolocation) {
+      showManualLocationNotice(true);
+    }
+
+    // Fungsi Pilih Outlet Manual
+    window.selectOutlet = function(outletId) {
+        currentSelectedId = outletId;
+        const outlet = globalOutlets.find(o => o.id === outletId);
+        if (outlet) {
+            // [FIX] Simpan ke localStorage agar halaman checkout/payment bisa mengakses ID outlet
+            const toSave = Object.assign({}, outlet, { saved_at: Date.now() });
+            localStorage.setItem('rbm_outlet_info', JSON.stringify(toSave));
+            updateLocationUI();
+            // Redirect kembali ke index.html setelah memilih
+            setTimeout(function(){
+              window.location.href = 'index.html';
+            }, 300);
+        }
+    }
+
+    function updateLocationUI() {
+        const cards = document.querySelectorAll('.location-card');
+        cards.forEach(card => {
+            const id = card.dataset.id;
+            card.classList.remove('nearest', 'selected');
+            
+            if (id === currentNearestId) card.classList.add('nearest');
+            if (id === currentSelectedId) card.classList.add('selected');
+        // update inline nearest badge visibility
+        try {
+          const nb = card.querySelector('.nearest-inline');
+          if (nb) nb.style.display = (id === currentNearestId) ? 'inline-block' : 'none';
+        } catch(e) {}
+      });
+    }
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; 
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    function checkNearestLocation() {
+        if (navigator.geolocation && globalOutlets.length > 0) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                let minDist = Infinity;
+                let nearestId = null;
+
+                globalOutlets.forEach(outlet => {
+                    if (outlet.lat && outlet.lon) {
+                        const dist = getDistance(lat, lon, outlet.lat, outlet.lon);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearestId = outlet.id;
+                        }
+                    }
+                });
+
+                if (nearestId) {
+                    currentNearestId = nearestId;
+                    updateLocationUI();
+                }
+        }, (err) => {
+          console.log("Lokasi tidak diizinkan:", err);
+          showManualLocationNotice(true);
+        });
+        }
+    }
+
+    // Show or hide the manual location notice
+    function showManualLocationNotice(show) {
+      const n = document.getElementById('manualLocationNotice');
+      if (!n) return;
+      n.style.display = show ? 'block' : 'none';
+    }
+
+    // If Permissions API is available, react to a denied permission immediately
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
+          if (permissionStatus.state === 'denied') {
+            showManualLocationNotice(true);
+          }
+          permissionStatus.onchange = function() {
+            showManualLocationNotice(this.state === 'denied');
+            if (this.state === 'granted') checkNearestLocation();
+          };
+        }).catch(()=>{});
+      }
+    } catch(e) {}
+
+    // Button: scroll to manual location list
+    document.addEventListener('click', function(e){
+      if (e.target && e.target.id === 'openManualLocationBtn') {
+        const container = document.getElementById('locationContainer');
+        if (container) {
+          container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // ensure notice is hidden after action
+          showManualLocationNotice(false);
+        }
+      }
+    });
+
+    function renderLocations(outlets) {
+        globalOutlets = outlets || [];
+        const container = document.getElementById('locationContainer');
+        if (!container) return;
+        
+        if (!outlets || outlets.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:20px;">Belum ada lokasi yang tersedia.</div>';
+            return;
+        }
+
+        container.innerHTML = outlets.map(outlet => {
+            let mediaHtml = '';
+            let mapUrl = outlet.embed_map;
+            
+            // [BARU] Ekstrak URL jika admin memasukkan tag iframe lengkap di Kasir
+            if (mapUrl && mapUrl.includes('<iframe')) {
+                const match = mapUrl.match(/src="([^"]+)"/);
+                if (match && match[1]) mapUrl = match[1];
+            }
+
+            if (mapUrl) {
+                mediaHtml = `<iframe src="${mapUrl}" width="600" height="140" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+            } else {
+                mediaHtml = `<div style="width: 100%; height: 140px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #888; flex-direction: column;"><span style="font-size: 24px; margin-bottom: 8px;">🗺️</span>Peta tidak tersedia</div>`;
+            }
+
+            return `
+              <div class="location-card" data-id="${outlet.id}" onclick="selectOutlet('${outlet.id}')">
+                <div class="loc-body">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <div>
+                      <h3 class="loc-title">${outlet.name}</h3>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <a class="loc-link" target="_blank" rel="noopener" href="${outlet.map_link || '#'}" onclick="event.stopPropagation()">Lihat di Google Maps</a>
+                        <span class="nearest-inline" data-id="nearest-${outlet.id}" style="display:none;">📍 Terdekat</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                ${mediaHtml}
+              </div>
+            `;
+        }).join('');
+        
+        updateLocationUI();
+        checkNearestLocation();
+    }
+
+    // Load from LocalStorage first
+    const cachedSettings = localStorage.getItem('rbm_customer_app_settings');
+    if (cachedSettings) {
+        try {
+            const settings = JSON.parse(cachedSettings);
+            if (settings.outlets) renderLocations(settings.outlets);
+            if (settings.ordering_enabled !== undefined) {
+                updateBottomNav(settings.ordering_enabled);
+            }
+        } catch(e) {}
+    }
+
+    // Load from Firebase
+    db.ref('customer_app_settings').on('value', (snapshot) => {
+        const settings = snapshot.val();
+        if (settings) {
+            localStorage.setItem('rbm_customer_app_settings', JSON.stringify(settings));
+            if (settings.outlets) renderLocations(settings.outlets);
+        }
+    });
+  </script>
 </body>
 </html>
