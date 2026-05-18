@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservasi - Rice Bowl Monsters</title>
+    
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #4C2A85;
+            --secondary-color: #f59e0b;
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        /* Header */
+        .app-header {
+            position: sticky; top: 0; z-index: 100;
+            background: white; padding: 10px 16px;
+            display: flex; align-items: center; gap: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .back-btn { font-size: 24px; font-weight: bold; color: #333; text-decoration: none; }
+        .page-title { font-size: 18px; font-weight: 700; margin: 0; flex-grow: 1; text-align: center; padding-right: 24px; }
+
+        /* Content */
+        .content { padding: 16px; padding-bottom: 100px; }
+        
+        .booking-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 24px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .booking-card-title {
+            text-align: center;
+            font-size: 20px;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-main);
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 42, 133, 0.1);
+        }
+
+        .row-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .row-group .form-group {
+            flex: 1;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #3a1f66;
+        }
+
+        .btn-submit:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        /* Menu Pre-Order Styling */
+        .menu-preorder-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .menu-preorder-item:last-child { border-bottom: none; }
+        .menu-preorder-info { flex: 1; padding-right: 8px; }
+        .menu-preorder-name { font-size: 13px; font-weight: 600; color: var(--text-main); line-height: 1.3; }
+        .menu-preorder-price { font-size: 12px; color: var(--primary-color); font-weight: 600; margin-top: 2px; }
+        .menu-preorder-controls { display: flex; align-items: center; gap: 10px; }
+        .menu-preorder-btn { background: #eef2ff; color: var(--primary-color); border: 1px solid #c7d2fe; width: 28px; height: 28px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .menu-preorder-btn:active { background: #c7d2fe; }
+        .menu-preorder-qty { font-size: 14px; font-weight: bold; min-width: 20px; text-align: center; }
+        .menu-category-title { font-size: 11px; font-weight: bold; color: white; background: var(--primary-color); padding: 4px 8px; border-radius: 4px; margin-top: 12px; margin-bottom: 4px; display: inline-block; letter-spacing: 0.5px; text-transform: uppercase; }
+
+        /* Card Radio Styling */
+        .image-radio-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 6px; }
+        .image-radio-card { border: 2px solid #e5e7eb; border-radius: 12px; padding: 8px; cursor: pointer; text-align: center; transition: all 0.2s; background: white; }
+        .image-radio-card img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
+        .image-radio-card.selected { border-color: var(--primary-color); background: #f9f5ff; box-shadow: 0 4px 10px rgba(76, 42, 133, 0.1); }
+        .image-radio-card-title { font-weight: 600; font-size: 13px; color: var(--text-main); }
+
+        /* Bottom Nav Override */
+        .bottom-nav {
+            position: fixed; bottom: 16px; left: 16px; right: 16px;
+            background: white; border-radius: 50px;
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            padding: 6px 8px; z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .bottom-link {
+            display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; color: #888; padding: 6px 4px;
+            font-size: 10px; gap: 4px; font-family: serif;
+        }
+        .bottom-link .icon { font-size: 18px; }
+        .bottom-link.active { color: var(--primary-color); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <a href="index.html" class="back-btn">❮</a>
+    <h1 class="page-title">Reservasi</h1>
+</header>
+
+<main class="content with-bottom-nav">
+    <div class="booking-card">
+        <h2 class="booking-card-title">Form Booking & Acara</h2>
+        <form id="bookingForm" class="booking-form" onsubmit="submitCustomerBooking(event)">
+        
+        <div class="form-group" id="outlet-selector-group">
+            <label>Pilih Cabang / Lokasi *</label>
+            <select id="cust_outlet" required onchange="loadOutletSettings(this.value)">
+                <option value="">Memuat lokasi...</option>
+            </select>
+        </div>
+
+        <div id="reservasi-closed-msg" style="display:none; text-align:center; padding:30px 10px; color:#dc2626; font-weight:bold; background:#fee2e2; border-radius:8px; border:1px solid #fecaca; margin-top: 10px; margin-bottom: 20px;">
+            🙏 Maaf, fitur Reservasi untuk cabang ini sedang ditutup / dinonaktifkan.
+        </div>
+
+        <div id="tnc-container" class="form-group" style="display:none; background:#f9fafb; padding:12px; border-radius:8px; border:1px solid #e5e7eb; font-size:12px; color:#4b5563; max-height:150px; overflow-y:auto; white-space:pre-wrap; line-height: 1.5;"></div>
+
+        <div class="form-group">
+            <label>Nama Pemesan *</label>
+            <input type="text" id="cust_nama" placeholder="Masukkan nama lengkap Anda" required>
+        </div>
+
+        <div class="form-group">
+            <label>Nomor WhatsApp *</label>
+            <input type="tel" id="cust_wa" placeholder="08..." required>
+        </div>
+
+        <div class="row-group">
+            <div class="form-group">
+                <label>Tanggal *</label>
+                <input type="date" id="cust_tanggal" required>
+            </div>
+            <div class="form-group">
+                <label>Jumlah Tamu *</label>
+                <input type="number" id="cust_tamu" placeholder="Orang" min="1" required>
+            </div>
+        </div>
+
+        <div class="row-group">
+            <div class="form-group">
+                <label>Jam Mulai *</label>
+                <input type="time" id="cust_jam_mulai" required>
+            </div>
+            <div class="form-group">
+                <label>Jam Selesai *</label>
+                <input type="time" id="cust_jam_selesai" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Pilih Ruangan *</label>
+            <div id="ruangan-container" class="image-radio-group">
+                <p style="font-size:12px; color:#888;">Memuat data ruangan...</p>
+            </div>
+            <input type="hidden" id="cust_ruangan">
+        </div>
+
+        <div class="form-group">
+            <label>Penataan Kursi/Meja *</label>
+            <div id="meja-container" class="image-radio-group">
+                <p style="font-size:12px; color:#888;">Memuat data penataan meja...</p>
+            </div>
+            <input type="hidden" id="cust_meja">
+        </div>
+
+        <div class="form-group" id="bank-info-container" style="display:none; background:#eef2ff; padding:12px; border-radius:8px; border:1px solid #c7d2fe; margin-top:16px;">
+            <label style="color:#3730a3; margin-bottom: 8px;">Instruksi Transfer Down Payment (DP)</label>
+            <div style="font-size:13px; color:#4338ca; margin-bottom:12px; background: white; padding: 10px; border-radius: 6px;">
+                Bank: <strong id="bank-name"></strong><br>
+                No. Rekening: <strong id="bank-rek" style="font-size: 15px;"></strong><br>
+                A/N: <strong id="bank-an"></strong>
+            </div>
+            <label>Nominal DP yang Akan Ditransfer (Opsional)</label>
+            <input type="number" id="cust_dp" placeholder="Contoh: 50000" min="0">
+            <div id="dp-helper-text" style="font-size:11px; color:#d97706; margin-top:4px; font-weight:600;"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Catatan Tambahan (Opsional)</label>
+            <textarea id="cust_catatan" rows="3" placeholder="Contoh: Butuh proyektor, kursi anak, dekorasi meja..."></textarea>
+        </div>
+        
+        <div class="form-group" id="menu-preorder-container" style="display:none; background:#f9fafb; padding:16px; border-radius:12px; border:1px solid #e5e7eb; margin-top:20px; margin-bottom:20px;">
+            <label style="color:#3730a3; margin-bottom: 4px; font-size:15px;">Pre-Order Menu (Opsional)</label>
+            <p style="font-size:12px; color:#6b7280; margin-bottom:12px; margin-top:0;">Pesan menu sekarang agar hidangan siap saat Anda datang.</p>
+            <div id="menu-list" style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
+                <!-- Menu rendered here -->
+            </div>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed #cbd5e1; display: flex; flex-direction: column; gap: 8px; font-weight: bold; color: var(--text-main); font-size: 14px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Subtotal Pre-Order:</span>
+                    <span id="preorder-subtotal">Rp 0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: var(--secondary-color);">
+                    <span>PPN (<span id="preorder-ppn-rate">0</span>%):</span>
+                    <span id="preorder-ppn-amount">Rp 0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 16px; color: var(--primary-color); border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    <span>Total Pre-Order:</span>
+                    <span id="preorder-total">Rp 0</span>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn-submit">Kirim Permintaan Booking</button>
+    </form>
+</div>
+</main>
+
+<nav class="bottom-nav">
+    <a class="bottom-link" href="index.html"> <span class="icon">🏠</span> <span>Home</span> </a>
+    <a class="bottom-link" href="tukarpoint.html"> <span class="icon">🎁</span> <span>Tukar Poin</span> </a>
+    <a class="bottom-link" href="diskon.html"> <span class="icon">🏷️</span> <span>Diskon</span> </a>
+    <a class="bottom-link" href="riwayat.html"> <span class="icon">🧾</span> <span>Riwayat</span> </a>
+    <a class="bottom-link" href="lokasi.html"> <span class="icon">📍</span> <span>Lokasi</span> </a>
+    <a class="bottom-link" href="akun.html"> <span class="icon">👤</span> <span>Akun</span> </a>
+</nav>
+
+<script>
+    // 1. MASUKKAN KONFIGURASI FIREBASE ANDA DI SINI
+    // (Anda bisa menyalin ini dari file index.html di POS Anda)
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
+        authDomain: "ricebowlmonst.firebaseapp.com",
+        databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
+        projectId: "ricebowlmonst",
+        storageBucket: "ricebowlmonst.firebasestorage.app",
+        messagingSenderId: "723669558962",
+        appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
+    // Logika Pre-Order Menu
+    let preOrderCart = {};
+    let currentMenuData = [];
+    let currentPpnRate = 0;
+    let currentDpPercent = 0;
+    let currentOutletsData = [];
+
+    function parsePrice(priceString) {
+        if (!priceString) return 0;
+        if (typeof priceString === 'number') return priceString;
+        return parseFloat(String(priceString).replace(/[^0-9]/g, ''));
+    }
+
+    function formatPrice(price) {
+        return `Rp ${Math.round(price).toLocaleString('id-ID')}`;
+    }
+    
+    window.updatePreOrderQty = function(id, name, price, change) {
+        if (!preOrderCart[id]) {
+            preOrderCart[id] = { name, price: parsePrice(price), quantity: 0 };
+        }
+        
+        preOrderCart[id].quantity += change;
+        
+        if (preOrderCart[id].quantity <= 0) {
+            delete preOrderCart[id];
+            document.getElementById(`qty-${id}`).textContent = '0';
+        } else {
+            document.getElementById(`qty-${id}`).textContent = preOrderCart[id].quantity;
+        }
+        
+        updatePreOrderTotal();
+    };
+
+    function updatePreOrderTotal() {
+        let subtotal = 0;
+        Object.values(preOrderCart).forEach(item => {
+            subtotal += item.price * item.quantity;
+        });
+        
+        let ppnAmount = subtotal * (currentPpnRate / 100);
+        let total = subtotal + ppnAmount;
+        
+        const subtotalEl = document.getElementById('preorder-subtotal');
+        if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+        
+        const ppnEl = document.getElementById('preorder-ppn-amount');
+        if (ppnEl) ppnEl.textContent = formatPrice(ppnAmount);
+        
+        document.getElementById('preorder-total').textContent = formatPrice(total);
+
+        // Auto-suggest nominal DP based on Pre-Order Total
+        const dpInput = document.getElementById('cust_dp');
+        const dpHelper = document.getElementById('dp-helper-text');
+        if (currentDpPercent > 0 && total > 0) {
+            let suggestedDp = total * (currentDpPercent / 100);
+            if (dpInput) dpInput.value = Math.round(suggestedDp);
+            if (dpHelper) dpHelper.textContent = `*Saran DP (${currentDpPercent}% dari Total Pre-Order): ${formatPrice(suggestedDp)}`;
+        } else {
+            if (dpHelper) dpHelper.textContent = '';
+        }
+    }
+
+    async function submitCustomerBooking(event) {
+        event.preventDefault(); // Mencegah halaman reload
+        const btnSubmit = document.getElementById('btnSubmit');
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Memproses...";
+
+        // Olah Pre-Order
+        let preorderText = "";
+        let subtotalPreorder = 0;
+        let pesananArray = [];
+        
+        Object.values(preOrderCart).forEach(item => {
+            preorderText += `${item.quantity}x ${item.name}, `;
+            subtotalPreorder += item.price * item.quantity;
+            pesananArray.push(item);
+        });
+        
+        let ppnPreorder = subtotalPreorder * (currentPpnRate / 100);
+        let totalPreorder = subtotalPreorder + ppnPreorder;
+
+        let finalFasilitas = document.getElementById('cust_catatan').value;
+        if (preorderText) {
+            // Gabungkan catatan customer dengan ringkasan pesanan ke field fasilitas
+            let divider = finalFasilitas ? "\n\nCatatan Tambahan:\n" + finalFasilitas : "";
+            finalFasilitas = `[PRE-ORDER MENU]\n${preorderText.slice(0, -2)}\nSubtotal: ${formatPrice(subtotalPreorder)}\nPPN (${currentPpnRate}%): ${formatPrice(ppnPreorder)}\nTotal Pesanan: ${formatPrice(totalPreorder)}${divider}`;
+        }
+
+        // 2. KUMPULKAN DATA SESUAI FORMAT POS (rbm-reservasi.html)
+        const newRes = {
+            id: "RES-" + Date.now().toString().slice(-6),
+            pj: "Customer Online", // Penanda bahwa ini diinput sendiri oleh customer
+            timestamp: new Date().toISOString(),
+            nama: document.getElementById('cust_nama').value,
+            wa: document.getElementById('cust_wa').value,
+            tanggal: document.getElementById('cust_tanggal').value,
+            jamMulai: document.getElementById('cust_jam_mulai').value,
+            jamSelesai: document.getElementById('cust_jam_selesai').value,
+            jmlTamu: document.getElementById('cust_tamu').value,
+            ruangan: document.getElementById('cust_ruangan').value,
+            meja: document.getElementById('cust_meja').value || "Bebas",
+            fasilitas: finalFasilitas,
+            dp: document.getElementById('cust_dp').value || 0,
+            pesanan: pesananArray,
+            totalPesanan: totalPreorder
+        };
+
+        // 3. LOGIKA SIMPAN KE FIREBASE
+        const selectedOutlet = document.getElementById('cust_outlet').value;
+        const outletSfx = selectedOutlet ? '_' + selectedOutlet.toLowerCase().replace(/[^a-z0-9]/g, '_') : '';
+        const dbPath = 'rbm_pro/reservasi_data' + outletSfx;
+        const ref = db.ref(dbPath);
+
+        try {
+            // Karena format POS menggunakan array JSON String (berdasarkan `JSON.stringify` di POS Anda),
+            // kita harus menarik data lama dulu, tambahkan yang baru, lalu simpan kembali string-nya.
+            ref.once('value', (snapshot) => {
+                let data = snapshot.val();
+                let arrayData = [];
+                
+                if (typeof data === 'string') {
+                    try { arrayData = JSON.parse(data); } catch(e) { arrayData = []; }
+                } else if (Array.isArray(data)) {
+                    arrayData = data;
+                } else if (data && typeof data === 'object') {
+                    arrayData = Object.values(data);
+                }
+                
+                // Masukkan bookingan customer
+                arrayData.push(newRes);
+                
+                // Simpan ulang ke Firebase
+                ref.set(JSON.stringify(arrayData))
+                    .then(() => {
+                        alert("✅ Permintaan Reservasi Berhasil Dikirim!\n\nKami akan segera menghubungi nomor WhatsApp Anda untuk konfirmasi.");
+                        preOrderCart = {};
+                        updatePreOrderTotal();
+                        document.getElementById('bookingForm').reset();
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerText = "Kirim Permintaan Booking";
+                    })
+                    .catch(error => {
+                        alert("❌ Terjadi kesalahan koneksi. Silakan coba lagi.");
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerText = "Kirim Permintaan Booking";
+                    });
+            });
+        } catch (err) {
+            alert("Gagal memproses data: " + err.message);
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "Kirim Permintaan Booking";
+        }
+    }
+
+    // Memastikan input tanggal tidak bisa diisi untuk hari kemarin
+    // Dan menarik pengaturan dari Firebase sesuai outlet
+    window.onload = function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("cust_tanggal").setAttribute('min', today);
+
+        // Ambil daftar outlet dari Firebase untuk mengisi dropdown
+        db.ref('customer_app_settings/outlets').once('value', snap => {
+            const outlets = snap.val() || [];
+            const select = document.getElementById('cust_outlet');
+            currentOutletsData = outlets;
+            select.innerHTML = '';
+            
+            const outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
+            let defaultOutletId = outletInfo.id || 'sidoarjo';
+
+            let hasOptions = false;
+            const processOutlet = (o) => {
+                if (o && o.id) {
+                    const opt = document.createElement('option');
+                    opt.value = o.id;
+                    opt.textContent = o.name || o.id;
+                    if (o.id === defaultOutletId) opt.selected = true;
+                    select.appendChild(opt);
+                    hasOptions = true;
+                }
+            };
+
+            if (Array.isArray(outlets)) {
+                outlets.forEach(processOutlet);
+            } else if (typeof outlets === 'object') {
+                Object.values(outlets).forEach(processOutlet);
+            }
+
+            if (!hasOptions) {
+                select.innerHTML = '<option value="sidoarjo">Sidoarjo</option><option value="surabaya">Surabaya</option>';
+                select.value = defaultOutletId;
+            }
+
+            loadOutletSettings(select.value);
+        });
+    };
+
+    // [BARU] Fungsi untuk memuat pengaturan Reservasi berdasarkan Outlet yang dipilih
+    window.loadOutletSettings = function(outletId) {
+        if (!outletId) return;
+
+        // Cek status ON/OFF reservasi untuk outlet ini
+        let isReservasiEnabled = true;
+        if (Array.isArray(currentOutletsData)) {
+            const selected = currentOutletsData.find(o => o.id === outletId);
+            if (selected && (selected.reservation_enabled === false || selected.reservation_enabled === 'false')) isReservasiEnabled = false;
+        } else if (typeof currentOutletsData === 'object') {
+            const selected = Object.values(currentOutletsData).find(o => o.id === outletId);
+            if (selected && (selected.reservation_enabled === false || selected.reservation_enabled === 'false')) isReservasiEnabled = false;
+        }
+
+        const formGroups = document.querySelectorAll('#bookingForm .form-group');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const closedMsg = document.getElementById('reservasi-closed-msg');
+
+        if (!isReservasiEnabled) {
+            formGroups.forEach(el => {
+                if (el.id !== 'outlet-selector-group') el.style.display = 'none';
+            });
+            btnSubmit.style.display = 'none';
+            if (closedMsg) closedMsg.style.display = 'block';
+            return; // Stop eksekusi agar form tetap tersembunyi
+        } else {
+            formGroups.forEach(el => {
+                if (el.id !== 'outlet-selector-group') el.style.display = 'block';
+            });
+            btnSubmit.style.display = 'block';
+            if (closedMsg) closedMsg.style.display = 'none';
+            // Pastikan kontainer yang dinamis tetap sembunyi sampai datanya di-fetch
+            document.getElementById('tnc-container').style.display = 'none';
+            document.getElementById('bank-info-container').style.display = 'none';
+            document.getElementById('menu-preorder-container').style.display = 'none';
+        }
+
+        document.getElementById('ruangan-container').innerHTML = '<p style="font-size:12px; color:#888;">Memuat data ruangan...</p>';
+        document.getElementById('meja-container').innerHTML = '<p style="font-size:12px; color:#888;">Memuat data penataan meja...</p>';
+        
+        db.ref('customer_app_settings/reservasi/' + outletId).once('value', snap => {
+            const data = snap.val() || {};
+            
+            const tnc = document.getElementById('tnc-container');
+            if(data.syaratKetentuan) {
+                tnc.style.display = 'block';
+                tnc.innerHTML = `<strong>Syarat & Ketentuan Reservasi:</strong><br>${data.syaratKetentuan}`;
+            } else {
+                tnc.style.display = 'none';
+            }
+
+            currentPpnRate = parseFloat(data.ppn) || 0;
+            currentDpPercent = parseFloat(data.dpPercent) || 0;
+            document.getElementById('preorder-ppn-rate').textContent = currentPpnRate;
+            updatePreOrderTotal();
+
+            if(data.bankInfo && data.bankInfo.noRek) {
+                document.getElementById('bank-info-container').style.display = 'block';
+                document.getElementById('bank-name').textContent = data.bankInfo.bank;
+                document.getElementById('bank-rek').textContent = data.bankInfo.noRek;
+                document.getElementById('bank-an').textContent = data.bankInfo.aName;
+            } else {
+                // Fallback jika tidak ada setingan bank, DP tidak wajib (hidden)
+                document.getElementById('bank-info-container').style.display = 'none';
+            }
+
+            // Tampilkan ruangan dan meja HANYA berdasarkan data di Firebase
+            renderImageRadios('ruangan-container', 'cust_ruangan', data.ruangan || []);
+            renderImageRadios('meja-container', 'cust_meja', data.penataanMeja || []);
+        });
+
+        // [BARU] Fetch Menu Products untuk fitur Pre-Order
+        db.ref('products/' + outletId).once('value', snap => {
+            const data = snap.val();
+            currentMenuData = [];
+            preOrderCart = {};
+            updatePreOrderTotal();
+            
+            if (data) {
+                const extractProducts = (obj) => {
+                    if (!obj || typeof obj !== 'object') return;
+                    if ((obj.name || obj.nama || obj.nama_menu) && (obj.price || obj.harga)) {
+                        if (obj.available !== false && obj.available !== 'false' && obj.is_active !== false && obj.is_active !== 'false') {
+                            currentMenuData.push({
+                                id: obj.id || obj.name || obj.nama,
+                                name: obj.name || obj.nama || obj.nama_menu,
+                                price: obj.price || obj.harga,
+                                category: obj.category || obj.kategori || 'Lainnya'
+                            });
+                        }
+                        return;
+                    }
+                    Object.keys(obj).forEach(key => {
+                        if (typeof obj[key] === 'object' && obj[key] !== null) {
+                            if (!obj[key].id) obj[key].id = key;
+                            extractProducts(obj[key]);
+                        }
+                    });
+                };
+                extractProducts(data);
+                renderPreOrderMenu();
+            } else {
+                document.getElementById('menu-preorder-container').style.display = 'none';
+            }
+        });
+    };
+
+    function renderPreOrderMenu() {
+        const container = document.getElementById('menu-list');
+        const wrapper = document.getElementById('menu-preorder-container');
+        
+        if (currentMenuData.length === 0) {
+            wrapper.style.display = 'none';
+            return;
+        }
+        
+        wrapper.style.display = 'block';
+        
+        const grouped = {};
+        currentMenuData.forEach(item => {
+            const cat = item.category || 'Lainnya';
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(item);
+        });
+        
+        let html = '';
+        Object.keys(grouped).sort().forEach(cat => {
+            html += `<div class="menu-category-title">${cat}</div>`;
+            grouped[cat].forEach(item => {
+                const qty = preOrderCart[item.id]?.quantity || 0;
+                // Format id dan nama agar aman masuk ke dalam string HTML onclick
+                const safeId = item.id.toString().replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeName = item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safePrice = item.price;
+                html += `
+                    <div class="menu-preorder-item">
+                        <div class="menu-preorder-info">
+                            <div class="menu-preorder-name">${item.name}</div>
+                            <div class="menu-preorder-price">${formatPrice(parsePrice(item.price))}</div>
+                        </div>
+                        <div class="menu-preorder-controls">
+                            <button type="button" class="menu-preorder-btn" onclick="updatePreOrderQty('${safeId}', '${safeName}', '${safePrice}', -1)">-</button>
+                            <span class="menu-preorder-qty" id="qty-${safeId}">${qty}</span>
+                            <button type="button" class="menu-preorder-btn" onclick="updatePreOrderQty('${safeId}', '${safeName}', '${safePrice}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function renderImageRadios(containerId, inputId, items) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        // Jika data kosong di Firebase, tampilkan keterangan kosong
+        if (!items || items.length === 0) {
+            container.innerHTML = '<p style="font-size:12px; color:#888;">Tidak ada pilihan tersedia.</p>';
+            document.getElementById(inputId).value = '';
+            return;
+        }
+        
+        items.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'image-radio-card';
+            card.onclick = () => {
+                Array.from(container.children).forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                document.getElementById(inputId).value = item.nama;
+            };
+            card.innerHTML = `<img src="${item.foto || 'https://placehold.co/400x300?text=No+Image'}" alt="${item.nama}">
+                              <div class="image-radio-card-title">${item.nama}</div>`;
+            container.appendChild(card);
+            if(index === 0) card.click(); // Auto select opsi pertama
+        });
+    }
+
+    // Mengatur Bottom Nav berdasarkan status fitur pesan dari Firebase (agar link 'Riwayat' bisa menghilang dinamis jika ditutup)
+    function updateBottomNav(isEnabled) {
+        const riwayatLink = document.querySelector('.bottom-link[href="riwayat.html"]');
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (riwayatLink) {
+            if (isEnabled === false) {
+                riwayatLink.style.display = 'none';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(5, 1fr)';
+            } else {
+                riwayatLink.style.display = 'flex';
+                if (bottomNav) bottomNav.style.gridTemplateColumns = 'repeat(6, 1fr)';
+            }
+        }
+    }
+    db.ref('customer_app_settings/ordering_enabled').on('value', (snapshot) => {
+        updateBottomNav(snapshot.val());
+    });
+</script>
+
+</body>
+</html>

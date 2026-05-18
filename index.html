@@ -932,6 +932,31 @@
     body.has-table .game-trigger {
         bottom: 160px;
     }
+    
+    /* [BARU] Booking Button Styles */
+    .booking-trigger {
+        position: fixed;
+        bottom: 150px; /* [DIUBAH] Default posisi di atas tombol game */
+        left: 20px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb); /* Warna Biru */
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 13px;
+        animation: bounceIn 1s;
+        text-decoration: none;
+    }
+    .booking-trigger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5); }
+    .booking-trigger:active { transform: scale(0.95); }
 
     /* [BARU] Penyesuaian Posisi Global Chat saat AI Chat Nonaktif */
     body.ai-chat-disabled .global-chat-trigger {
@@ -1024,6 +1049,12 @@
     transform: scale(1);
   }
   .floating-cart-btn .cart-details .cart-total-price { font-size: 15px; }
+  
+  /* [BARU] Posisi Booking Button saat Ada Elemen Lain Muncul */
+  body.has-cart .booking-trigger { bottom: 150px; }
+  body.has-table .booking-trigger { bottom: 220px; } /* Naik karena game naik ke 160px */
+  body.has-cart.has-table .booking-trigger { bottom: 220px; }
+  
   .floating-cart-btn .cart-details .checkout-text { font-size: 12px; opacity: 0.9; font-weight: 500; }
   .floating-cart-btn .cart-details .cart-total-price { font-size: 16px; }
   .floating-cart-btn .cart-icon-wrapper {
@@ -1587,6 +1618,11 @@
       </div>
   </div>
 
+  <!-- [BARU] Booking Button -->
+  <a href="booking.html" class="booking-trigger" id="booking-btn">
+      <span>📅</span>
+  </a>
+
   <!-- [BARU] Game Button -->
   <a href="game.html" class="game-trigger">
       <span>🎮</span>
@@ -1703,7 +1739,8 @@
     let appFeatures = {
         aiChat: true,
         game: true,
-        globalChat: true
+        globalChat: true,
+        reservation: true
     };
     
     // [BARU] Variabel untuk menyimpan data menu dari Kasir
@@ -1753,6 +1790,12 @@
             globalChatBtn.style.display = (appFeatures.globalChat && !isGlobalOpen) ? 'flex' : 'none';
             
             if (!appFeatures.globalChat && isGlobalOpen) toggleGlobalChat();
+        }
+        
+        // Update Booking Button
+        const bookingBtn = document.getElementById('booking-btn');
+        if (bookingBtn) {
+            bookingBtn.style.display = appFeatures.reservation ? 'flex' : 'none';
         }
     }
 
@@ -2515,11 +2558,19 @@
               if (currentOutlet && typeof currentOutlet.ordering_enabled !== 'undefined') {
                   isOrderingEnabled = currentOutlet.ordering_enabled === true;
                   updateAppModeUI(); // Refresh UI (tombol tambah, keranjang, dll)
+              }
+              if (currentOutlet && typeof currentOutlet.reservation_enabled !== 'undefined') {
+                  appFeatures.reservation = currentOutlet.reservation_enabled !== false && currentOutlet.reservation_enabled !== 'false';
+                  updateFeaturesUI();
               } else {
                   // Fallback ke setting global jika tidak ada setting per outlet
                   if (typeof settings.ordering_enabled !== 'undefined') {
                       isOrderingEnabled = settings.ordering_enabled === true;
                       updateAppModeUI();
+                  }
+                  if (typeof settings.reservation_enabled !== 'undefined') {
+                      appFeatures.reservation = settings.reservation_enabled !== false && settings.reservation_enabled !== 'false';
+                      updateFeaturesUI();
                   }
               }
           } catch(e) { console.warn('Gagal cek status outlet:', e); }
@@ -3670,6 +3721,7 @@ function handleHeaderScroll() {
           if (typeof settings.enable_ai_chat !== 'undefined') appFeatures.aiChat = settings.enable_ai_chat;
           if (typeof settings.enable_game !== 'undefined') appFeatures.game = settings.enable_game;
           if (typeof settings.enable_global_chat !== 'undefined') appFeatures.globalChat = settings.enable_global_chat;
+          if (typeof settings.reservation_enabled !== 'undefined') appFeatures.reservation = settings.reservation_enabled !== false && settings.reservation_enabled !== 'false';
           
           updateFeaturesUI();
 
