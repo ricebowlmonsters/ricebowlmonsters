@@ -1239,6 +1239,9 @@
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
   }
+  .special-offer-card .offer-image img {
+    padding: 4px 10px !important;
+  }
   /* [BARU] CSS untuk slider gambar di dalam kartu outlet */
   .outlet-image-slider {
     position: relative;
@@ -2036,7 +2039,7 @@
       infoEl.innerHTML = `
         <span class="menu-detail-category">${menuData.category}</span>
         <h2>${menuData.name}</h2>
-        <div class="menu-detail-price">${menuData.price}</div>
+        <div class="menu-detail-price">${formatPrice(parsePrice(menuData.price))}</div>
         <p class="menu-detail-description">${menuData.description}</p>
         <div class="menu-detail-actions">
           ${orderButtonHtml}
@@ -2102,7 +2105,7 @@
             <img src="${fav.img}" alt="${fav.name}">
             <div class="favorite-item-info">
               <div class="favorite-item-name">${fav.name}</div>
-              <div class="favorite-item-price">${fav.price}</div>
+              <div class="favorite-item-price">${formatPrice(parsePrice(fav.price))}</div>
             </div>
             <button class="favorite-item-remove" onclick="event.stopPropagation(); removeFavorite('${fav.name}')">Hapus</button>
           </div>
@@ -2705,11 +2708,11 @@
           return (
           `<div class="h-card" data-item-name="${it.name}" data-sub-category="${subCategory}">` +
             `${it.favorite ? '<div class="fav-badge">★ Best Seller</div>' : ''}` +
-            `<div class="card-content" data-menu='${JSON.stringify(it)}' style="cursor:pointer;"><img src="${it.img}" alt="${it.name}"></div>` +
+            `<div class="card-content" data-menu='${JSON.stringify(it)}' style="cursor:pointer;"><img src="${it.img}" alt="${it.name}" loading="lazy" decoding="async"></div>` +
             `<div class="body">` +
               `<h3>${it.name}</h3>` +
               `<div class="price-and-controls">` +
-                `<div class="price">${it.price}</div>` +
+                `<div class="price">${formatPrice(parsePrice(it.price))}</div>` +
                 (isOrderingEnabled ? `<div class="cart-controls">` +
                   `<button class="quantity-btn minus-btn" data-name="${it.name}" data-change="-1" data-menu='${JSON.stringify(it)}' style="display:none;">-</button>` +
                   `<span class="item-quantity" style="display:none;">0</span>` +
@@ -4034,7 +4037,7 @@ function handleHeaderScroll() {
             if (foundMenu) {
                  return `
                     Ini dia <b>${foundMenu.name}</b>! 😋<br>
-                    Harga: ${foundMenu.price}<br>
+                    Harga: ${formatPrice(parsePrice(foundMenu.price))}<br>
                     ${foundMenu.description ? `<i>${foundMenu.description}</i><br>` : ''}
                     <img src="${foundMenu.img}" style="width:100%; max-width:200px; border-radius:8px; margin-top:8px; object-fit: cover; border: 1px solid #eee;">
                 `;
