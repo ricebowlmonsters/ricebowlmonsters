@@ -4016,10 +4016,24 @@ function handleHeaderScroll() {
     }
 
     // [BARU] Variabel untuk menyimpan respon AI dinamis dari Firebase
-    let dynamicAIResponses = [];
+    const builtInAIResponses = [{
+      keywords: 'profil rice bowl monsters,tentang rice bowl monsters,rice bowl monsters,pt indo surya lautan,indo lautan makmur,chef una,ponti,darmokali,trosobo,royal plaza,jam operasional,alamat outlet,harga rice bowl,harga menu rice bowl,menu mie,paket hemat,es campur monsters,gofood,grabfood,shopeefood',
+      response: `Halo {name}! Rice Bowl Monsters adalah restoran rice bowl dan mi yang dikelola PT Indo Surya Lautan, dengan dukungan pasokan produk olahan dari PT Indo Lautan Makmur. Menu dikembangkan bersama Chef Una, Top 11 MasterChef Indonesia Musim 10. Harga dan ketersediaan dapat berbeda menurut outlet dan platform pemesanan.
+
+  Outlet Rice Bowl Monsters:
+  - Ponti, Sidoarjo: Jl. Raya Ponti No. 10, Magersari. Reservasi 0822-4666-6651. Buka setiap hari pukul 09.00-21.00 WIB.
+  - Darmokali, Surabaya: Jl. Darmokali No. 20, Keputran, Tegalsari. Reservasi 0819-9760-0777. Buka setiap hari sekitar pukul 09.00/10.00-21.00 WIB.
+  - Trosobo, Sidoarjo: kawasan Raya Trosobo/Citra Harmoni. Reservasi 0857-4309-3269. Buka setiap hari pukul 09.00-21.00 WIB.
+  - Royal Plaza, Surabaya: area kuliner Royal Plaza, Jl. Ahmad Yani No. 16-18. Reservasi 0851-7891-5755. Buka pukul 10.00-21.30 WIB.
+
+  Pilihan menu meliputi rice bowl beef dan chicken, Chicken Katsu, menu Chef Una, serta mi goreng dan mi kuah. Kisaran harga rice bowl beef Rp46.800-Rp47.970, chicken Rp34.800-Rp37.570, dan mi Rp4.900-Rp42.000. Tersedia paket kombinasi, gorengan, Es Campur Monsters, kopi, dan minuman segar. Data menu menyebut sebagian besar hidangan utama termasuk es teh dan telur mata sapi.
+
+  Pemesanan tersedia melalui ricebowlmonsters.id, GoFood, GrabFood, dan ShopeeFood. Portal mendukung dine-in dengan nomor meja, takeaway, poin loyalitas, voucer, dan reservasi. Untuk memastikan harga, jam layanan, atau ketersediaan terbaru, silakan hubungi outlet tujuan atau cek platform pemesanan.`
+    }];
+    let configuredAIResponses = [];
     if (db) {
         db.ref('ai_responses').on('value', (snapshot) => {
-            dynamicAIResponses = snapshot.val() ? Object.values(snapshot.val()) : [];
+        configuredAIResponses = snapshot.val() ? Object.values(snapshot.val()) : [];
         });
     }
 
@@ -4044,14 +4058,64 @@ function handleHeaderScroll() {
             }
         }
 
-        // [BARU] Cek Respon Dinamis dari Pengaturan Kasir
-        if (dynamicAIResponses.length > 0) {
-            for (const item of dynamicAIResponses) {
-                const keywords = item.keywords.split(',').map(k => k.trim().toLowerCase());
-                if (keywords.some(k => input.includes(k))) {
-                    return item.response.replace(/{name}/g, userName).replace(/\n/g, '<br>');
-                }
+        // Respon yang diatur dari kasir tetap memiliki prioritas.
+        for (const item of configuredAIResponses) {
+          if (!item || typeof item.keywords !== 'string' || typeof item.response !== 'string') continue;
+          const keywords = item.keywords.split(',').map(k => k.trim().toLowerCase());
+          if (keywords.some(k => k && input.includes(k))) {
+            return item.response.replace(/{name}/g, userName).replace(/\n/g, '<br>');
             }
+        }
+
+        // Rekomendasikan menu yang cocok dengan preferensi yang ditanyakan.
+        if (Array.isArray(globalMenuData) && globalMenuData.length > 0) {
+          const asksSpicy = /pedas|hot|cabe|cabai|sambal/.test(input);
+          const asksChicken = /ayam|chicken/.test(input);
+          const asksBeef = /beef|sapi/.test(input);
+          const asksNoodles = /\bmi\b|mie|noodle/.test(input);
+          const asksRice = /rice bowl|nasi/.test(input);
+          const asksSweet = /manis|honey|madu|teriyaki|sweet|asam/.test(input);
+          const asksCrispy = /crispy|krispi|goreng|katsu/.test(input);
+          const asksPopular = /best seller|favorit|populer/.test(input);
+          const asksRecommendation = /rekomendasi|sarankan|saran menu|pilihan menu|menu apa/.test(input);
+          const hasMenuPreference = asksSpicy || asksChicken || asksBeef || asksNoodles || asksRice || asksSweet || asksCrispy || asksPopular;
+
+          if (hasMenuPreference || asksRecommendation) {
+            const selectedLocation = String(currentSessionOutletId || '').toLowerCase();
+            const availableMenus = selectedLocation
+              ? globalMenuData.filter(item => item.locations && item.locations.includes(selectedLocation))
+              : globalMenuData;
+            const matches = availableMenus.filter(item => {
+              const menuText = `${item.name} ${item.category} ${item.description}`.toLowerCase();
+              const isSpicy = item.spicy === true || item.spicy === 'true' || /pedas|hot|cabe|cabai|sambal/.test(menuText);
+              const isPopular = item.favorite === true || item.favorite === 'true';
+              return (!asksSpicy || isSpicy) &&
+                (!asksChicken || /ayam|chicken/.test(menuText)) &&
+                (!asksBeef || /beef|sapi/.test(menuText)) &&
+                (!asksNoodles || /\bmi\b|mie|noodle/.test(menuText)) &&
+                (!asksRice || /rice bowl|nasi/.test(menuText)) &&
+                (!asksSweet || /manis|honey|madu|teriyaki|sweet|asam/.test(menuText)) &&
+                (!asksCrispy || /crispy|krispi|goreng|katsu/.test(menuText)) &&
+                (!asksPopular || isPopular);
+            }).slice(0, 5);
+
+            if (matches.length === 0) {
+              return 'Maaf, belum ada menu yang cocok dengan kriteria itu di data menu saat ini. Coba tanyakan menu pedas, ayam, beef, mi, atau rice bowl.';
+            }
+
+            const menuList = matches.map(item =>
+              `<b>${item.name}</b> - ${formatPrice(parsePrice(item.price))}${item.description ? `<br><small>${item.description}</small>` : ''}`
+            ).join('<br><br>');
+            return `Ini beberapa menu yang cocok, ${userName}:<br><br>${menuList}<br><br>Mau lihat detail salah satunya?`;
+          }
+        }
+
+        // Respon informasi bawaan digunakan jika tidak ada pertanyaan menu yang cocok.
+        for (const item of builtInAIResponses) {
+          const keywords = item.keywords.split(',').map(k => k.trim().toLowerCase());
+          if (keywords.some(k => k && input.includes(k))) {
+            return item.response.replace(/{name}/g, userName).replace(/\n/g, '<br>');
+          }
         }
 
         // Fallback
