@@ -1961,9 +1961,6 @@
             is_active: item.is_active
           })).filter(item => (item.available !== false && item.available !== 'false') && (item.is_active !== false && item.is_active !== 'false'));
 
-          // [OPTIMASI] Simpan data menu ke cache lokal agar loading berikutnya instan
-          localStorage.setItem('rbm_menu_data_cache', JSON.stringify(globalMenuData));
-
           let locationId = currentSessionOutletId;
           renderGroupedMenus(locationId);
         } else {
@@ -4278,6 +4275,7 @@ function handleHeaderScroll() {
 
     function initGlobalChatListener() {
         const container = document.getElementById('global-chat-messages');
+        if (!container) return;
         const user = JSON.parse(localStorage.getItem('rbm_user') || '{}');
         const myPhone = user.phone || 'guest';
         const badge = document.getElementById('global-chat-badge');
@@ -4289,11 +4287,12 @@ function handleHeaderScroll() {
         db.ref('global_chat').orderByChild('isPinned').equalTo(true).limitToLast(1).on('value', (snapshot) => {
             const data = snapshot.val();
             const pinnedEl = document.getElementById('global-chat-pinned');
+            const pinnedElText = document.getElementById('global-chat-pinned-text');
+            if (!pinnedEl || !pinnedElText) return;
             if (data) {
                 const key = Object.keys(data)[0];
                 const msg = data[key];
                 globalPinnedKey = key;
-                const pinnedElText = document.getElementById('global-chat-pinned-text');
                 pinnedElText.innerHTML = '<span class="pin-icon">📌</span> ';
                 pinnedElText.append(`${msg.sender}: ${msg.text}`);
                 pinnedEl.style.display = 'block';
@@ -4315,7 +4314,7 @@ function handleHeaderScroll() {
             
             // [BARU] Handle Unread Badge
             const modal = document.getElementById('global-chat-modal');
-            if (!modal.classList.contains('show') && !isMe) {
+            if (modal && !modal.classList.contains('show') && !isMe) {
                 globalChatUnread++;
                 if (badge) {
                     badge.textContent = globalChatUnread;

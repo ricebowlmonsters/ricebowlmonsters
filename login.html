@@ -76,7 +76,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5xRkvhJSsgGvq6tYeKc4VBwzTyw6bpZgexRYtIYCTgXiGtN1wahPhSijnH5h3VHez/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdh5OZ5Te2P-1YlsctrnV6ByWvOvQetGuzr2WUmseJf5WTUatTZ2Yeh7hGPJCobkhJ6g/exec';
     
     const yearSpan = document.getElementById('year');
     const loginForm = document.getElementById('login-form');
@@ -143,7 +143,7 @@
       loginButton.textContent = 'Memproses...';
       showMessage(loginMessage, '');
 
-      fetch(`${SCRIPT_URL}?phone=${phoneNumber}`)
+      fetch(`${SCRIPT_URL}?phone=${encodeURIComponent(phoneNumber)}`)
         .then(response => response.json())
         .then(result => {
           if (result.status === 'success') {
@@ -151,7 +151,7 @@
               nama: result.data.nama,
               phone: result.data.phone,
               username: result.data.username,
-              points: result.data.points_sisa
+              points: result.data.points !== undefined ? result.data.points : (result.data.points_sisa || 0)
             };
             localStorage.setItem('rbm_user', JSON.stringify(userProfile));
             
