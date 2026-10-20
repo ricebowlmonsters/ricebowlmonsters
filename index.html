@@ -2159,7 +2159,10 @@
           }
           locationLink.textContent = 'Mencari lokasi...';
           navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
-      });
+      }).then(
+          position => ({ position }),
+          error => ({ error })
+      );
 
       // [DIUBAH] Ambil data lokasi langsung dari Firebase (Paralel)
       let stores = [];
@@ -2226,7 +2229,9 @@
 
       try {
           // Tunggu hasil lokasi user (yang sudah berjalan paralel dengan fetch Firebase)
-          const position = await locationPromise;
+          const locationResult = await locationPromise;
+          if (locationResult.error) throw locationResult.error;
+          const position = locationResult.position;
           
           const userLat = position.coords.latitude;
           const userLon = position.coords.longitude;
@@ -3636,6 +3641,104 @@ function handleHeaderScroll() {
     function loadAppSettings() {
       if (!db) return;
       const settingsCacheKey = 'rbm_customer_app_settings';
+      const imageCacheDbName = 'rbm_customer_image_cache';
+      const imageCacheStoreName = 'settings';
+      const imageCacheMaxSize = 6 * 1024 * 1024;
+
+      const openImageCache = () => new Promise((resolve, reject) => {
+          if (!window.indexedDB) {
+              reject(new Error('IndexedDB tidak tersedia di browser ini.'));
+              return;
+          }
+          const request = indexedDB.open(imageCacheDbName, 1);
+          request.onupgradeneeded = () => {
+              const database = request.result;
+              if (!database.objectStoreNames.contains(imageCacheStoreName)) {
+                  database.createObjectStore(imageCacheStoreName);
+              }
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error || new Error('Gagal membuka cache gambar.'));
+      });
+
+      const readImageCache = async () => {
+          const database = await openImageCache();
+          return new Promise((resolve, reject) => {
+              const transaction = database.transaction(imageCacheStoreName, 'readonly');
+              const request = transaction.objectStore(imageCacheStoreName).get('home');
+              request.onsuccess = () => resolve(request.result || {});
+              request.onerror = () => reject(request.error || new Error('Gagal membaca cache gambar.'));
+              transaction.oncomplete = () => database.close();
+              transaction.onerror = () => {
+                  database.close();
+                  reject(transaction.error || new Error('Gagal membaca cache gambar.'));
+              };
+          });
+      };
+
+      const writeImageCache = async (settings) => {
+          const images = {};
+          let size = 0;
+          const addImage = (key, value) => {
+              if (typeof value !== 'string' || !value) return;
+              if (size + value.length > imageCacheMaxSize) return;
+              images[key] = value;
+              size += value.length;
+          };
+
+          const outlets = toSettingsList(settings.outlets);
+          const offers = toSettingsList(settings.special_offers);
+          addImage('banner:0', toSettingsList(settings.promo_slider)[0]);
+          const firstOutlet = outlets[0];
+          addImage(`outlet:${firstOutlet && firstOutlet.id || 0}`, firstOutlet && (firstOutlet.image || toSettingsList(firstOutlet.images)[0]));
+          offers.slice(0, 3).forEach((offer, index) => {
+              addImage(`offer:${index}`, offer && offer.image);
+          });
+          addImage('promo', (settings.promo_popup || settings.promo || {}).image);
+          addImage('logo', settings.logo);
+          addImage('point_icon', settings.point_icon);
+          addImage('exchange_icon', settings.exchange_icon);
+          outlets.slice(1).forEach((outlet, index) => {
+              addImage(`outlet:${outlet && outlet.id || index + 1}`, outlet && (outlet.image || toSettingsList(outlet.images)[0]));
+          });
+          offers.slice(3).forEach((offer, index) => {
+              addImage(`offer:${index + 3}`, offer && offer.image);
+          });
+
+          const database = await openImageCache();
+          await new Promise((resolve, reject) => {
+              const transaction = database.transaction(imageCacheStoreName, 'readwrite');
+              transaction.objectStore(imageCacheStoreName).put(images, 'home');
+              transaction.oncomplete = resolve;
+              transaction.onerror = () => reject(transaction.error || new Error('Gagal menyimpan cache gambar.'));
+              transaction.onabort = () => reject(transaction.error || new Error('Penyimpanan cache gambar dibatalkan.'));
+          }).finally(() => database.close());
+      };
+
+      const restoreCachedImages = (settings, images) => {
+          if (!settings || !images) return settings;
+          const restored = { ...settings };
+          ['logo', 'point_icon', 'exchange_icon'].forEach(key => {
+              if (!restored[key] && images[key]) restored[key] = images[key];
+          });
+          if (images.promo) {
+              restored.promo_popup = { ...(restored.promo_popup || restored.promo || {}), image: images.promo };
+          }
+          const banners = toSettingsList(restored.promo_slider);
+          if (images['banner:0'] && banners.length) banners[0] = images['banner:0'];
+          restored.promo_slider = banners;
+          restored.outlets = toSettingsList(restored.outlets).map((outlet, index) => {
+              if (!outlet) return outlet;
+              const image = outlet.image || images[`outlet:${outlet.id || index}`];
+              return image ? { ...outlet, image, images: [image] } : outlet;
+          });
+          restored.special_offers = toSettingsList(restored.special_offers).map((offer, index) => {
+              if (!offer || offer.image || !images[`offer:${index}`]) return offer;
+              return { ...offer, image: images[`offer:${index}`] };
+          });
+          return restored;
+      };
+
       const createSettingsCache = (settings) => {
           const cached = { ...settings };
           ['logo', 'login_logo', 'point_icon', 'exchange_icon'].forEach(key => {
@@ -3663,6 +3766,9 @@ function handleHeaderScroll() {
           cached.outlets = toSettingsList(cached.outlets).map(outlet => {
               if (!outlet || typeof outlet !== 'object') return outlet;
               const cachedOutlet = { ...outlet };
+              if (typeof cachedOutlet.image === 'string' && cachedOutlet.image.startsWith('data:')) {
+                  delete cachedOutlet.image;
+              }
               cachedOutlet.images = toSettingsList(cachedOutlet.images).map(image =>
                   typeof image === 'string' && image.startsWith('data:') ? '' : image
               );
@@ -3720,7 +3826,7 @@ function handleHeaderScroll() {
                  grid.innerHTML = specialOffers.map((offer, index) => `
                     <a href="${offer.link || '#'}" data-default-link="${offer.link || '#'}" target="_blank" class="special-offer-card" data-position="${index + 1}" data-platform="${offer.platform || ''}">
                         <div class="offer-image" style="height: 100%;">
-                            <img src="${offer.image}" alt="${offer.alt || 'Promo'}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                            <img src="${offer.image}" alt="${offer.alt || 'Promo'}" loading="${index < 3 ? 'eager' : 'lazy'}" ${index < 3 ? 'fetchpriority="high"' : ''} decoding="async" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
                         </div>
                     </a>
                  `).join('');
@@ -3736,9 +3842,9 @@ function handleHeaderScroll() {
              if (track) {
                  if(dotsContainer) dotsContainer.innerHTML = '';
 
-                 track.innerHTML = outlets.map(outlet => {
-                     const images = toSettingsList(outlet.images);
-                     const imgsHtml = images.map(src => `<img src="${src}" alt="${outlet.name}" loading="lazy" decoding="async">`).join('');
+                 track.innerHTML = outlets.map((outlet, outletIndex) => {
+                     const images = [outlet.image || toSettingsList(outlet.images)[0]].filter(Boolean);
+                     const imgsHtml = images.map(src => `<img src="${src}" alt="${outlet.name}" loading="${outletIndex < 2 ? 'eager' : 'lazy'}" ${outletIndex === 0 ? 'fetchpriority="high"' : ''} decoding="async">`).join('');
                      
                      return `
                      <div class="outlet-slide" data-outlet-id="${outlet.id || 'outlet'}">
@@ -3780,21 +3886,52 @@ function handleHeaderScroll() {
           if (antiFlashStyle) antiFlashStyle.remove();
       };
 
-      // 2. Coba load dari LocalStorage dulu (Cache) agar instan
+      // 2. Tampilkan metadata dan gambar yang pernah tersimpan sebelum meminta data terbaru.
+      let cachedSettings = null;
       try {
-          const cachedSettings = localStorage.getItem(settingsCacheKey);
-          if (cachedSettings) applySettings(JSON.parse(cachedSettings));
+          const serializedSettings = localStorage.getItem(settingsCacheKey);
+          if (serializedSettings) cachedSettings = JSON.parse(serializedSettings);
       } catch (error) {
           console.error('Gagal membaca cache pengaturan aplikasi:', error);
       }
+
+      let hasReceivedFirebaseSettings = false;
+      if (cachedSettings) applySettings(cachedSettings);
+
+      // Baca cache gambar tanpa menunda listener Firebase.
+      readImageCache().then(images => {
+          if (cachedSettings && !hasReceivedFirebaseSettings) {
+              applySettings(restoreCachedImages(cachedSettings, images));
+          }
+      }).catch(error => {
+          console.warn('Cache gambar lokal tidak dapat dibaca; beranda akan memuat gambar terbaru dari Firebase.', error);
+      });
 
       // 3. Listen ke Firebase untuk update terbaru
       db.ref('customer_app_settings').on('value', (snapshot) => {
           const settings = snapshot.val();
           if (!settings) return;
+          hasReceivedFirebaseSettings = true;
+
+          const storedOutlets = toSettingsList(settings.outlets);
+          const outletsWithSingleImage = storedOutlets.map(outlet => {
+              const images = toSettingsList(outlet.images);
+              const image = images[0] || outlet.image || '';
+              return { ...outlet, image, images: image ? [image] : [] };
+          });
+          const hasExtraOutletImages = storedOutlets.some(outlet => toSettingsList(outlet.images).length > 1);
+          if (hasExtraOutletImages) {
+              settings.outlets = outletsWithSingleImage;
+              db.ref('customer_app_settings/outlets').set(outletsWithSingleImage).catch(error => {
+                  console.error('Gagal menghapus foto outlet tambahan dari Firebase:', error.message);
+              });
+          }
 
           // Terapkan pengaturan
           applySettings(settings);
+          writeImageCache(settings).catch(error => {
+              console.warn('Gambar dimuat, tetapi cache offline gagal disimpan:', error);
+          });
 
           const serializedCache = JSON.stringify(createSettingsCache(settings));
           try {
