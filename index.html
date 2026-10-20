@@ -33,8 +33,6 @@
   </script>
   <title>Rice Bowl Monster - Beranda</title>
   
-  <link rel="stylesheet" href="styles.css">
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -1326,9 +1324,9 @@
   <main class="content">
     <section class="promo-section">
       <div class="promo-slider" id="promoSlider">
-        <div class="promo-item"><img src="https://placehold.co/800x400/jpg?text=Banner+Utama+1" alt="Latar Utama 1"></div>
-        <div class="promo-item"><img src="https://placehold.co/800x400/png?text=Banner+Utama+2" alt="Latar Utama 1"></div>
-        <div class="promo-item"><img src="https://placehold.co/800x400/png?text=Banner+Utama+3" alt="Latar Utama 1"></div>
+        <div class="promo-item"><img src="https://placehold.co/800x400/jpg?text=Banner+Utama+1" alt="Latar Utama 1" fetchpriority="high" decoding="async"></div>
+        <div class="promo-item"><img src="https://placehold.co/800x400/png?text=Banner+Utama+2" alt="Banner Utama 2" loading="lazy" decoding="async"></div>
+        <div class="promo-item"><img src="https://placehold.co/800x400/png?text=Banner+Utama+3" alt="Banner Utama 3" loading="lazy" decoding="async"></div>
     </section>
     
 
@@ -1805,6 +1803,15 @@
     // [BARU] Helper untuk normalisasi kunci kategori (hapus spasi & simbol aneh)
     const normalizeKey = (str) => String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
+    function toSettingsList(value) {
+        if (Array.isArray(value)) return value.filter(item => item !== null && item !== undefined);
+        if (!value || typeof value !== 'object') return [];
+        return Object.keys(value)
+          .sort((a, b) => Number(a) - Number(b))
+          .map(key => value[key])
+          .filter(item => item !== null && item !== undefined);
+    }
+
     function parsePrice(priceString) {
         if (!priceString) return 0;
         if (typeof priceString === 'number') return priceString;
@@ -1887,8 +1894,7 @@
           }
           localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
           
-          // Render ulang ikon kategori dan menu
-          renderCategoryIcons();
+          // Render kategori hanya setelah menu dan outlet siap ditampilkan.
           if (globalMenuData.length > 0) {
               let locationId = currentSessionOutletId;
               renderGroupedMenus(locationId);
@@ -2161,9 +2167,7 @@
           if (typeof db !== 'undefined') {
               const snapshot = await db.ref('customer_app_settings/outlets').once('value');
               const data = snapshot.val();
-              if (data && Array.isArray(data)) {
-                  stores = data;
-              }
+              stores = toSettingsList(data);
           }
       } catch(e) {
           console.error("Gagal ambil lokasi dari Firebase:", e);
@@ -2529,6 +2533,8 @@
         const container = document.querySelector('.menu-icons');
         if (!container) return;
 
+        const section = container.closest('.menu-icons-section');
+        if (section) section.style.display = categories.length > 0 ? '' : 'none';
         container.innerHTML = categories.map((cat, index) => {
             // [PERBAIKAN] Gunakan fallback aman jika cat.value kosong
             const val = cat.value || cat.id || cat.name || '';
@@ -2593,6 +2599,7 @@
 
       // [DIUBAH] Tampilkan indikator loading skeleton jika data dari server belum tiba
       if (!isMenuLoaded) {
+        renderCategoryIcons([]);
         const skeletonCard = `
           <div class="skeleton-card">
             <div class="skeleton skeleton-img"></div>
@@ -2625,6 +2632,7 @@
 
       // [BARU] Tampilkan pesan jika menu kosong setelah loading selesai
       if (items.length === 0) {
+        renderCategoryIcons([]);
         container.innerHTML = `
           <div style="text-align: center; padding: 40px 20px;">
             <p style="color: var(--muted);">Belum ada menu yang tersedia saat ini.</p>
@@ -3627,6 +3635,41 @@ function handleHeaderScroll() {
     // [BARU] Fungsi Load Pengaturan dari Firebase (Logo, Promo, Running Text)
     function loadAppSettings() {
       if (!db) return;
+      const settingsCacheKey = 'rbm_customer_app_settings';
+      const createSettingsCache = (settings) => {
+          const cached = { ...settings };
+          ['logo', 'login_logo', 'point_icon', 'exchange_icon'].forEach(key => {
+              if (typeof cached[key] === 'string' && cached[key].startsWith('data:')) delete cached[key];
+          });
+          ['promo', 'promo_popup'].forEach(key => {
+              if (cached[key] && typeof cached[key] === 'object') {
+                  cached[key] = { ...cached[key] };
+                  if (typeof cached[key].image === 'string' && cached[key].image.startsWith('data:')) {
+                      delete cached[key].image;
+                  }
+              }
+          });
+          cached.promo_slider = toSettingsList(cached.promo_slider).map(image =>
+              typeof image === 'string' && image.startsWith('data:') ? '' : image
+          );
+          cached.special_offers = toSettingsList(cached.special_offers).map(offer => {
+              if (!offer || typeof offer !== 'object') return offer;
+              const cachedOffer = { ...offer };
+              if (typeof cachedOffer.image === 'string' && cachedOffer.image.startsWith('data:')) {
+                  delete cachedOffer.image;
+              }
+              return cachedOffer;
+          });
+          cached.outlets = toSettingsList(cached.outlets).map(outlet => {
+              if (!outlet || typeof outlet !== 'object') return outlet;
+              const cachedOutlet = { ...outlet };
+              cachedOutlet.images = toSettingsList(cachedOutlet.images).map(image =>
+                  typeof image === 'string' && image.startsWith('data:') ? '' : image
+              );
+              return cachedOutlet;
+          });
+          return cached;
+      };
       
       // 1. Definisi fungsi untuk menerapkan pengaturan ke UI
       const applySettings = (settings) => {
@@ -3658,24 +3701,26 @@ function handleHeaderScroll() {
           }
 
           // 2. Update Promo Slider (Main)
-          if (settings.promo_slider && Array.isArray(settings.promo_slider)) {
+          const promoSlider = toSettingsList(settings.promo_slider);
+          if (promoSlider.length > 0) {
              const slider = document.getElementById('promoSlider');
-             if (slider && settings.promo_slider.length > 0) {
-                 slider.innerHTML = settings.promo_slider.map(img => 
-                   `<div class="promo-item"><img src="${img}" alt="Promo Utama"></div>`
+             if (slider) {
+                 slider.innerHTML = promoSlider.map((img, index) => 
+                   `<div class="promo-item"><img src="${img}" alt="Promo Utama ${index + 1}" ${index === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></div>`
                  ).join('');
                  initPromoSlider(); // Re-init slider
              }
           }
 
           // 3. Update Special Offers
-          if (settings.special_offers && Array.isArray(settings.special_offers)) {
+          const specialOffers = toSettingsList(settings.special_offers);
+          if (specialOffers.length > 0) {
              const grid = document.querySelector('.special-offer-grid');
-             if (grid && settings.special_offers.length > 0) {
-                 grid.innerHTML = settings.special_offers.map((offer, index) => `
+             if (grid) {
+                 grid.innerHTML = specialOffers.map((offer, index) => `
                     <a href="${offer.link || '#'}" data-default-link="${offer.link || '#'}" target="_blank" class="special-offer-card" data-position="${index + 1}" data-platform="${offer.platform || ''}">
                         <div class="offer-image" style="height: 100%;">
-                            <img src="${offer.image}" alt="${offer.alt || 'Promo'}" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                            <img src="${offer.image}" alt="${offer.alt || 'Promo'}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
                         </div>
                     </a>
                  `).join('');
@@ -3683,16 +3728,17 @@ function handleHeaderScroll() {
           }
 
           // 4. Update Outlets
-          if (settings.outlets && Array.isArray(settings.outlets)) {
+          const outlets = toSettingsList(settings.outlets);
+          if (outlets.length > 0) {
              const track = document.querySelector('#outletSlider .outlet-slider-track');
              const dotsContainer = document.getElementById('mainOutletDots');
              
-             if (track && settings.outlets.length > 0) {
+             if (track) {
                  if(dotsContainer) dotsContainer.innerHTML = '';
 
-                 track.innerHTML = settings.outlets.map(outlet => {
-                     const images = outlet.images || [];
-                     const imgsHtml = images.map(src => `<img src="${src}" alt="${outlet.name}">`).join('');
+                 track.innerHTML = outlets.map(outlet => {
+                     const images = toSettingsList(outlet.images);
+                     const imgsHtml = images.map(src => `<img src="${src}" alt="${outlet.name}" loading="lazy" decoding="async">`).join('');
                      
                      return `
                      <div class="outlet-slide" data-outlet-id="${outlet.id || 'outlet'}">
@@ -3722,6 +3768,10 @@ function handleHeaderScroll() {
           if (typeof settings.enable_game !== 'undefined') appFeatures.game = settings.enable_game;
           if (typeof settings.enable_global_chat !== 'undefined') appFeatures.globalChat = settings.enable_global_chat;
           if (typeof settings.reservation_enabled !== 'undefined') appFeatures.reservation = settings.reservation_enabled !== false && settings.reservation_enabled !== 'false';
+          if (typeof settings.ordering_enabled !== 'undefined') {
+              isOrderingEnabled = settings.ordering_enabled === true || settings.ordering_enabled === 'true';
+              updateAppModeUI();
+          }
           
           updateFeaturesUI();
 
@@ -3731,13 +3781,11 @@ function handleHeaderScroll() {
       };
 
       // 2. Coba load dari LocalStorage dulu (Cache) agar instan
-      const cachedSettings = localStorage.getItem('rbm_customer_app_settings');
-      if (cachedSettings) {
-          try {
-              applySettings(JSON.parse(cachedSettings));
-          } catch (e) {
-              console.error('Error parsing cached settings:', e);
-          }
+      try {
+          const cachedSettings = localStorage.getItem(settingsCacheKey);
+          if (cachedSettings) applySettings(JSON.parse(cachedSettings));
+      } catch (error) {
+          console.error('Gagal membaca cache pengaturan aplikasi:', error);
       }
 
       // 3. Listen ke Firebase untuk update terbaru
@@ -3745,13 +3793,23 @@ function handleHeaderScroll() {
           const settings = snapshot.val();
           if (!settings) return;
 
-          // Simpan ke cache untuk kunjungan berikutnya
-          localStorage.setItem('rbm_customer_app_settings', JSON.stringify(settings));
-          
           // Terapkan pengaturan
           applySettings(settings);
+
+          const serializedCache = JSON.stringify(createSettingsCache(settings));
+          try {
+              localStorage.setItem(settingsCacheKey, serializedCache);
+          } catch (error) {
+              console.warn('Cache pengaturan penuh; menghapus cache lama lalu mencoba menyimpan versi ringan.', error);
+              try {
+                  localStorage.removeItem(settingsCacheKey);
+                  localStorage.setItem(settingsCacheKey, serializedCache);
+              } catch (retryError) {
+                  console.error('Gagal menyimpan cache pengaturan aplikasi. Pengaturan Firebase tetap diterapkan.', retryError);
+              }
+          }
       }, (error) => {
-          console.warn("Gagal memuat pengaturan aplikasi (Firebase):", error.message);
+          console.error("Gagal memuat pengaturan aplikasi dari Firebase:", error.message);
       });
     }
 
@@ -3801,54 +3859,10 @@ function handleHeaderScroll() {
         }
     }
 
-    // [BARU] Fungsi untuk mengambil pengaturan aplikasi dari server
-    async function fetchAppSettings() {
-        try {
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'getAppSettings' })
-            });
-            const result = await response.json();
-            if (result.status === 'success' && result.data) {
-                // Mengambil status fitur pesan (misal key: isOrderEnabled)
-                if (typeof result.data.isOrderEnabled !== 'undefined') {
-                    isOrderingEnabled = result.data.isOrderEnabled === true || result.data.isOrderEnabled === 'true';
-                }
-                updateAppModeUI(); // [OPTIMASI] Update UI segera setelah data diterima
-            }
-        } catch (error) {
-            console.log('Gagal memuat pengaturan, menggunakan default (Aktif).');
-            isOrderingEnabled = true; // Fallback ke aktif jika gagal memuat
-            updateAppModeUI();
-        }
-    }
-
-    // [BARU] Fungsi backup ambil setting dari Firebase
-    function fetchFirebaseSettings() {
-        if (!db) return;
-        db.ref('customer_app_settings').on('value', (snapshot) => {
-            const settings = snapshot.val();
-            if (settings) {
-                // [FIX] Cek ordering_enabled (sesuai customer-settings.html)
-                if (typeof settings.ordering_enabled !== 'undefined') {
-                    isOrderingEnabled = settings.ordering_enabled === true;
-                }
-                // Refresh UI saat setting berubah realtime
-                updateAppModeUI();
-                
-                const locationId = currentSessionOutletId;
-                renderGroupedMenus(locationId);
-            }
-        });
-    }
-
     async function init() {
       handlePromoPopup();
       
-      // [OPTIMASI] Hapus 'await' agar tidak memblokir tampilan. Biarkan berjalan di background.
-      fetchAppSettings(); 
-      fetchFirebaseSettings(); // Listen perubahan realtime dari Firebase
+      // Satu listener Firebase digunakan untuk gambar, outlet, dan status fitur.
       
       // Pastikan user sudah login; jika belum, arahkan ke login
       initPromoSlider();
