@@ -255,8 +255,12 @@
         const outlet = globalOutlets.find(o => o.id === outletId);
         if (outlet) {
             // [FIX] Simpan ke localStorage agar halaman checkout/payment bisa mengakses ID outlet
-            const toSave = Object.assign({}, outlet, { saved_at: Date.now() });
+            const toSave = Object.assign({}, outlet, {
+                saved_at: Date.now(),
+                location_confirmed_at: Date.now()
+            });
             localStorage.setItem('rbm_outlet_info', JSON.stringify(toSave));
+            localStorage.removeItem('rbm_outlet_confirmation_required');
             updateLocationUI();
             // Redirect kembali ke index.html setelah memilih
             setTimeout(function(){

@@ -164,6 +164,27 @@
         }
         const database = firebase.database();
 
+        function hasConfirmedOutlet() {
+            if (localStorage.getItem('rbm_outlet_confirmation_required') === 'true') return false;
+            try {
+                const outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
+                return Boolean(outletInfo.id && outletInfo.location_confirmed_at);
+            } catch (error) {
+                console.error('Gagal membaca outlet terpilih:', error);
+                return false;
+            }
+        }
+
+        function showOutletConfirmationRequired() {
+            document.getElementById('payment-container').innerHTML = `
+                <div style="text-align:center; padding: 30px 16px;">
+                    <h3>Konfirmasi outlet diperlukan</h3>
+                    <p>Lokasi outlet belum dikonfirmasi. Kembali ke beranda untuk memperbarui lokasi atau memilih outlet.</p>
+                    <a href="index.html" style="color: var(--primary); font-weight: 600;">Kembali ke beranda</a>
+                </div>
+            `;
+        }
+
         // [DIUBAH] Pindahkan orderId ke scope yang lebih tinggi agar bisa diakses bersama
         // [DIUBAH] Ambil ID dari URL jika ada (mode edit), jika tidak, buat baru.
         const urlParams = new URLSearchParams(window.location.search);
@@ -171,6 +192,10 @@
         let sharedOrderId = editOrderId || null;
 
         function saveOrderAndRedirect() {
+            if (!hasConfirmedOutlet()) {
+                showOutletConfirmationRequired();
+                return;
+            }
             let history = JSON.parse(localStorage.getItem('rbm_order_history') || '[]');
 
             // [DIUBAH] Ambil info outlet dari localStorage
@@ -240,6 +265,10 @@
 
         // [BARU] Fungsi untuk mengirim pesanan ke Firebase
         function sendOrderToFirebase() {
+            if (!hasConfirmedOutlet()) {
+                showOutletConfirmationRequired();
+                return;
+            }
             let outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
             const outletId = outletInfo.id;
 
@@ -358,6 +387,10 @@
         }
 
         function renderQrisView() {
+            if (!hasConfirmedOutlet()) {
+                showOutletConfirmationRequired();
+                return;
+            }
             const container = document.getElementById('payment-container');
             const total = formatPrice(paymentInfo.total);
             paymentInfo = { ...paymentInfo, method: 'QRIS' }; // [DIUBAH] Pastikan metode pembayaran tersimpan dengan membuat objek baru
@@ -388,6 +421,10 @@
         }
 
         function renderCashierView() {
+            if (!hasConfirmedOutlet()) {
+                showOutletConfirmationRequired();
+                return;
+            }
             const container = document.getElementById('payment-container');
             const { subtotal, discountAmount, ppn, total } = paymentInfo;
             const tableNumber = orderDetails.tableNumber || 'N/A';
@@ -436,6 +473,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (!hasConfirmedOutlet()) {
+                showOutletConfirmationRequired();
+                return;
+            }
+
             cart = JSON.parse(localStorage.getItem('rbm_cart') || '[]');
             orderDetails = JSON.parse(localStorage.getItem('rbm_order_details') || '{}');
             paymentInfo = JSON.parse(localStorage.getItem('rbm_payment_info') || '{}');

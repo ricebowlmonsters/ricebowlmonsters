@@ -16,8 +16,6 @@
   </script>
   <title>Tukar Poin - Rice Bowl Monster</title>
   
-  <link rel="stylesheet" href="styles.css">
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -188,15 +186,6 @@
 
 </head>
 <body>
-<script>
-  (function(){
-    try{
-      var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-      var isReload = nav ? nav.type === 'reload' : (performance && performance.navigation && performance.navigation.type === 1);
-      if(isReload){ window.location.replace('index.html'); }
-    }catch(e){}
-  })();
-</script>
 <div class="app-container">
   <header class="app-header">
     <a href="home.html" class="back-btn" aria-label="Kembali">❮</a>
@@ -275,7 +264,7 @@
 
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMPdwTqhkFN1Zc_Onj8v1aPAq0Sa9dRJNyN9hsvKI46cn0rJJH4Jq2NeWsg97IM-FJ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdh5OZ5Te2P-1YlsctrnV6ByWvOvQetGuzr2WUmseJf5WTUatTZ2Yeh7hGPJCobkhJ6g/exec';
 
     // [BARU] Inisialisasi Firebase
     const firebaseConfig = {
@@ -293,6 +282,9 @@
         firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.database();
+    let merchandise = [];
+    let vouchers = [];
+    let allRewards = [];
 
     // [BARU] Update Bottom Nav berdasarkan status fitur pesan
     function updateBottomNav(isEnabled) {
@@ -323,9 +315,11 @@
           vouchers = [];
           
           if (data) {
-              Object.values(data).forEach(item => {
-                  if (item.type === 'merchandise') merchandise.push(item);
-                  else if (item.type === 'voucher') vouchers.push(item);
+              Object.entries(data).forEach(([id, item]) => {
+                  if (!item || !item.nama || !Number.isFinite(Number(item.point)) || Number(item.point) <= 0) return;
+                  const reward = { ...item, id };
+                  if (item.type === 'merchandise') merchandise.push(reward);
+                  else if (item.type === 'voucher') vouchers.push(reward);
               });
           }
           
@@ -335,6 +329,15 @@
           // Render ulang tampilan
           renderRewards(merchandise, 'merchandise');
           renderRewards(vouchers, 'voucher');
+      }, (error) => {
+          console.error('Gagal memuat hadiah dari Firebase:', error);
+          renderRewards([], 'merchandise');
+          renderRewards([], 'voucher');
+          document.querySelectorAll('.reward-grid').forEach(grid => {
+              if (grid.closest('#merchandise, #voucher')) {
+                  grid.innerHTML = '<div class="empty-state">Hadiah gagal dimuat. Periksa koneksi lalu muat ulang halaman.</div>';
+              }
+          });
       });
 
       // Cek dari LocalStorage saat load
@@ -388,7 +391,7 @@
       const grid = document.querySelector(`#${containerId} .reward-grid`);
       if (grid) {
         grid.innerHTML = dataArray.length ? dataArray.map(item => `
-          <div class="reward-card" data-cost="${item.point}">
+          <div class="reward-card" data-cost="${Number(item.point)}" data-reward-id="${item.id}">
             <img src="${item.foto}" alt="${item.nama}" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
             <div class="card-body">
               <h3>${item.nama}</h3>
@@ -401,10 +404,15 @@
     }
 
     function loadUserPoints() {
-        const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
         const pointsEl = document.getElementById('userPoints');
-        if (pointsEl) {
-            pointsEl.textContent = userData.points || 0;
+        if (!pointsEl) return;
+        try {
+            const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+            const points = Number(userData.points ?? 0);
+            pointsEl.textContent = Number.isFinite(points) ? points : 'Data poin tidak valid';
+        } catch (error) {
+            console.error('Gagal membaca data user:', error);
+            pointsEl.textContent = 'Data poin gagal dimuat';
         }
     }
 
@@ -419,8 +427,10 @@
 
           const card = button.closest('.reward-card');
           const itemName = card.querySelector('h3').textContent;
+          const rewardId = card.dataset.rewardId;
           // [FIX] Mengambil poin dari data-cost untuk menghindari error NaN.
           const cost = parseInt(card.dataset.cost, 10);
+          const rewardDetails = allRewards.find(item => String(item.id) === String(rewardId));
           
           let userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
           // FIX: Ambil nama dengan berbagai kemungkinan key agar tidak kosong
@@ -436,10 +446,14 @@
             return;
           }
 
-          const currentPoints = parseInt(userData.points || '0', 10);
+          const currentPoints = Number(userData.points || 0);
           
-          if (isNaN(cost) || currentPoints < cost) {
+          if (!Number.isSafeInteger(cost) || cost <= 0 || !Number.isFinite(currentPoints) || currentPoints < cost) {
             await showCustomPopup({ title: 'Poin Tidak Cukup', message: `Poin Anda ${currentPoints}, butuh ${cost} poin untuk menukar ini.` });
+            return;
+          }
+          if (!rewardDetails) {
+            await showCustomPopup({ title: 'Gagal', message: 'Data hadiah tidak tersedia. Muat ulang halaman lalu coba lagi.' });
             return;
           }
           
@@ -454,10 +468,6 @@
           button.textContent = 'Memproses...';
           button.disabled = true;
 
-          // [FIX] Cari item lengkap untuk mendapatkan 'itemType'
-          const redeemedItemDetails = allRewards.find(item => item.nama === itemName);
-          const itemType = redeemedItemDetails ? redeemedItemDetails.type : 'unknown';
-
           try {
             const response = await fetch(SCRIPT_URL, {
               method: 'POST',
@@ -469,45 +479,58 @@
                 name: userName,        // Kirim sebagai 'name' juga
                 username: userName,    // Kirim sebagai 'username' juga
                 reward: itemName,      // Diubah dari 'itemName'
-                cost: cost             // Diubah dari 'points'
+                cost: cost,
+                itemType: rewardDetails.type
               })
             });
+            if (!response.ok) {
+              throw new Error(`Server mengembalikan HTTP ${response.status}.`);
+            }
             const result = await response.json();
             
             if (result.status === 'success') {
-              // Update poin di local storage & tampilan
-              userData.points = result.newPoints;
-              localStorage.setItem('rbm_user', JSON.stringify(userData));
-              document.getElementById('userPoints').textContent = result.newPoints;
-              
-              // --- PERUBAHAN DIMULAI DI SINI ---
-              // 1. Cari detail lengkap item yang ditukar
-              const redeemedItem = allRewards.find(item => item.nama === itemName);
-              if (redeemedItem) {
-                // 2. Tambahkan ID unik dan status
-                const itemToClaim = { ...redeemedItem, id: Date.now(), status: 'unclaimed' };
-
-                // 3. Ambil data klaim yang sudah ada, atau buat array baru
-                const storageKey = `rbm_unclaimed_rewards_${userData.phone}`;
-                const unclaimed = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                
-                // 4. Tambahkan item baru ke dalamnya
-                unclaimed.push(itemToClaim);
-                
-                // 5. Simpan kembali ke localStorage
-                localStorage.setItem(storageKey, JSON.stringify(unclaimed));
-                renderUnclaimedRewards(); // Perbarui tampilan tab klaim
+              const newPoints = Number(result.newPoints);
+              if (!Number.isFinite(newPoints)) {
+                throw new Error('Respons server tidak berisi sisa poin yang valid.');
               }
-              // --- PERUBAHAN SELESAI ---
+
+              // Update poin di local storage & tampilan
+              userData.points = newPoints;
+              localStorage.setItem('rbm_user', JSON.stringify(userData));
+              document.getElementById('userPoints').textContent = newPoints;
               
-              await showCustomPopup({ title: 'Berhasil!', message: `Penukaran berhasil!\nSilakan cek tab 'Klaim Hadiah' untuk mengambil hadiah Anda di resto.` });
+              const itemId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+              const itemToClaim = { ...rewardDetails, id: itemId, status: 'unclaimed' };
+              const storageKey = `rbm_unclaimed_rewards_${userData.phone}`;
+              const unclaimed = JSON.parse(localStorage.getItem(storageKey) || '[]');
+              unclaimed.push(itemToClaim);
+              localStorage.setItem(storageKey, JSON.stringify(unclaimed));
+
+              const claimCode = result.data && result.data.code;
+              if (claimCode) {
+                setActiveClaim(itemId, {
+                  code: claimCode,
+                  itemId,
+                  itemName,
+                  claimTime: result.data.claimTime
+                });
+              }
+              renderUnclaimedRewards();
+              
+              const claimMessage = claimCode
+                ? 'Silakan buka tab Klaim Hadiah untuk menunjukkan kode ke kasir.'
+                : 'Poin telah dipotong, tetapi server tidak mengirim kode klaim. Hubungi kasir/admin sebelum menukar hadiah lagi.';
+              await showCustomPopup({ title: 'Berhasil!', message: `Penukaran berhasil!\n${claimMessage}` });
             
             } else {
               await showCustomPopup({ title: 'Gagal', message: `Gagal menukar poin: ${result.message || 'Silakan coba lagi.'}` });
             }
           } catch (error) {
             console.error('Error:', error);
-            await showCustomPopup({ title: 'Error', message: 'Gagal menukar poin. Terjadi kesalahan koneksi.' });
+            const message = error instanceof TypeError
+              ? 'Tidak dapat terhubung ke server penukaran. Penukaran belum bisa dipastikan; periksa saldo poin atau riwayat ke kasir sebelum mencoba lagi.'
+              : `Gagal menukar poin: ${error.message || 'Periksa koneksi internet lalu coba lagi.'}`;
+            await showCustomPopup({ title: 'Error', message });
           } finally {
             button.textContent = 'Tukar';
             button.disabled = false;
@@ -526,8 +549,10 @@
             return;
           }
           
-          // Generate kode baru
-          generateClaimCode(itemId, itemName);
+          await showCustomPopup({
+            title: 'Kode Klaim Tidak Ditemukan',
+            message: 'Kode klaim tidak tersimpan untuk penukaran ini. Jangan menukar ulang poin; silakan hubungi kasir/admin untuk bantuan.'
+          });
         }
       });
     }
@@ -700,101 +725,6 @@
             }
         }
     };
-
-    const CONFIG = {
-      SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzMPdwTqhkFN1Zc_Onj8v1aPAq0Sa9dRJNyN9hsvKI46cn0rJJH4Jq2NeWsg97IM-FJ/exec'
-    };
-
-    async function generateClaimCode(itemId, itemName) {
-      const userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
-      const userPhone = userData.phone;
-      const userName = userData.name || userData.nama || userData.username || '';
-      
-      if (!userPhone) {
-        showCustomPopup({ title: 'Error', message: 'Nomor telepon tidak ditemukan. Silakan login ulang.' });
-        return;
-      }
-
-      if (!userName) {
-        showCustomPopup({ title: 'Data Tidak Lengkap', message: 'Nama user tidak ditemukan. Silakan Logout dan Login kembali agar nama tercatat.' });
-        return;
-      }
-      
-      try {
-        console.log('Generating claim code for:', { phone: userPhone, itemId, itemName });
-        console.log('API URL:', CONFIG.SCRIPT_URL);
-        
-        const payload = {
-          action: 'generateClaimCode',
-          phone: userPhone,
-          nama: userName,
-          name: userName,
-          username: userName,
-          itemId: itemId,
-          itemName: itemName
-        };
-        
-        console.log('Request payload:', payload);
-        
-        const response = await fetch(CONFIG.SCRIPT_URL, {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify(payload)
-        });
-        
-        console.log('Response status:', response.status, response.statusText);
-        
-        if (!response.ok) {
-          const text = await response.text();
-          console.error('Response not OK. Status:', response.status, 'Body:', text);
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        console.log('Response result:', result);
-        
-        if (result.status === 'success' && result.data) {
-          const code = result.data.code;
-          // Simpan kode ke activeClaims
-          const claimData = {
-            code: code,
-            itemId: itemId,
-            itemName: itemName,
-            claimTime: result.data.claimTime
-          };
-          setActiveClaim(itemId, claimData);
-          
-          // Tampilkan popup dengan kode
-          showCodePopup(code, itemName, itemId);
-        } else {
-          const errorMsg = result.message || 'Terjadi kesalahan';
-          console.error('API returned error:', result);
-          showCustomPopup({ title: 'Error', message: 'Gagal generate kode: ' + errorMsg });
-        }
-      } catch (error) {
-        console.error('Error generating code:', error);
-        console.error('Error details:', {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-        });
-        
-        let errorMessage = 'Gagal generate kode. ';
-        if (error.message && error.message.includes('Failed to fetch')) {
-          errorMessage += 'Tidak dapat terhubung ke server. ';
-          errorMessage += 'Pastikan koneksi internet aktif dan Google Apps Script URL benar.';
-        } else if (error.message && error.message.includes('CORS')) {
-          errorMessage += 'Masalah CORS. Silakan gunakan server lokal atau deploy aplikasi.';
-        } else {
-          errorMessage += error.message || 'Pastikan koneksi internet aktif.';
-        }
-        
-        showCustomPopup({ title: 'Error', message: errorMessage });
-      }
-    }
 
     function showCodePopup(code, itemName, itemId) {
       const popup = document.getElementById('qrPopup');

@@ -339,6 +339,29 @@
             localStorage.setItem('rbm_cart', JSON.stringify(cart));
         }
 
+        function hasConfirmedOutlet() {
+            if (localStorage.getItem('rbm_outlet_confirmation_required') === 'true') return false;
+            try {
+                const outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
+                return Boolean(outletInfo.id && outletInfo.location_confirmed_at);
+            } catch (error) {
+                console.error('Gagal membaca outlet terpilih:', error);
+                return false;
+            }
+        }
+
+        function showOutletConfirmationRequired() {
+            document.querySelector('main').innerHTML = `
+                <div class="summary-card">
+                    <div class="summary-card-content" style="text-align:center;">
+                        <h3>Konfirmasi outlet diperlukan</h3>
+                        <p>Lokasi outlet belum dikonfirmasi. Kembali ke beranda untuk memperbarui lokasi atau memilih outlet.</p>
+                        <a href="index.html">Kembali ke beranda</a>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderCheckout() {
             const container = document.getElementById('checkout-items-container');
             const subtotalEl = document.getElementById('checkout-subtotal');
@@ -436,6 +459,10 @@
 
         // [DIUBAH] Fungsi ini sekarang hanya menyimpan data dan mengarahkan ke halaman pembayaran
         function proceedToPayment() {
+            if (!hasConfirmedOutlet()) {
+                showOutletConfirmationRequired();
+                return;
+            }
             const overallNote = document.getElementById('overall-note').value;
             const subtotal = cart.reduce((sum, item) => sum + parsePrice(item.price) * item.quantity, 0);
             let discountAmount = appliedDiscount;
@@ -679,6 +706,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (!hasConfirmedOutlet()) {
+                showOutletConfirmationRequired();
+                return;
+            }
+
             try {
                 const cartData = localStorage.getItem('rbm_cart');
                 cart = cartData ? JSON.parse(cartData) : [];

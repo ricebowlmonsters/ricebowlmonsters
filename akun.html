@@ -144,7 +144,7 @@
         <div class="profile-content">
           <div class="profile-left">
             <div class="logo-container">
-              <img id="account-logo" src="logo-rbm.png" alt="Rice Bowl Monster Logo" style="width:56px; height:56px; object-fit: contain;">
+              <img id="account-logo" src="Logo Toko (Header).png" alt="Rice Bowl Monster Logo" style="width:56px; height:56px; object-fit: contain;">
             </div>
             <div>
               <p id="account-title" class="form-title" style="margin:0; font-size:23px; color: var(--primary, #d32f2f);">Rice Bowl Monsters</p>
@@ -381,14 +381,12 @@
         updateBottomNav(snapshot.val());
     });
 
-    db.ref('customer_app_settings/account_page').on('value', (snapshot) => {
-        const settings = snapshot.val() || {};
+    const accountSettings = {};
+    ['title', 'greeting', 'guest_name', 'whatsapp', 'show_faq', 'faq_label', 'show_terms', 'terms_label'].forEach(key => {
+      db.ref(`customer_app_settings/account_page/${key}`).on('value', (snapshot) => {
+        accountSettings[key] = snapshot.val();
+        const settings = accountSettings;
         
-        // Update Branding
-        if (settings.logo) {
-            const logoEl = document.getElementById('account-logo');
-            if (logoEl) logoEl.src = settings.logo;
-        }
         if (settings.title) {
             const titleEl = document.getElementById('account-title');
             if (titleEl) titleEl.textContent = settings.title;
@@ -424,6 +422,9 @@
             const labelEl = termsBtn.querySelector('.action-label');
             if (labelEl) labelEl.textContent = settings.terms_label || 'Ketentuan Layanan';
         }
+      }, (error) => {
+        console.error(`Gagal memuat pengaturan akun ${key} dari Firebase:`, error.message);
+      });
     });
 
     // Cek dari LocalStorage saat load

@@ -1302,15 +1302,14 @@
 <body>
   <div class="popup-overlay" id="promoPopup">
     <div class="popup-content">
-      <img src="https://placehold.co/300x400/png?text=Promo+Spesial" alt="Promo Spesial">
+      <img src="Gambar Pop-up.png" alt="Promo Spesial">
       <button class="popup-close" id="promoCloseBtn" aria-label="Tutup">X</button>
     </div>
   </div>
 
   <header class="app-header" style="justify-content: space-between;">
     <div class="logo">
-      <!-- [DIUBAH] Gunakan placeholder jika file lokal tidak ada untuk mencegah error -->
-      <img src="https://placehold.co/150x60/png?text=RBM+Logo" alt="Rice Bowl Monster Logo" onerror="this.style.display='none'">
+      <img src="Logo Toko (Header).png" alt="Rice Bowl Monster Logo">
     </div>
     <!-- Bagian Lokasi dipindahkan ke sini -->
     <div class="location-row">
@@ -1324,9 +1323,10 @@
   <main class="content">
     <section class="promo-section">
       <div class="promo-slider" id="promoSlider">
-        <div class="promo-item"><img src="https://placehold.co/800x400/jpg?text=Banner+Utama+1" alt="Latar Utama 1" fetchpriority="high" decoding="async"></div>
-        <div class="promo-item"><img src="https://placehold.co/800x400/png?text=Banner+Utama+2" alt="Banner Utama 2" loading="lazy" decoding="async"></div>
-        <div class="promo-item"><img src="https://placehold.co/800x400/png?text=Banner+Utama+3" alt="Banner Utama 3" loading="lazy" decoding="async"></div>
+        <div class="promo-item"><img src="Banner 1.jpg" alt="Banner Utama 1" fetchpriority="high" decoding="async"></div>
+        <div class="promo-item"><img src="Banner 2.jpg" alt="Banner Utama 2" loading="lazy" decoding="async"></div>
+        <div class="promo-item"><img src="Banner 3.jpg" alt="Banner Utama 3" loading="lazy" decoding="async"></div>
+      </div>
     </section>
     
 
@@ -1354,17 +1354,17 @@
     <div class="special-offer-grid">
         <a href="#" target="_blank" class="special-offer-card" data-position="1" data-platform="gofood">
             <div class="offer-image" style="height: 100%;">
-                <img src="https://placehold.co/100x50/png?text=GoFood" alt="Pesan via GoFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                <img src="Posisi 1 (Kiri) - Default.png" alt="Pesan via GoFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
             </div>
         </a>
         <a href="#" target="_blank" class="special-offer-card" data-position="2" data-platform="shopeefood">
             <div class="offer-image" style="height: 100%;">
-                <img src="https://placehold.co/100x50/png?text=Shopee" alt="Pesan via ShopeeFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                <img src="Posisi 2 (Tengah) - Default.png" alt="Pesan via ShopeeFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
             </div>
             </a>
         <a href="#" target="_blank" class="special-offer-card" data-position="3" data-platform="grabfood">
             <div class="offer-image" style="height: 100%;">
-                <img src="https://placehold.co/100x50/png?text=Grab" alt="Pesan via GrabFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                <img src="Posisi 3 (Kanan) - Default.png" alt="Pesan via GrabFood" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
             </div>
             </a>
     </div>
@@ -2147,38 +2147,90 @@
         findNearestStore();
     }
 
+    function updateOnlineFoodLinks(store) {
+        if (!store) return;
+        const links = store.links || {};
+
+        document.querySelectorAll('.special-offer-card').forEach((card, index) => {
+            const defaultLink = card.dataset.defaultLink;
+            if (defaultLink) card.href = defaultLink;
+
+            const position = card.dataset.position || String(index + 1);
+            if (links[position]) {
+                card.href = links[position];
+                return;
+            }
+
+            const platform = card.dataset.platform;
+            if (platform && links[platform]) card.href = links[platform];
+        });
+    }
+
     async function findNearestStore() {
       const locationLink = document.getElementById('findNearestLocation');
       if (!locationLink) return;
 
-      // [OPTIMASI] Trigger request lokasi SEGERA agar popup muncul tanpa menunggu Firebase
+      localStorage.setItem('rbm_outlet_confirmation_required', 'true');
+      let manualSelectionMade = false;
+      locationLink.textContent = 'Mencari lokasi... (Pilih manual)';
+      locationLink.href = 'lokasi.html';
+      locationLink.onclick = null;
+
       const locationPromise = new Promise((resolve, reject) => {
           if (!navigator.geolocation) {
               reject(new Error('Geolokasi tidak didukung'));
               return;
           }
-          locationLink.textContent = 'Mencari lokasi...';
-          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: false,
+              timeout: 10000,
+              maximumAge: 60000
+          });
       }).then(
           position => ({ position }),
           error => ({ error })
       );
 
-      // [DIUBAH] Ambil data lokasi langsung dari Firebase (Paralel)
-      let stores = [];
-      try {
-          if (typeof db !== 'undefined') {
-              const snapshot = await db.ref('customer_app_settings/outlets').once('value');
-              const data = snapshot.val();
-              stores = toSettingsList(data);
+      const cachedOutlets = (() => {
+          try {
+              const settings = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
+              return toSettingsList(settings.outlets);
+          } catch (error) {
+              console.error('Gagal membaca cache outlet:', error);
+              return [];
           }
-      } catch(e) {
-          console.error("Gagal ambil lokasi dari Firebase:", e);
+      })();
+
+      const outletsPromise = (async () => {
+          if (!db) throw new Error('Firebase belum terinisialisasi');
+          let timeoutId;
+          try {
+              const snapshot = await Promise.race([
+                  db.ref('customer_app_settings/outlets').once('value'),
+                  new Promise((_, reject) => {
+                      timeoutId = setTimeout(() => reject(new Error('Waktu tunggu outlet dari Firebase habis')), 8000);
+                  })
+              ]);
+              return toSettingsList(snapshot.val());
+          } finally {
+              clearTimeout(timeoutId);
+          }
+      })().then(
+          stores => ({ stores }),
+          error => ({ error })
+      );
+
+      const [locationResult, outletsResult] = await Promise.all([locationPromise, outletsPromise]);
+      let stores = outletsResult.stores || [];
+      if (stores.length === 0 && cachedOutlets.length > 0) {
+          console.warn('Menggunakan cache outlet karena daftar outlet Firebase tidak tersedia.');
+          stores = cachedOutlets;
+      } else if (outletsResult.error) {
+          console.error('Gagal mengambil lokasi outlet dari Firebase:', outletsResult.error);
       }
 
-      // [BARU] Handle jika data outlet kosong (Gagal memuat)
       if (stores.length === 0) {
-          locationLink.innerHTML = 'Gagal memuat. <span style="text-decoration:underline;">Coba Lagi ↻</span>';
+          locationLink.textContent = 'Outlet belum dimuat. Coba lagi';
           locationLink.href = '#';
           locationLink.onclick = (e) => {
               e.preventDefault();
@@ -2201,35 +2253,7 @@
         return R * c; // Jarak dalam km
       }
 
-      // [DIUBAH] Fungsi untuk memperbarui link online food berdasarkan data-platform
-      function updateOnlineFoodLinks(store) {
-        if (!store) return;
-        const links = store.links || {};
-
-        const onlineFoodCards = document.querySelectorAll('.special-offer-card');
-        onlineFoodCards.forEach((card, index) => {
-            // [FIX] Reset ke link default dulu agar tidak 'nyangkut' link outlet sebelumnya
-            const defaultLink = card.dataset.defaultLink;
-            if (defaultLink) card.href = defaultLink;
-
-            // Prioritas 1: Cek berdasarkan Posisi (1, 2, 3)
-            const position = card.dataset.position || String(index + 1);
-            if (links[position]) {
-                card.href = links[position];
-                return;
-            }
-
-            // Prioritas 2: Cek berdasarkan Platform (Legacy)
-            const platform = card.dataset.platform;
-            if (platform && links[platform]) {
-                card.href = links[platform];
-            }
-        });
-      }
-
       try {
-          // Tunggu hasil lokasi user (yang sudah berjalan paralel dengan fetch Firebase)
-          const locationResult = await locationPromise;
           if (locationResult.error) throw locationResult.error;
           const position = locationResult.position;
           
@@ -2240,7 +2264,10 @@
           let minDistance = Infinity;
 
           stores.forEach(store => {
-            const distance = getDistance(userLat, userLon, store.lat, store.lon);
+            const storeLat = Number(store.lat);
+            const storeLon = Number(store.lon);
+            if (!Number.isFinite(storeLat) || !Number.isFinite(storeLon)) return;
+            const distance = getDistance(userLat, userLon, storeLat, storeLon);
             if (distance < minDistance) {
               minDistance = distance;
               nearestStore = store;
@@ -2248,60 +2275,51 @@
           });
 
           if (nearestStore) {
+            if (manualSelectionMade) return;
             locationLink.textContent = nearestStore.name;
             locationLink.href = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLon}&destination=${nearestStore.lat},${nearestStore.lon}`;
             locationLink.target = '_blank'; // Buka di tab baru
             locationLink.onclick = null; // Hapus event click sebelumnya jika ada
             
-            // [DIUBAH] Tidak lagi menyimpan ke localStorage agar setiap refresh memilih ulang
             currentSessionOutletId = nearestStore.id;
-            // [FIX] Simpan ke localStorage agar halaman checkout/payment bisa mengakses ID outlet
-            localStorage.setItem('rbm_outlet_info', JSON.stringify({ ...nearestStore, saved_at: Date.now() }));
+            localStorage.setItem('rbm_outlet_info', JSON.stringify({
+                ...nearestStore,
+                saved_at: Date.now(),
+                location_confirmed_at: Date.now()
+            }));
+            localStorage.removeItem('rbm_outlet_confirmation_required');
             
             updateOnlineFoodLinks(nearestStore); // [BARU] Perbarui link online food
             // Render menu berdasarkan lokasi terdekat
             renderGroupedMenus(nearestStore.id);
             try { hideMandatoryManualOverlay(); } catch(e){}
           } else {
-            locationLink.textContent = 'Lokasi tidak ditemukan';
-            renderGroupedMenus(null); // Kosongkan menu jika tidak ditemukan
-            updateOnlineFoodLinks(stores[0]); // Default ke Sidoarjo
+            locationLink.textContent = 'Pilih Lokasi Manual';
+            renderGroupedMenus(null);
+            showLocationListInPage(stores, () => { manualSelectionMade = true; });
           }
 
       } catch (error) {
+          if (manualSelectionMade) return;
           console.error("Error mendapatkan lokasi: ", error.message);
           console.warn('Geolocation ditolak/gagal.');
+          localStorage.setItem('rbm_outlet_confirmation_required', 'true');
           
           locationLink.textContent = 'Pilih Lokasi Manual';
           locationLink.href = '#';
           locationLink.onclick = null;
           
-          // [DIUBAH] Cek apakah ada lokasi tersimpan sebelum menampilkan popup
+          // A saved outlet is only a suggestion until the user confirms it.
           const savedRaw = localStorage.getItem('rbm_outlet_info');
-          let hasSavedOutlet = false;
           
           if (savedRaw) {
               try {
                   const saved = JSON.parse(savedRaw);
                   if (saved && saved.id) {
-                      hasSavedOutlet = true;
-                      
-                      // Cek kesegaran data (24 jam)
-                      const AGE_LIMIT = 24 * 60 * 60 * 1000;
-                      const age = Date.now() - (saved.saved_at || 0);
-                      
-                      if (age <= AGE_LIMIT) {
-                          // Masih fresh, gunakan otomatis
-                          currentSessionOutletId = saved.id;
-                          locationLink.textContent = saved.name;
-                          locationLink.href = saved.map_link || '#';
-                          renderGroupedMenus(saved.id);
-                          updateOnlineFoodLinks(saved);
-                          try { hideMandatoryManualOverlay(); } catch(e){}
-                      }
-                      else {
-                          // [DIUBAH] Jika stale, anggap tidak ada saved outlet agar popup muncul
-                          hasSavedOutlet = false;
+                      const availableOutlet = stores.find(store => String(store.id) === String(saved.id));
+                      if (availableOutlet) {
+                          showSavedOutletConfirmation(availableOutlet, stores, () => { manualSelectionMade = true; });
+                          return;
                       }
                   }
               } catch(e) {
@@ -2309,15 +2327,60 @@
               }
           }
           
-          // Jika tidak ada lokasi tersimpan, baru tampilkan popup list
-          if (!hasSavedOutlet) {
-              showLocationListInPage(stores);
-          }
+          showLocationListInPage(stores, () => { manualSelectionMade = true; });
       }
     }
 
+    function showSavedOutletConfirmation(savedOutlet, stores, onManualSelection) {
+        if (document.getElementById('locationPickerPopup')) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'locationPickerPopup';
+        overlay.className = 'popup-overlay show';
+        overlay.style.display = 'flex';
+        overlay.style.zIndex = '3000';
+        overlay.innerHTML = `
+            <div class="popup-box" style="width: 85%; max-width: 340px; background: white; padding: 24px 20px; border-radius: 24px; text-align: center;">
+                <h3 style="margin: 0 0 10px; color: var(--text);">Lokasi perangkat tidak dapat diperbarui</h3>
+                <p style="font-size: 13px; color: #6b7280; margin: 0 0 18px;">
+                    Outlet terakhir yang tersimpan adalah <strong>${savedOutlet.name || 'Outlet'}</strong>.
+                    Apakah Anda ingin menggunakannya atau memilih outlet lain?
+                </p>
+                <button id="confirmSavedOutletBtn" style="width: 100%; background: #4C2A85; color: white; border: none; padding: 11px; border-radius: 10px; cursor: pointer; margin-bottom: 8px;">Gunakan outlet ini</button>
+                <button id="chooseAnotherOutletBtn" style="width: 100%; background: white; color: #4C2A85; border: 1px solid #4C2A85; padding: 10px; border-radius: 10px; cursor: pointer;">Pilih outlet lain</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.querySelector('#confirmSavedOutletBtn').addEventListener('click', () => {
+            currentSessionOutletId = savedOutlet.id;
+            localStorage.setItem('rbm_outlet_info', JSON.stringify({
+                ...savedOutlet,
+                saved_at: Date.now(),
+                location_confirmed_at: Date.now()
+            }));
+            localStorage.removeItem('rbm_outlet_confirmation_required');
+
+            const locationLink = document.getElementById('findNearestLocation');
+            if (locationLink) {
+                locationLink.textContent = savedOutlet.name || 'Outlet';
+                locationLink.href = savedOutlet.map_link || '#';
+            }
+            renderGroupedMenus(savedOutlet.id);
+            updateOnlineFoodLinks(savedOutlet);
+            overlay.remove();
+            hideMandatoryManualOverlay();
+        });
+
+        overlay.querySelector('#chooseAnotherOutletBtn').addEventListener('click', () => {
+            if (onManualSelection) onManualSelection();
+            overlay.remove();
+            showLocationListInPage(stores, onManualSelection);
+        });
+    }
+
     // [BARU] Fungsi untuk menampilkan popup pemilihan lokasi manual
-    function showLocationListInPage(stores) {
+    function showLocationListInPage(stores, onManualSelection) {
         // Cek jika popup sudah ada agar tidak duplikat
         if (document.getElementById('locationPickerPopup')) return;
 
@@ -2358,10 +2421,15 @@
                 const storeId = el.dataset.id;
                 const selectedStore = stores.find(s => s.id == storeId);
                 if (selectedStore) {
-                    // Set lokasi sesi ini (tidak disimpan permanen)
+                    if (onManualSelection) onManualSelection();
                     currentSessionOutletId = selectedStore.id;
-                    // [FIX] Simpan ke localStorage agar halaman checkout/payment bisa mengakses ID outlet
-                    localStorage.setItem('rbm_outlet_info', JSON.stringify({ ...selectedStore, saved_at: Date.now() }));
+                    localStorage.setItem('rbm_outlet_info', JSON.stringify({
+                        ...selectedStore,
+                        saved_at: Date.now(),
+                        location_confirmed_at: Date.now()
+                    }));
+                    localStorage.removeItem('rbm_outlet_confirmation_required');
+                    updateOnlineFoodLinks(selectedStore);
                     
                     // Update UI Header
                     const locationLink = document.getElementById('findNearestLocation');
@@ -2442,16 +2510,14 @@
         if (!navigator.permissions || !navigator.permissions.query) return;
         navigator.permissions.query({ name: 'geolocation' }).then(status => {
           if (status.state === 'denied') {
-            // hide other overlays and show forced manual overlay
-            try { hideMandatoryLocationOverlay(); } catch(e){}
-            showMandatoryManualOverlay();
+            hideMandatoryManualOverlay();
           } else {
             // permission not denied -> ensure manual overlay hidden
             hideMandatoryManualOverlay();
             hideMandatoryLocationOverlay();
           }
           status.onchange = function(){
-            if (this.state === 'denied') showMandatoryManualOverlay();
+            if (this.state === 'denied') hideMandatoryManualOverlay();
             else hideMandatoryManualOverlay();
           };
         }).catch(()=>{});
@@ -2777,11 +2843,11 @@
                 <span class="points-label">Poin Anda:</span>
                 <span class="points-value" id="userPoints">${user.points >= 999999999 ? '∞' : (user.points || '0')}</span>
               </div>
-              <img src="https://placehold.co/40x40/png?text=$" alt="Poin" class="points-icon" id="icon-points-display">
+              <img src="Ikon Poin (Beranda).png" alt="Poin" class="points-icon" id="icon-points-display">
             </div>
             <a href="tukarpoint.html" class="exchange-card welcome-card" style="cursor: pointer;">
               <span class="exchange-text">Tukar Poin</span>
-              <img src="https://placehold.co/40x40/png?text=TP" alt="Tukar Poin" class="points-icon" id="icon-exchange-display">
+              <img src="Ikon Tukar Poin.png" alt="Tukar Poin" class="points-icon" id="icon-exchange-display">
             </a>
           </div>
         `;
@@ -3637,203 +3703,36 @@ function handleHeaderScroll() {
     // ==========================================
     // 12. APP SETTINGS & INITIALIZATION
     // ==========================================
-    // [BARU] Fungsi Load Pengaturan dari Firebase (Logo, Promo, Running Text)
+    // Load only settings that still need to be dynamic; branding and promo images are local files.
     function loadAppSettings() {
       if (!db) return;
       const settingsCacheKey = 'rbm_customer_app_settings';
-      const imageCacheDbName = 'rbm_customer_image_cache';
-      const imageCacheStoreName = 'settings';
-      const imageCacheMaxSize = 6 * 1024 * 1024;
+      const cachedSettings = {};
+      try {
+          const serializedSettings = localStorage.getItem(settingsCacheKey);
+          if (serializedSettings) Object.assign(cachedSettings, JSON.parse(serializedSettings));
+      } catch (error) {
+          console.error('Gagal membaca cache pengaturan aplikasi:', error);
+      }
 
-      const openImageCache = () => new Promise((resolve, reject) => {
-          if (!window.indexedDB) {
-              reject(new Error('IndexedDB tidak tersedia di browser ini.'));
-              return;
-          }
-          const request = indexedDB.open(imageCacheDbName, 1);
-          request.onupgradeneeded = () => {
-              const database = request.result;
-              if (!database.objectStoreNames.contains(imageCacheStoreName)) {
-                  database.createObjectStore(imageCacheStoreName);
-              }
-          };
-          request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error || new Error('Gagal membuka cache gambar.'));
+      ['logo', 'login_logo', 'point_icon', 'exchange_icon', 'promo', 'promo_popup', 'promo_slider', 'special_offers'].forEach(key => {
+          delete cachedSettings[key];
       });
 
-      const readImageCache = async () => {
-          const database = await openImageCache();
-          return new Promise((resolve, reject) => {
-              const transaction = database.transaction(imageCacheStoreName, 'readonly');
-              const request = transaction.objectStore(imageCacheStoreName).get('home');
-              request.onsuccess = () => resolve(request.result || {});
-              request.onerror = () => reject(request.error || new Error('Gagal membaca cache gambar.'));
-              transaction.oncomplete = () => database.close();
-              transaction.onerror = () => {
-                  database.close();
-                  reject(transaction.error || new Error('Gagal membaca cache gambar.'));
-              };
-          });
-      };
-
-      const writeImageCache = async (settings) => {
-          const images = {};
-          let size = 0;
-          const addImage = (key, value) => {
-              if (typeof value !== 'string' || !value) return;
-              if (size + value.length > imageCacheMaxSize) return;
-              images[key] = value;
-              size += value.length;
-          };
-
-          const outlets = toSettingsList(settings.outlets);
-          const offers = toSettingsList(settings.special_offers);
-          addImage('banner:0', toSettingsList(settings.promo_slider)[0]);
-          const firstOutlet = outlets[0];
-          addImage(`outlet:${firstOutlet && firstOutlet.id || 0}`, firstOutlet && (firstOutlet.image || toSettingsList(firstOutlet.images)[0]));
-          offers.slice(0, 3).forEach((offer, index) => {
-              addImage(`offer:${index}`, offer && offer.image);
-          });
-          addImage('promo', (settings.promo_popup || settings.promo || {}).image);
-          addImage('logo', settings.logo);
-          addImage('point_icon', settings.point_icon);
-          addImage('exchange_icon', settings.exchange_icon);
-          outlets.slice(1).forEach((outlet, index) => {
-              addImage(`outlet:${outlet && outlet.id || index + 1}`, outlet && (outlet.image || toSettingsList(outlet.images)[0]));
-          });
-          offers.slice(3).forEach((offer, index) => {
-              addImage(`offer:${index + 3}`, offer && offer.image);
-          });
-
-          const database = await openImageCache();
-          await new Promise((resolve, reject) => {
-              const transaction = database.transaction(imageCacheStoreName, 'readwrite');
-              transaction.objectStore(imageCacheStoreName).put(images, 'home');
-              transaction.oncomplete = resolve;
-              transaction.onerror = () => reject(transaction.error || new Error('Gagal menyimpan cache gambar.'));
-              transaction.onabort = () => reject(transaction.error || new Error('Penyimpanan cache gambar dibatalkan.'));
-          }).finally(() => database.close());
-      };
-
-      const restoreCachedImages = (settings, images) => {
-          if (!settings || !images) return settings;
-          const restored = { ...settings };
-          ['logo', 'point_icon', 'exchange_icon'].forEach(key => {
-              if (!restored[key] && images[key]) restored[key] = images[key];
-          });
-          if (images.promo) {
-              restored.promo_popup = { ...(restored.promo_popup || restored.promo || {}), image: images.promo };
+      const saveSettingsCache = (settings) => {
+          Object.assign(cachedSettings, settings);
+          try {
+              localStorage.setItem(settingsCacheKey, JSON.stringify(cachedSettings));
+          } catch (error) {
+              console.warn('Gagal menyimpan cache pengaturan aplikasi:', error);
           }
-          const banners = toSettingsList(restored.promo_slider);
-          if (images['banner:0'] && banners.length) banners[0] = images['banner:0'];
-          restored.promo_slider = banners;
-          restored.outlets = toSettingsList(restored.outlets).map((outlet, index) => {
-              if (!outlet) return outlet;
-              const image = outlet.image || images[`outlet:${outlet.id || index}`];
-              return image ? { ...outlet, image, images: [image] } : outlet;
-          });
-          restored.special_offers = toSettingsList(restored.special_offers).map((offer, index) => {
-              if (!offer || offer.image || !images[`offer:${index}`]) return offer;
-              return { ...offer, image: images[`offer:${index}`] };
-          });
-          return restored;
-      };
-
-      const createSettingsCache = (settings) => {
-          const cached = { ...settings };
-          ['logo', 'login_logo', 'point_icon', 'exchange_icon'].forEach(key => {
-              if (typeof cached[key] === 'string' && cached[key].startsWith('data:')) delete cached[key];
-          });
-          ['promo', 'promo_popup'].forEach(key => {
-              if (cached[key] && typeof cached[key] === 'object') {
-                  cached[key] = { ...cached[key] };
-                  if (typeof cached[key].image === 'string' && cached[key].image.startsWith('data:')) {
-                      delete cached[key].image;
-                  }
-              }
-          });
-          cached.promo_slider = toSettingsList(cached.promo_slider).map(image =>
-              typeof image === 'string' && image.startsWith('data:') ? '' : image
-          );
-          cached.special_offers = toSettingsList(cached.special_offers).map(offer => {
-              if (!offer || typeof offer !== 'object') return offer;
-              const cachedOffer = { ...offer };
-              if (typeof cachedOffer.image === 'string' && cachedOffer.image.startsWith('data:')) {
-                  delete cachedOffer.image;
-              }
-              return cachedOffer;
-          });
-          cached.outlets = toSettingsList(cached.outlets).map(outlet => {
-              if (!outlet || typeof outlet !== 'object') return outlet;
-              const cachedOutlet = { ...outlet };
-              if (typeof cachedOutlet.image === 'string' && cachedOutlet.image.startsWith('data:')) {
-                  delete cachedOutlet.image;
-              }
-              cachedOutlet.images = toSettingsList(cachedOutlet.images).map(image =>
-                  typeof image === 'string' && image.startsWith('data:') ? '' : image
-              );
-              return cachedOutlet;
-          });
-          return cached;
       };
       
       // 1. Definisi fungsi untuk menerapkan pengaturan ke UI
       const applySettings = (settings) => {
           if (!settings) return;
 
-          // [BARU] Update Logo Toko
-          if (settings.logo) {
-              const logoImg = document.querySelector('.logo img');
-              if (logoImg) logoImg.src = settings.logo;
-          }
-
-          // [BARU] Update Ikon Poin
-          if (settings.point_icon) {
-              const pointIcon = document.getElementById('icon-points-display');
-              if (pointIcon) pointIcon.src = settings.point_icon;
-          }
-
-          // [BARU] Update Ikon Tukar Poin
-          if (settings.exchange_icon) {
-              const exchangeIcon = document.getElementById('icon-exchange-display');
-              if (exchangeIcon) exchangeIcon.src = settings.exchange_icon;
-          }
-
-          // 1. Update Promo Popup
-          const promoData = settings.promo_popup || settings.promo;
-          if (promoData && promoData.image) {
-              const promoImg = document.querySelector('#promoPopup img');
-              if (promoImg) promoImg.src = promoData.image;
-          }
-
-          // 2. Update Promo Slider (Main)
-          const promoSlider = toSettingsList(settings.promo_slider);
-          if (promoSlider.length > 0) {
-             const slider = document.getElementById('promoSlider');
-             if (slider) {
-                 slider.innerHTML = promoSlider.map((img, index) => 
-                   `<div class="promo-item"><img src="${img}" alt="Promo Utama ${index + 1}" ${index === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></div>`
-                 ).join('');
-                 initPromoSlider(); // Re-init slider
-             }
-          }
-
-          // 3. Update Special Offers
-          const specialOffers = toSettingsList(settings.special_offers);
-          if (specialOffers.length > 0) {
-             const grid = document.querySelector('.special-offer-grid');
-             if (grid) {
-                 grid.innerHTML = specialOffers.map((offer, index) => `
-                    <a href="${offer.link || '#'}" data-default-link="${offer.link || '#'}" target="_blank" class="special-offer-card" data-position="${index + 1}" data-platform="${offer.platform || ''}">
-                        <div class="offer-image" style="height: 100%;">
-                            <img src="${offer.image}" alt="${offer.alt || 'Promo'}" loading="${index < 3 ? 'eager' : 'lazy'}" ${index < 3 ? 'fetchpriority="high"' : ''} decoding="async" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
-                        </div>
-                    </a>
-                 `).join('');
-             }
-          }
-
-          // 4. Update Outlets
+          // Update outlet cards from their dedicated Firebase child path.
           const outlets = toSettingsList(settings.outlets);
           if (outlets.length > 0) {
              const track = document.querySelector('#outletSlider .outlet-slider-track');
@@ -3880,40 +3779,36 @@ function handleHeaderScroll() {
           }
           
           updateFeaturesUI();
-
-          // [BARU] Hapus style anti-flash setelah UI diupdate agar kontrol kembali ke JS
-          const antiFlashStyle = document.getElementById('anti-flash-style');
-          if (antiFlashStyle) antiFlashStyle.remove();
       };
 
-      // 2. Tampilkan metadata dan gambar yang pernah tersimpan sebelum meminta data terbaru.
-      let cachedSettings = null;
-      try {
-          const serializedSettings = localStorage.getItem(settingsCacheKey);
-          if (serializedSettings) cachedSettings = JSON.parse(serializedSettings);
-      } catch (error) {
-          console.error('Gagal membaca cache pengaturan aplikasi:', error);
-      }
+      applySettings(cachedSettings);
 
-      let hasReceivedFirebaseSettings = false;
-      if (cachedSettings) applySettings(cachedSettings);
-
-      // Baca cache gambar tanpa menunda listener Firebase.
-      readImageCache().then(images => {
-          if (cachedSettings && !hasReceivedFirebaseSettings) {
-              applySettings(restoreCachedImages(cachedSettings, images));
+      const settingPaths = [
+          'outlets',
+          'enable_ai_chat',
+          'enable_game',
+          'enable_global_chat',
+          'reservation_enabled',
+          'ordering_enabled'
+      ];
+      let initialSettingsLoaded = 0;
+      const initialSettingsReceived = new Set();
+      const receiveSetting = (key, value) => {
+          const settings = { [key]: value };
+          applySettings(settings);
+          saveSettingsCache(settings);
+          if (!initialSettingsReceived.has(key)) {
+              initialSettingsReceived.add(key);
+              initialSettingsLoaded += 1;
+              if (initialSettingsLoaded === settingPaths.length) {
+                  const antiFlashStyle = document.getElementById('anti-flash-style');
+                  if (antiFlashStyle) antiFlashStyle.remove();
+              }
           }
-      }).catch(error => {
-          console.warn('Cache gambar lokal tidak dapat dibaca; beranda akan memuat gambar terbaru dari Firebase.', error);
-      });
+      };
 
-      // 3. Listen ke Firebase untuk update terbaru
-      db.ref('customer_app_settings').on('value', (snapshot) => {
-          const settings = snapshot.val();
-          if (!settings) return;
-          hasReceivedFirebaseSettings = true;
-
-          const storedOutlets = toSettingsList(settings.outlets);
+      db.ref('customer_app_settings/outlets').on('value', (snapshot) => {
+          const storedOutlets = toSettingsList(snapshot.val());
           const outletsWithSingleImage = storedOutlets.map(outlet => {
               const images = toSettingsList(outlet.images);
               const image = images[0] || outlet.image || '';
@@ -3921,32 +3816,21 @@ function handleHeaderScroll() {
           });
           const hasExtraOutletImages = storedOutlets.some(outlet => toSettingsList(outlet.images).length > 1);
           if (hasExtraOutletImages) {
-              settings.outlets = outletsWithSingleImage;
               db.ref('customer_app_settings/outlets').set(outletsWithSingleImage).catch(error => {
                   console.error('Gagal menghapus foto outlet tambahan dari Firebase:', error.message);
               });
           }
-
-          // Terapkan pengaturan
-          applySettings(settings);
-          writeImageCache(settings).catch(error => {
-              console.warn('Gambar dimuat, tetapi cache offline gagal disimpan:', error);
-          });
-
-          const serializedCache = JSON.stringify(createSettingsCache(settings));
-          try {
-              localStorage.setItem(settingsCacheKey, serializedCache);
-          } catch (error) {
-              console.warn('Cache pengaturan penuh; menghapus cache lama lalu mencoba menyimpan versi ringan.', error);
-              try {
-                  localStorage.removeItem(settingsCacheKey);
-                  localStorage.setItem(settingsCacheKey, serializedCache);
-              } catch (retryError) {
-                  console.error('Gagal menyimpan cache pengaturan aplikasi. Pengaturan Firebase tetap diterapkan.', retryError);
-              }
-          }
+          receiveSetting('outlets', outletsWithSingleImage);
       }, (error) => {
-          console.error("Gagal memuat pengaturan aplikasi dari Firebase:", error.message);
+          console.error('Gagal memuat outlet dari Firebase:', error.message);
+      });
+
+      settingPaths.slice(1).forEach(key => {
+          db.ref(`customer_app_settings/${key}`).on('value', (snapshot) => {
+              receiveSetting(key, snapshot.val());
+          }, (error) => {
+              console.error(`Gagal memuat pengaturan ${key} dari Firebase:`, error.message);
+          });
       });
     }
 

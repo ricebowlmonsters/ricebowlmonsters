@@ -19,7 +19,7 @@
   <main class="auth-container">
     <div class="brand">
       <div class="logo">
-        <img id="login-logo-img" src="https://placehold.co/65x65/png?text=RBM" alt="Rice Bowl Monster Logo">
+        <img id="login-logo-img" src="Logo Halaman Login.png" alt="Rice Bowl Monster Logo">
       </div>
       <div class="brand-text">
         <h1>Rice Bowl Monsters</h1>
@@ -71,10 +71,6 @@
     </form>
   </dialog>
 
-  <!-- [BARU] Firebase SDK untuk Load Logo -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdh5OZ5Te2P-1YlsctrnV6ByWvOvQetGuzr2WUmseJf5WTUatTZ2Yeh7hGPJCobkhJ6g/exec';
     
@@ -91,27 +87,6 @@
     const batalBtn = document.getElementById('btn-batal');
 
     yearSpan.textContent = new Date().getFullYear();
-
-    // [BARU] Load Logo dari Firebase Settings
-    const firebaseConfig = {
-        apiKey: "AIzaSyDWQG53tP2zKILTwPSJQpiVzFNyvYLxLqw",
-        authDomain: "ricebowlmonst.firebaseapp.com",
-        databaseURL: "https://ricebowlmonst-default-rtdb.firebaseio.com",
-        projectId: "ricebowlmonst",
-        storageBucket: "ricebowlmonst.firebasestorage.app",
-        messagingSenderId: "723669558962",
-        appId: "1:723669558962:web:c17a1a4683a86cc5a88bab"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    db.ref('customer_app_settings').once('value').then(snapshot => {
-        const settings = snapshot.val();
-        if (settings && (settings.login_logo || settings.logo)) {
-            const logoImg = document.getElementById('login-logo-img');
-            if (logoImg) logoImg.src = settings.login_logo || settings.logo;
-        }
-    });
 
     function showMessage(element, text, isError = false) {
       element.textContent = text;
