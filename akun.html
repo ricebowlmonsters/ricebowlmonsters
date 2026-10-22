@@ -144,7 +144,7 @@
         <div class="profile-content">
           <div class="profile-left">
             <div class="logo-container">
-              <img id="account-logo" src="Logo Toko (Header).png" alt="Rice Bowl Monster Logo" style="width:56px; height:56px; object-fit: contain;">
+              <img id="account-logo" src="Logo Halaman Login.png" alt="Rice Bowl Monster Logo" style="width:56px; height:56px; object-fit: contain;">
             </div>
             <div>
               <p id="account-title" class="form-title" style="margin:0; font-size:23px; color: var(--primary, #d32f2f);">Rice Bowl Monsters</p>
@@ -292,7 +292,7 @@
             saveNameBtn.textContent = '...';
 
             try {
-                const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdh5OZ5Te2P-1YlsctrnV6ByWvOvQetGuzr2WUmseJf5WTUatTZ2Yeh7hGPJCobkhJ6g/exec';
+                const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcxHbeA1GGERUAg8uGL3JVvkDknD_6gvqOw1dH4Wu0bdsR-6iqLYHUps_MJvzFQQtMEg/exec';
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -382,7 +382,11 @@
     });
 
     const accountSettings = {};
-    ['title', 'greeting', 'guest_name', 'whatsapp', 'show_faq', 'faq_label', 'show_terms', 'terms_label'].forEach(key => {
+    const accountWhatsAppNumber = '62895420822040';
+    const accountWhatsAppButton = document.getElementById('action-wa');
+    if (accountWhatsAppButton) accountWhatsAppButton.href = `https://wa.me/${accountWhatsAppNumber}`;
+
+    ['title', 'greeting', 'guest_name', 'show_faq', 'faq_label', 'show_terms', 'terms_label'].forEach(key => {
       db.ref(`customer_app_settings/account_page/${key}`).on('value', (snapshot) => {
         accountSettings[key] = snapshot.val();
         const settings = accountSettings;
@@ -401,11 +405,6 @@
             const user = getUser();
             if (!user || !user.phone) setLoggedOutView();
         }
-
-        // Update WhatsApp Link
-        const waBtn = document.getElementById('action-wa');
-        const waNumber = settings.whatsapp || '6285173350016'; // Default number
-        if (waBtn) waBtn.href = `https://wa.me/${waNumber}`;
 
         // Update Visibility FAQ
         const faqBtn = document.getElementById('action-faq');

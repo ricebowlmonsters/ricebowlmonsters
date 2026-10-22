@@ -2170,13 +2170,15 @@
       const locationLink = document.getElementById('findNearestLocation');
       if (!locationLink) return;
 
-      localStorage.setItem('rbm_outlet_confirmation_required', 'true');
+      const qrParams = new URLSearchParams(window.location.search);
+      const qrOutletId = qrParams.get('outlet');
+      if (!qrOutletId) localStorage.setItem('rbm_outlet_confirmation_required', 'true');
       let manualSelectionMade = false;
-      locationLink.textContent = 'Mencari lokasi... (Pilih manual)';
+      locationLink.textContent = qrOutletId ? 'Memuat outlet dari QR...' : 'Mencari lokasi... (Pilih manual)';
       locationLink.href = 'lokasi.html';
       locationLink.onclick = null;
 
-      const locationPromise = new Promise((resolve, reject) => {
+      const locationPromise = qrOutletId ? Promise.resolve({}) : new Promise((resolve, reject) => {
           if (!navigator.geolocation) {
               reject(new Error('Geolokasi tidak didukung'));
               return;
@@ -2201,7 +2203,8 @@
           }
       })();
 
-      const outletsPromise = (async () => {
+      const cachedQrOutlet = qrOutletId && cachedOutlets.some(store => String(store.id) === String(qrOutletId));
+      const outletsPromise = cachedQrOutlet ? Promise.resolve({ stores: cachedOutlets }) : (async () => {
           if (!db) throw new Error('Firebase belum terinisialisasi');
           let timeoutId;
           try {
@@ -2230,6 +2233,11 @@
       }
 
       if (stores.length === 0) {
+          if (qrOutletId) {
+              locationLink.textContent = 'Outlet QR tidak dapat dimuat';
+              renderGroupedMenus(null);
+              return;
+          }
           locationLink.textContent = 'Outlet belum dimuat. Coba lagi';
           locationLink.href = '#';
           locationLink.onclick = (e) => {
@@ -2237,6 +2245,35 @@
               window.refreshLocation();
           };
           renderGroupedMenus(null);
+          return;
+      }
+
+      if (qrOutletId) {
+          const qrOutlet = stores.find(store => String(store.id) === String(qrOutletId));
+          if (!qrOutlet) {
+              localStorage.setItem('rbm_outlet_confirmation_required', 'true');
+              locationLink.textContent = 'Outlet QR tidak tersedia';
+              locationLink.href = 'lokasi.html';
+              renderGroupedMenus(null);
+              console.error('Outlet pada QR tidak ditemukan atau sudah tidak aktif:', qrOutletId);
+              return;
+          }
+
+          currentSessionOutletId = qrOutlet.id;
+          localStorage.setItem('rbm_outlet_info', JSON.stringify({
+              ...qrOutlet,
+              saved_at: Date.now(),
+              location_confirmed_at: Date.now(),
+              source: 'table_qr'
+          }));
+          localStorage.removeItem('rbm_outlet_confirmation_required');
+          locationLink.textContent = qrOutlet.name || qrParams.get('outletName') || 'Outlet dari QR';
+          locationLink.href = qrOutlet.map_link || '#';
+          locationLink.target = qrOutlet.map_link ? '_blank' : '';
+          locationLink.onclick = null;
+          updateOnlineFoodLinks(qrOutlet);
+          renderGroupedMenus(qrOutlet.id);
+          try { hideMandatoryManualOverlay(); } catch (error) { console.warn('Gagal menutup pemilih lokasi:', error); }
           return;
       }
 

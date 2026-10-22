@@ -47,26 +47,90 @@
 
     .tabs {
       display: flex;
-      background: #e5e7eb;
-      padding: 4px;
-      border-radius: 12px;
-      margin-bottom: 16px;
+      gap: 8px;
+      padding: 5px;
+      background: #f0edf5;
+      border: 1px solid #e8e2f0;
+      border-radius: 14px;
+      margin-bottom: 18px;
+    }
+    .tabs[hidden] { display: none !important; }
+    .tabs-label {
+      margin: 0 0 9px 2px;
+      color: #81768e;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
     }
     .tab-btn {
       flex: 1;
-      padding: 10px;
+      min-height: 42px;
+      padding: 9px 12px;
       border: none;
       background: transparent;
-      border-radius: 8px;
-      font-weight: 600;
-      color: var(--muted);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #766b83;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
     .tab-btn.active {
       background-color: var(--card);
       color: var(--primary);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: 0 3px 10px rgba(49, 31, 75, 0.1);
+    }
+    .tab-btn:active { transform: scale(0.98); }
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 2px 0 18px;
+      padding: 5px;
+      background: #fff;
+      border: 1px solid #ece8f1;
+      border-radius: 17px;
+      box-shadow: 0 5px 18px rgba(39, 24, 60, 0.06);
+    }
+    .quick-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 54px;
+      padding: 9px 10px;
+      color: #6b6078;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 13px;
+      cursor: pointer;
+      transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .quick-action-btn.active {
+      color: #fff;
+      background: linear-gradient(135deg, #4C2A85, #7045ad);
+      box-shadow: 0 5px 12px rgba(76, 42, 133, 0.22);
+    }
+    .quick-action-btn:active { transform: scale(0.98); }
+    .quick-action-icon {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      border-radius: 10px;
+      background: rgba(76, 42, 133, 0.08);
+      font-size: 15px;
+    }
+    .quick-action-btn.active .quick-action-icon { background: rgba(255, 255, 255, 0.16); }
+    .quick-action-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+    .quick-action-title { font-size: 12px; font-weight: 800; letter-spacing: 0.035em; }
+    .quick-action-subtitle { font-size: 10px; font-weight: 500; opacity: 0.78; }
+    @media (max-width: 360px) {
+      .quick-actions { gap: 5px; }
+      .quick-action-btn { gap: 6px; padding: 8px 6px; }
+      .quick-action-subtitle { font-size: 9px; }
     }
     .reward-content { display: none; }
     .reward-content.active { display: block; }
@@ -112,9 +176,36 @@
       text-align: center;
       margin-bottom: 20px;
       box-shadow: 0 4px 12px rgba(76, 42, 133, 0.2);
+      position: relative;
+      overflow: hidden;
     }
     .points-label { font-size: 14px; opacity: 0.9; margin-bottom: 4px; }
-    .points-value { font-size: 32px; font-weight: 800; }
+    .points-value { font-size: 32px; font-weight: 800; position: relative; z-index: 1; }
+    .points-summary .points-label { position: relative; z-index: 1; }
+    .floating-coins { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .floating-coin {
+      position: absolute;
+      bottom: -28px;
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      opacity: 0;
+      filter: drop-shadow(0 2px 3px rgba(36, 20, 0, 0.35));
+      animation: coin-float 3.8s ease-in infinite;
+    }
+    .floating-coin:nth-child(1) { left: 14%; animation-delay: 0s; }
+    .floating-coin:nth-child(2) { left: 38%; width: 17px; height: 17px; animation-delay: 1.2s; animation-duration: 4.2s; }
+    .floating-coin:nth-child(3) { left: 68%; width: 20px; height: 20px; animation-delay: 2.1s; animation-duration: 3.5s; }
+    .floating-coin:nth-child(4) { left: 86%; width: 16px; height: 16px; animation-delay: 0.7s; animation-duration: 4.5s; }
+    @keyframes coin-float {
+      0% { transform: translate3d(0, 0, 0) rotate(-18deg) scale(0.72); opacity: 0; }
+      18% { opacity: 0.82; }
+      78% { opacity: 0.72; }
+      100% { transform: translate3d(14px, -112px, 0) rotate(28deg) scale(1.08); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .floating-coin { animation: none; opacity: 0.22; bottom: 12px; }
+    }
     .popup-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: rgba(0, 0, 0, 0.6); display: flex;
@@ -143,28 +234,6 @@
     #qrCodeContainer { margin: 16px 0; display: flex; justify-content: center; }
     #qrCodeContainer img { border: 5px solid #eee; border-radius: 8px; }
     .popup-caption { font-size: 0.8rem; color: #888; margin-top: 12px; margin-bottom: 0; }
-    /* [BARU] Gaya untuk tombol aksi cepat */
-    .quick-actions {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .quick-action-btn {
-      flex: 1;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 10px;
-      cursor: pointer;
-      border: 1px solid var(--primary);
-      background-color: var(--card);
-      color: var(--primary);
-      transition: all 0.3s ease;
-    }
-    .quick-action-btn.active {
-      background-color: var(--primary);
-      color: var(--primary-text);
-    }
     /* [BARU] Override Bottom Nav untuk 6 item */
     .bottom-nav {
       position: fixed; bottom: 16px; left: 16px; right: 16px;
@@ -193,18 +262,34 @@
   </header>
   <main class="content with-bottom-nav">
     <section class="quick-actions">
-        <button id="btnTukarVcr" class="quick-action-btn">TUKAR VCR</button>
-        <button id="btnKlaimVcr" class="quick-action-btn">KLAIM VCR</button>
+        <button id="btnTukarVcr" class="quick-action-btn active" type="button" aria-pressed="true">
+          <span class="quick-action-icon" aria-hidden="true">🎁</span>
+          <span class="quick-action-copy"><span class="quick-action-title">TUKAR VCR</span><span class="quick-action-subtitle">Pilih hadiah &amp; voucher</span></span>
+        </button>
+        <button id="btnKlaimVcr" class="quick-action-btn" type="button" aria-pressed="false">
+          <span class="quick-action-icon" aria-hidden="true">✓</span>
+          <span class="quick-action-copy"><span class="quick-action-title">KLAIM VCR</span><span class="quick-action-subtitle">Kode klaim &amp; riwayat</span></span>
+        </button>
     </section>
     <section class="points-summary">
+      <div class="floating-coins" aria-hidden="true">
+        <img class="floating-coin" src="Ikon Poin (Beranda).png" alt="">
+        <img class="floating-coin" src="Ikon Poin (Beranda).png" alt="">
+        <img class="floating-coin" src="Ikon Poin (Beranda).png" alt="">
+        <img class="floating-coin" src="Ikon Poin (Beranda).png" alt="">
+      </div>
       <div class="points-label">Poin Anda Saat Ini</div>
       <div class="points-value" id="userPoints">...</div>
     </section>
-    <nav class="tabs">
-      <button class="tab-btn active" data-target="merchandise">Merchandise</button>
-      <button class="tab-btn" data-target="voucher">Voucher</button>
-      <button class="tab-btn" data-target="klaim">Klaim Hadiah</button>
-      <button class="tab-btn" data-target="riwayat">Riwayat</button>
+    <p class="tabs-label" id="exchangeTabsLabel">Pilih jenis penukaran</p>
+    <nav class="tabs" id="exchangeTabs" aria-labelledby="exchangeTabsLabel">
+      <button class="tab-btn active" type="button" data-target="merchandise" aria-pressed="true">Merchandise</button>
+      <button class="tab-btn" type="button" data-target="voucher" aria-pressed="false">Voucher</button>
+    </nav>
+    <p class="tabs-label" id="claimTabsLabel" hidden>Pantau dan gunakan hadiah</p>
+    <nav class="tabs" id="claimTabs" aria-labelledby="claimTabsLabel" hidden>
+      <button class="tab-btn" type="button" data-target="klaim" aria-pressed="false">Klaim Hadiah</button>
+      <button class="tab-btn" type="button" data-target="riwayat" aria-pressed="false">Riwayat</button>
     </nav>
     <div id="merchandise" class="reward-content active">
       <div class="reward-grid"></div>
@@ -264,7 +349,7 @@
 
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdh5OZ5Te2P-1YlsctrnV6ByWvOvQetGuzr2WUmseJf5WTUatTZ2Yeh7hGPJCobkhJ6g/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcxHbeA1GGERUAg8uGL3JVvkDknD_6gvqOw1dH4Wu0bdsR-6iqLYHUps_MJvzFQQtMEg/exec';
 
     // [BARU] Inisialisasi Firebase
     const firebaseConfig = {
@@ -367,8 +452,7 @@
     });
 
     document.getElementById('btnTukarVcr').addEventListener('click', () => {
-        // Arahkan ke tab voucher sebagai contoh, atau bisa diubah sesuai kebutuhan
-        document.querySelector('.tab-btn[data-target="voucher"]').click();
+        document.querySelector('.tab-btn[data-target="merchandise"]').click();
     });
 
     function showCustomPopup({ title, message, type = 'alert' }) {
@@ -561,12 +645,15 @@
       const tabButtons = document.querySelectorAll('.tab-btn');
       tabButtons.forEach(button => {
         button.addEventListener('click', () => {
-          document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-pressed', 'false');
+          });
           document.querySelectorAll('.reward-content').forEach(content => content.classList.remove('active'));
           button.classList.add('active');
+          button.setAttribute('aria-pressed', 'true');
           document.getElementById(button.getAttribute('data-target')).classList.add('active');
           
-          // [BARU] Update status tombol aksi cepat saat tab berubah
           updateQuickActionButtons(button.getAttribute('data-target'));
         });
       });
@@ -579,22 +666,23 @@
       }
     }
 
-    // [BARU] Fungsi untuk update visual tombol TUKAR/KLAIM
     function updateQuickActionButtons(target) {
         const btnTukar = document.getElementById('btnTukarVcr');
         const btnKlaim = document.getElementById('btnKlaimVcr');
+        const exchangeTabs = document.getElementById('exchangeTabs');
+        const claimTabs = document.getElementById('claimTabs');
+        const exchangeLabel = document.getElementById('exchangeTabsLabel');
+        const claimLabel = document.getElementById('claimTabsLabel');
+        const isClaimMode = target === 'klaim' || target === 'riwayat';
         
-        if (btnTukar) btnTukar.classList.remove('active');
-        if (btnKlaim) btnKlaim.classList.remove('active');
-        
-        if (target === 'klaim') {
-            if (btnKlaim) btnKlaim.classList.add('active');
-        } else if (target === 'riwayat') {
-            // Tidak ada tombol aksi cepat yang aktif untuk riwayat
-        } else {
-            // Tab merchandise atau voucher dianggap sebagai bagian dari "TUKAR"
-            if (btnTukar) btnTukar.classList.add('active');
-        }
+        btnTukar.classList.toggle('active', !isClaimMode);
+        btnKlaim.classList.toggle('active', isClaimMode);
+        btnTukar.setAttribute('aria-pressed', String(!isClaimMode));
+        btnKlaim.setAttribute('aria-pressed', String(isClaimMode));
+        exchangeTabs.hidden = isClaimMode;
+        claimTabs.hidden = !isClaimMode;
+        exchangeLabel.hidden = isClaimMode;
+        claimLabel.hidden = !isClaimMode;
     }
 
     // --- FUNGSI-FUNGSI DARI klaim.html ---
