@@ -419,6 +419,7 @@
           // Render ulang tampilan
           renderRewards(merchandise, 'merchandise');
           renderRewards(vouchers, 'voucher');
+          enrichStoredRedemptionImages();
       }, (error) => {
           console.error('Gagal memuat hadiah dari Firebase:', error);
           renderRewards([], 'merchandise');
@@ -623,7 +624,8 @@
                 username: userName,    // Kirim sebagai 'username' juga
                 reward: itemName,      // Diubah dari 'itemName'
                 cost: cost,
-                itemType: rewardDetails.type
+                itemType: rewardDetails.type,
+                rewardId: rewardDetails.id
               })
             });
             if (!response.ok) {
@@ -774,6 +776,43 @@
       localStorage.setItem(`rbm_active_claims_${phone}`, JSON.stringify(claims));
     }
 
+    function findRewardImage(claim) {
+      const rewardId = String(claim.rewardId || '');
+      const reward = (rewardId && allRewards.find(item => String(item.id) === rewardId)) ||
+        allRewards.find(item =>
+          String(item.nama || '').trim().toLowerCase() === String(claim.nama || '').trim().toLowerCase() &&
+          Number(item.point) === Number(claim.point)
+        );
+      return reward && reward.foto ? reward.foto : '';
+    }
+
+    function enrichStoredRedemptionImages() {
+      const phone = getUserPhone();
+      if (!phone || !allRewards.length) return;
+
+      const storageKey = `rbm_unclaimed_rewards_${phone}`;
+      try {
+        const items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        if (!Array.isArray(items)) return;
+
+        let changed = false;
+        const enrichedItems = items.map(item => {
+          if (!item || item.foto) return item;
+          const foto = findRewardImage(item);
+          if (!foto) return item;
+          changed = true;
+          return { ...item, foto };
+        });
+        if (changed) {
+          localStorage.setItem(storageKey, JSON.stringify(enrichedItems));
+          renderUnclaimedRewards();
+          renderUsedRewards();
+        }
+      } catch (error) {
+        console.error('Gagal menyinkronkan foto hadiah:', error);
+      }
+    }
+
     async function syncRedemptionHistory() {
       const phone = getUserPhone();
       if (!phone) return;
@@ -830,6 +869,10 @@
           };
           return { ...localItem, ...item, id, code, foto: item.foto || (localItem && localItem.foto) || '' };
         }).filter(Boolean);
+
+        serverRewards.forEach(item => {
+          if (!item.foto) item.foto = findRewardImage(item);
+        });
 
         const localOnlyRewards = localRewards.filter(item => {
           const code = item.code || (activeClaims[item.id] && activeClaims[item.id].code);

@@ -175,6 +175,31 @@
             }
         }
 
+        function isEnabledSetting(value, fallback = false) {
+            if (value === undefined || value === null || value === '') return fallback;
+            return value === true || value === 'true' || value === 1;
+        }
+
+        async function canOrderAtSelectedOutlet() {
+            const outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
+            if (!outletInfo.id) return false;
+
+            const [outletsSnapshot, orderingSnapshot] = await Promise.all([
+                database.ref('customer_app_settings/outlets').once('value'),
+                database.ref('customer_app_settings/ordering_enabled').once('value')
+            ]);
+            const storedOutlets = outletsSnapshot.val() || [];
+            const outlets = Array.isArray(storedOutlets)
+                ? storedOutlets
+                : Object.values(storedOutlets).filter(Boolean);
+            const outlet = outlets.find(item => String(item.id) === String(outletInfo.id));
+            if (!outlet) return false;
+
+            return typeof outlet.ordering_enabled !== 'undefined'
+                ? isEnabledSetting(outlet.ordering_enabled)
+                : isEnabledSetting(orderingSnapshot.val());
+        }
+
         function showOutletConfirmationRequired() {
             document.getElementById('payment-container').innerHTML = `
                 <div style="text-align:center; padding: 30px 16px;">
@@ -264,10 +289,20 @@
         }
 
         // [BARU] Fungsi untuk mengirim pesanan ke Firebase
-        function sendOrderToFirebase() {
+        async function sendOrderToFirebase() {
             if (!hasConfirmedOutlet()) {
                 showOutletConfirmationRequired();
-                return;
+                return false;
+            }
+            try {
+                if (!await canOrderAtSelectedOutlet()) {
+                    alert('Pemesanan di outlet ini sedang ditutup. Pesanan tidak dapat dikirim.');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Gagal memeriksa status pemesanan outlet:', error);
+                alert('Status pemesanan belum dapat diperiksa. Periksa koneksi internet lalu coba lagi.');
+                return false;
             }
             let outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
             const outletId = outletInfo.id;
@@ -293,10 +328,11 @@
             const orderRef = database.ref(`orders/${outletId}/${sharedOrderId}`);
             if (editOrderId) {
                 // Hanya perbarui metode pembayaran dan status
-                orderRef.update({ payment: paymentInfo, status: 'Baru' });
+                await orderRef.update({ payment: paymentInfo, status: 'Baru' });
             } else {
-                orderRef.set(newOrder);
+                await orderRef.set(newOrder);
             }
+            return true;
         }
 
         function sendOrderToWhatsApp() {
@@ -386,21 +422,22 @@
             document.getElementById('pay-at-cashier').addEventListener('click', renderCashierView);
         }
 
-        function renderQrisView() {
+        async function renderQrisView() {
             if (!hasConfirmedOutlet()) {
                 showOutletConfirmationRequired();
                 return;
             }
+            paymentInfo = { ...paymentInfo, method: 'QRIS' };
+            try {
+                if (!await sendOrderToFirebase()) return;
+            } catch (error) {
+                console.error('Gagal mengirim pesanan ke Firebase:', error);
+                alert('Pesanan gagal dikirim. Periksa koneksi internet lalu coba lagi.');
+                return;
+            }
             const container = document.getElementById('payment-container');
             const total = formatPrice(paymentInfo.total);
-            paymentInfo = { ...paymentInfo, method: 'QRIS' }; // [DIUBAH] Pastikan metode pembayaran tersimpan dengan membuat objek baru
             const whatsappUrl = sendOrderToWhatsApp();
-            
-            try {
-                sendOrderToFirebase(); // [BARU] Kirim pesanan ke Firebase
-            } catch (e) {
-                console.error("Gagal kirim ke firebase:", e);
-            }
             container.innerHTML = `
                 <div id="qris-display">
                     <h3>Pembayaran QRIS</h3>
@@ -420,9 +457,17 @@
             startQrisTimer(600, document.getElementById('qris-timer'));
         }
 
-        function renderCashierView() {
+        async function renderCashierView() {
             if (!hasConfirmedOutlet()) {
                 showOutletConfirmationRequired();
+                return;
+            }
+            paymentInfo.method = 'Bayar di Kasir';
+            try {
+                if (!await sendOrderToFirebase()) return;
+            } catch (error) {
+                console.error('Gagal mengirim pesanan ke Firebase:', error);
+                alert('Pesanan gagal dikirim. Periksa koneksi internet lalu coba lagi.');
                 return;
             }
             const container = document.getElementById('payment-container');
@@ -437,14 +482,6 @@
                     </div>
                 `;
             });
-            paymentInfo.method = 'Bayar di Kasir'; // [DIUBAH] Simpan metode pembayaran SEBELUM memanggil fungsi lain
-            
-            try {
-                sendOrderToFirebase(); // [BARU] Kirim pesanan ke Firebase
-            } catch (e) {
-                console.error("Gagal kirim ke firebase:", e);
-            }
-
             container.innerHTML = `
                 <div id="cashier-display">
                     <h3>Pembayaran di Kasir</h3>

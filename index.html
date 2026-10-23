@@ -1748,6 +1748,7 @@
     let globalMenuData = [];
     let isMenuLoaded = false; // [BARU] Flag status loading
     let currentSessionOutletId = null; // [BARU] Simpan ID outlet hanya untuk sesi ini (tidak disimpan di localStorage)
+    let customerOutletsSettingsLoaded = false;
     const CATEGORIES_KEY = 'rbm_menu_categories';
     const defaultCategories = [];
 
@@ -1810,6 +1811,22 @@
           .sort((a, b) => Number(a) - Number(b))
           .map(key => value[key])
           .filter(item => item !== null && item !== undefined);
+    }
+
+    function isEnabledSetting(value, fallback = false) {
+        if (value === undefined || value === null || value === '') return fallback;
+        return value === true || value === 'true' || value === 1;
+    }
+
+    function getOrderingEnabledForOutlet(settings, outletId) {
+        if (!customerOutletsSettingsLoaded || !outletId) return false;
+        const outlets = toSettingsList(settings.outlets);
+        const outlet = outlets.find(item => String(item.id) === String(outletId));
+        if (!outlet) return false;
+        if (typeof outlet.ordering_enabled !== 'undefined') {
+            return isEnabledSetting(outlet.ordering_enabled);
+        }
+        return isEnabledSetting(settings.ordering_enabled);
     }
 
     function parsePrice(priceString) {
@@ -2664,24 +2681,16 @@
       if (locationId) {
           try {
               const settings = JSON.parse(localStorage.getItem('rbm_customer_app_settings') || '{}');
-              const outlets = settings.outlets || [];
-              // Cari outlet yang sedang aktif
+              currentSessionOutletId = locationId;
+              const outlets = toSettingsList(settings.outlets);
               const currentOutlet = outlets.find(o => String(o.id) === String(locationId));
-              
-              // Jika outlet ditemukan dan memiliki setting ordering_enabled spesifik
-              if (currentOutlet && typeof currentOutlet.ordering_enabled !== 'undefined') {
-                  isOrderingEnabled = currentOutlet.ordering_enabled === true;
-                  updateAppModeUI(); // Refresh UI (tombol tambah, keranjang, dll)
-              }
+              isOrderingEnabled = getOrderingEnabledForOutlet(settings, locationId);
+              updateAppModeUI();
               if (currentOutlet && typeof currentOutlet.reservation_enabled !== 'undefined') {
                   appFeatures.reservation = currentOutlet.reservation_enabled !== false && currentOutlet.reservation_enabled !== 'false';
                   updateFeaturesUI();
               } else {
                   // Fallback ke setting global jika tidak ada setting per outlet
-                  if (typeof settings.ordering_enabled !== 'undefined') {
-                      isOrderingEnabled = settings.ordering_enabled === true;
-                      updateAppModeUI();
-                  }
                   if (typeof settings.reservation_enabled !== 'undefined') {
                       appFeatures.reservation = settings.reservation_enabled !== false && settings.reservation_enabled !== 'false';
                       updateFeaturesUI();
@@ -3810,8 +3819,15 @@ function handleHeaderScroll() {
           if (typeof settings.enable_game !== 'undefined') appFeatures.game = settings.enable_game;
           if (typeof settings.enable_global_chat !== 'undefined') appFeatures.globalChat = settings.enable_global_chat;
           if (typeof settings.reservation_enabled !== 'undefined') appFeatures.reservation = settings.reservation_enabled !== false && settings.reservation_enabled !== 'false';
-          if (typeof settings.ordering_enabled !== 'undefined') {
-              isOrderingEnabled = settings.ordering_enabled === true || settings.ordering_enabled === 'true';
+          if (currentSessionOutletId) {
+              isOrderingEnabled = getOrderingEnabledForOutlet(cachedSettings, currentSessionOutletId);
+              updateAppModeUI();
+              if (globalMenuData.length > 0 && (Object.prototype.hasOwnProperty.call(settings, 'outlets') ||
+                  Object.prototype.hasOwnProperty.call(settings, 'ordering_enabled'))) {
+                  renderGroupedMenus(currentSessionOutletId);
+              }
+          } else {
+              isOrderingEnabled = false;
               updateAppModeUI();
           }
           
@@ -3832,8 +3848,9 @@ function handleHeaderScroll() {
       const initialSettingsReceived = new Set();
       const receiveSetting = (key, value) => {
           const settings = { [key]: value };
-          applySettings(settings);
+          if (key === 'outlets') customerOutletsSettingsLoaded = true;
           saveSettingsCache(settings);
+          applySettings(settings);
           if (!initialSettingsReceived.has(key)) {
               initialSettingsReceived.add(key);
               initialSettingsLoaded += 1;

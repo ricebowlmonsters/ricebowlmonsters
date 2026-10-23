@@ -350,6 +350,31 @@
             }
         }
 
+        function isEnabledSetting(value, fallback = false) {
+            if (value === undefined || value === null || value === '') return fallback;
+            return value === true || value === 'true' || value === 1;
+        }
+
+        async function canOrderAtSelectedOutlet() {
+            const outletInfo = JSON.parse(localStorage.getItem('rbm_outlet_info') || '{}');
+            if (!outletInfo.id) return false;
+
+            const [outletsSnapshot, orderingSnapshot] = await Promise.all([
+                db.ref('customer_app_settings/outlets').once('value'),
+                db.ref('customer_app_settings/ordering_enabled').once('value')
+            ]);
+            const storedOutlets = outletsSnapshot.val() || [];
+            const outlets = Array.isArray(storedOutlets)
+                ? storedOutlets
+                : Object.values(storedOutlets).filter(Boolean);
+            const outlet = outlets.find(item => String(item.id) === String(outletInfo.id));
+            if (!outlet) return false;
+
+            return typeof outlet.ordering_enabled !== 'undefined'
+                ? isEnabledSetting(outlet.ordering_enabled)
+                : isEnabledSetting(orderingSnapshot.val());
+        }
+
         function showOutletConfirmationRequired() {
             document.querySelector('main').innerHTML = `
                 <div class="summary-card">
@@ -458,9 +483,19 @@
         }
 
         // [DIUBAH] Fungsi ini sekarang hanya menyimpan data dan mengarahkan ke halaman pembayaran
-        function proceedToPayment() {
+        async function proceedToPayment() {
             if (!hasConfirmedOutlet()) {
                 showOutletConfirmationRequired();
+                return;
+            }
+            try {
+                if (!await canOrderAtSelectedOutlet()) {
+                    alert('Pemesanan di outlet ini sedang ditutup. Keranjang tidak dapat dilanjutkan.');
+                    return;
+                }
+            } catch (error) {
+                console.error('Gagal memeriksa status pemesanan outlet:', error);
+                alert('Status pemesanan belum dapat diperiksa. Periksa koneksi internet lalu coba lagi.');
                 return;
             }
             const overallNote = document.getElementById('overall-note').value;
