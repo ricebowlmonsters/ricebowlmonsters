@@ -280,6 +280,7 @@
       </div>
       <div class="points-label">Poin Anda Saat Ini</div>
       <div class="points-value" id="userPoints">...</div>
+      <div id="pointsStatus" role="status" aria-live="polite" style="position:relative; z-index:1; margin-top:6px; font-size:12px; opacity:.9;">Memeriksa saldo poin...</div>
     </section>
     <p class="tabs-label" id="exchangeTabsLabel">Pilih jenis penukaran</p>
     <nav class="tabs" id="exchangeTabs" aria-labelledby="exchangeTabsLabel">
@@ -298,9 +299,11 @@
       <div class="reward-grid"></div>
     </div>
     <div id="klaim" class="reward-content">
+      <p id="claimSyncStatus" role="status" aria-live="polite"></p>
       <div class="reward-grid"></div>
     </div>
     <div id="riwayat" class="reward-content">
+      <p id="historySyncStatus" role="status" aria-live="polite"></p>
       <div class="reward-grid"></div>
     </div>
   </main>
@@ -337,9 +340,8 @@
     </div>
     <div class="popup-buttons">
       <button id="closePopupButton" class="btn-secondary">Tutup</button>
-      <button id="deletePopupButton" class="btn-primary" style="background-color: #c62828;">Hapus</button>
     </div>
-    <p class="popup-caption">Klik "Hapus" jika hadiah sudah Anda terima di resto.</p>
+    <p class="popup-caption">Kode klaim tersimpan pada akun Anda dan dapat dibuka dari perangkat lain.</p>
   </div>
 </div>
 
@@ -349,7 +351,7 @@
 
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcxHbeA1GGERUAg8uGL3JVvkDknD_6gvqOw1dH4Wu0bdsR-6iqLYHUps_MJvzFQQtMEg/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9lmSwLUPjVz22AE_h024vhoQ_RuTDDgg6i5mcpQnxXbR6fNA9IzJ3uKXwanVodocynw/exec';
 
     // [BARU] Inisialisasi Firebase
     const firebaseConfig = {
@@ -370,6 +372,8 @@
     let merchandise = [];
     let vouchers = [];
     let allRewards = [];
+    let pointsVerified = false;
+    let redemptionHistorySyncFailed = false;
 
     // [BARU] Update Bottom Nav berdasarkan status fitur pesan
     function updateBottomNav(isEnabled) {
@@ -392,6 +396,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       loadUserPoints();
+      refreshUserPoints();
       
       // [BARU] Ambil data hadiah dari Firebase
       db.ref('rewards').on('value', (snapshot) => {
@@ -435,6 +440,7 @@
 
       renderUnclaimedRewards(); // Render item yang bisa diklaim di tab
       renderUsedRewards(); // [BARU] Render riwayat voucher
+      syncRedemptionHistory();
       setupTabs();
       activateTabFromUrl();
       
@@ -476,7 +482,7 @@
       if (grid) {
         grid.innerHTML = dataArray.length ? dataArray.map(item => `
           <div class="reward-card" data-cost="${Number(item.point)}" data-reward-id="${item.id}">
-            <img src="${item.foto}" alt="${item.nama}" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
+            <img src="${item.foto || 'https://placehold.co/300x200?text=No+Image'}" alt="${item.nama}" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
             <div class="card-body">
               <h3>${item.nama}</h3>
               <div class="points-cost">${item.point} Poin</div>
@@ -500,6 +506,51 @@
         }
     }
 
+    async function refreshUserPoints() {
+        const pointsEl = document.getElementById('userPoints');
+        const statusEl = document.getElementById('pointsStatus');
+        let userData;
+
+        try {
+            userData = JSON.parse(localStorage.getItem('rbm_user') || '{}');
+        } catch (error) {
+            console.error('Gagal membaca data user:', error);
+            pointsEl.textContent = '-';
+            statusEl.textContent = 'Data login tidak valid. Silakan login ulang.';
+            return;
+        }
+
+        if (!userData.phone) {
+            pointsEl.textContent = '-';
+            statusEl.textContent = 'Silakan login ulang untuk melihat saldo poin.';
+            return;
+        }
+
+        statusEl.textContent = 'Saldo sedang disinkronkan...';
+        try {
+            const response = await fetch(`${SCRIPT_URL}?phone=${encodeURIComponent(userData.phone)}`);
+            if (!response.ok) {
+                throw new Error(`Server mengembalikan HTTP ${response.status}.`);
+            }
+
+            const result = await response.json();
+            const serverPoints = Number(result && result.data && result.data.points);
+            if (result.status !== 'success' || !Number.isSafeInteger(serverPoints) || serverPoints < 0) {
+                throw new Error(result.message || 'Server tidak mengembalikan saldo poin yang valid.');
+            }
+
+            userData.points = serverPoints;
+            localStorage.setItem('rbm_user', JSON.stringify(userData));
+            pointsEl.textContent = serverPoints.toLocaleString('id-ID');
+            pointsVerified = true;
+            statusEl.textContent = 'Saldo berhasil diperbarui.';
+        } catch (error) {
+            pointsVerified = false;
+            statusEl.textContent = 'Saldo belum dapat diverifikasi. Periksa koneksi lalu muat ulang halaman.';
+            console.error('Gagal menyinkronkan saldo poin:', error);
+        }
+    }
+
     function setupEventListeners() {
       const mainContent = document.querySelector('.content');
       mainContent.addEventListener('click', async (event) => {
@@ -508,6 +559,14 @@
         // --- Ltikan ini HANYA berjalan untuk tombol tukar, BUKAN tombol klaim.
         if (button.classList.contains('btn-tukar') && !button.classList.contains('btn-claim')) {
           if (button.disabled) return;
+
+          if (!pointsVerified) {
+            await showCustomPopup({
+              title: 'Saldo Belum Terverifikasi',
+              message: 'Saldo poin belum berhasil diperiksa ke server. Pastikan koneksi internet aktif, lalu muat ulang halaman sebelum menukar.'
+            });
+            return;
+          }
 
           const card = button.closest('.reward-card');
           const itemName = card.querySelector('h3').textContent;
@@ -581,16 +640,16 @@
               // Update poin di local storage & tampilan
               userData.points = newPoints;
               localStorage.setItem('rbm_user', JSON.stringify(userData));
-              document.getElementById('userPoints').textContent = newPoints;
+              document.getElementById('userPoints').textContent = newPoints.toLocaleString('id-ID');
               
               const itemId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-              const itemToClaim = { ...rewardDetails, id: itemId, status: 'unclaimed' };
+              const claimCode = result.data && result.data.code;
+              const itemToClaim = { ...rewardDetails, id: itemId, code: claimCode || '', status: 'unclaimed' };
               const storageKey = `rbm_unclaimed_rewards_${userData.phone}`;
               const unclaimed = JSON.parse(localStorage.getItem(storageKey) || '[]');
               unclaimed.push(itemToClaim);
               localStorage.setItem(storageKey, JSON.stringify(unclaimed));
 
-              const claimCode = result.data && result.data.code;
               if (claimCode) {
                 setActiveClaim(itemId, {
                   code: claimCode,
@@ -600,6 +659,7 @@
                 });
               }
               renderUnclaimedRewards();
+              syncRedemptionHistory();
               
               const claimMessage = claimCode
                 ? 'Silakan buka tab Klaim Hadiah untuk menunjukkan kode ke kasir.'
@@ -629,7 +689,7 @@
           
           // Jika sudah ada kode, tampilkan kode yang sama
           if (activeClaims[itemId] && activeClaims[itemId].code) {
-            showCodePopup(activeClaims[itemId].code, itemName, itemId);
+            showCodePopup(activeClaims[itemId].code, itemName);
             return;
           }
           
@@ -697,7 +757,13 @@
     function getActiveClaims() { 
       const phone = getUserPhone();
       if (!phone) return {};
-      return JSON.parse(localStorage.getItem(`rbm_active_claims_${phone}`) || '{}'); 
+      try {
+        const claims = JSON.parse(localStorage.getItem(`rbm_active_claims_${phone}`) || '{}');
+        return claims && typeof claims === 'object' && !Array.isArray(claims) ? claims : {};
+      } catch (error) {
+        console.error('Gagal membaca kode klaim lokal:', error);
+        return {};
+      }
     }
 
     function setActiveClaim(itemId, qrData) {
@@ -708,12 +774,86 @@
       localStorage.setItem(`rbm_active_claims_${phone}`, JSON.stringify(claims));
     }
 
-    function removeActiveClaim(itemId) {
+    async function syncRedemptionHistory() {
       const phone = getUserPhone();
       if (!phone) return;
-      const claims = getActiveClaims();
-      delete claims[itemId];
-      localStorage.setItem(`rbm_active_claims_${phone}`, JSON.stringify(claims));
+
+      const claimStatus = document.getElementById('claimSyncStatus');
+      const historyStatus = document.getElementById('historySyncStatus');
+      claimStatus.textContent = 'Memuat klaim dari server...';
+      historyStatus.textContent = 'Memuat riwayat dari server...';
+
+      try {
+        const url = `${SCRIPT_URL}?action=getRedemptionHistory&phone=${encodeURIComponent(phone)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Server mengembalikan HTTP ${response.status}.`);
+
+        const result = await response.json();
+        if (result.status !== 'success') {
+          throw new Error(result.message || 'Server tidak mengembalikan riwayat klaim yang valid.');
+        }
+        if (!Array.isArray(result.data)) {
+          throw new Error('Backend belum mendukung sinkronisasi klaim. Admin perlu memublikasikan Apps Script versi terbaru.');
+        }
+
+        const storageKey = `rbm_unclaimed_rewards_${phone}`;
+        let localRewards = [];
+        try {
+          localRewards = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          if (!Array.isArray(localRewards)) localRewards = [];
+          localRewards = localRewards.filter(item => item && typeof item === 'object');
+        } catch (error) {
+          console.error('Gagal membaca klaim lokal:', error);
+        }
+
+        const activeClaims = getActiveClaims();
+        const localByCode = new Map();
+        localRewards.forEach(item => {
+          const code = item.code || (activeClaims[item.id] && activeClaims[item.id].code);
+          if (code) localByCode.set(String(code).toUpperCase(), item);
+        });
+
+        const serverCodes = new Set();
+        const serverRewards = result.data.map(item => {
+          if (!item || typeof item !== 'object') return null;
+          const code = String(item.code || item.id || '').trim().toUpperCase();
+          if (!code || !item.nama) return null;
+          serverCodes.add(code);
+          const localItem = localByCode.get(code);
+          const id = localItem ? localItem.id : code;
+          activeClaims[id] = {
+            ...(activeClaims[id] || {}),
+            code,
+            itemId: id,
+            itemName: item.nama,
+            claimTime: item.claimTime
+          };
+          return { ...localItem, ...item, id, code, foto: item.foto || (localItem && localItem.foto) || '' };
+        }).filter(Boolean);
+
+        const localOnlyRewards = localRewards.filter(item => {
+          const code = item.code || (activeClaims[item.id] && activeClaims[item.id].code);
+          return !code || !serverCodes.has(String(code).toUpperCase());
+        });
+
+        localStorage.setItem(storageKey, JSON.stringify([...serverRewards, ...localOnlyRewards]));
+        localStorage.setItem(`rbm_active_claims_${phone}`, JSON.stringify(activeClaims));
+        redemptionHistorySyncFailed = false;
+        claimStatus.textContent = 'Klaim tersinkronisasi dan tersedia di perangkat ini.';
+        historyStatus.textContent = 'Riwayat penggunaan berhasil diperbarui.';
+        renderUnclaimedRewards();
+        renderUsedRewards();
+      } catch (error) {
+        redemptionHistorySyncFailed = true;
+        const message = error instanceof TypeError
+          ? 'Koneksi ke server gagal. Periksa internet lalu muat ulang.'
+          : error.message;
+        claimStatus.textContent = `Klaim tidak tersinkronisasi: ${message}`;
+        historyStatus.textContent = `Riwayat tidak tersinkronisasi: ${message}`;
+        console.error('Gagal menyinkronkan riwayat penukaran:', error);
+        renderUnclaimedRewards();
+        renderUsedRewards();
+      }
     }
 
     function renderUnclaimedRewards() {
@@ -729,7 +869,9 @@
       if (unclaimed.length > 0) {
         container.innerHTML = unclaimed.map(createClaimCard).join('');
       } else {
-        container.innerHTML = '<div class="empty-state">Tidak ada hadiah yang perlu diklaim.</div>';
+        container.innerHTML = redemptionHistorySyncFailed
+          ? '<div class="empty-state">Klaim belum dapat diperiksa. Periksa koneksi lalu muat ulang.</div>'
+          : '<div class="empty-state">Tidak ada hadiah yang perlu diklaim.</div>';
       }
     }
 
@@ -747,15 +889,16 @@
       if (used.length > 0) {
         container.innerHTML = used.map(createUsedCard).join('');
       } else {
-        container.innerHTML = '<div class="empty-state">Belum ada riwayat penggunaan voucher.</div>';
+        container.innerHTML = redemptionHistorySyncFailed
+          ? '<div class="empty-state">Riwayat belum dapat diperiksa. Periksa koneksi lalu muat ulang.</div>'
+          : '<div class="empty-state">Belum ada riwayat penggunaan voucher.</div>';
       }
     }
 
     function createClaimCard(item) {
       return `
         <div class="reward-card" data-cost="${item.point}" style="position: relative;">
-          <button class="btn-delete-card" onclick="event.stopPropagation(); deleteRewardItem('${item.id}', 'unclaimed')" style="position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.9); color: #ef4444; border: 1px solid #fee2e2; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" title="Hapus">🗑️</button>
-          <img src="${item.foto}" alt="${item.nama}">
+          <img src="${item.foto || 'https://placehold.co/300x200?text=No+Image'}" alt="${item.nama}" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
           <div class="card-body">
             <h3>${item.nama}</h3>
             <div class="points-cost">Ditukar dengan ${item.point} Poin</div>
@@ -770,8 +913,7 @@
       const date = item.usedDate ? new Date(item.usedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
       return `
         <div class="reward-card used" style="opacity: 0.7; background: #f9fafb; border-color: #e5e7eb; position: relative;">
-          <button class="btn-delete-card" onclick="event.stopPropagation(); deleteRewardItem('${item.id}', 'used')" style="position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.9); color: #ef4444; border: 1px solid #fee2e2; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" title="Hapus Riwayat">🗑️</button>
-          <img src="${item.foto}" alt="${item.nama}" style="filter: grayscale(100%); opacity: 0.8;">
+          <img src="${item.foto || 'https://placehold.co/300x200?text=No+Image'}" alt="${item.nama}" style="filter: grayscale(100%); opacity: 0.8;" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
           <div class="card-body">
             <h3 style="color: #6b7280;">${item.nama}</h3>
             <div class="points-cost" style="color: #9ca3af; font-size: 12px; font-weight: 500;">Terpakai: ${date}</div>
@@ -781,66 +923,17 @@
       `;
     }
 
-    // [BARU] Fungsi hapus item reward
-    window.deleteRewardItem = async function(itemId, type) {
-        const message = type === 'unclaimed' 
-            ? 'Apakah Anda yakin ingin menghapus hadiah ini? Poin yang sudah ditukar tidak akan kembali.' 
-            : 'Hapus riwayat penggunaan voucher ini?';
-            
-        const confirmed = await showCustomPopup({ 
-            title: 'Hapus Item', 
-            message: message, 
-            type: 'confirm' 
-        });
-
-        if (confirmed) {
-            const phone = getUserPhone();
-            if (!phone) return;
-            
-            const storageKey = `rbm_unclaimed_rewards_${phone}`;
-            let allRewards = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            
-            // Filter out the item to delete
-            const updatedRewards = allRewards.filter(item => String(item.id) !== String(itemId));
-            
-            localStorage.setItem(storageKey, JSON.stringify(updatedRewards));
-            
-            if (type === 'unclaimed') {
-                removeActiveClaim(itemId);
-                renderUnclaimedRewards();
-            } else {
-                renderUsedRewards();
-            }
-        }
-    };
-
-    function showCodePopup(code, itemName, itemId) {
+    function showCodePopup(code, itemName) {
       const popup = document.getElementById('qrPopup');
       const titleEl = document.getElementById('qrPopupTitle');
       const codeDisplay = document.getElementById('claimCodeDisplay');
       const closeButton = document.getElementById('closePopupButton');
-      const deleteButton = document.getElementById('deletePopupButton');
 
       titleEl.textContent = `Klaim "${itemName}"`;
       codeDisplay.textContent = code;
       popup.classList.add('show');
 
       closeButton.onclick = () => popup.classList.remove('show');
-
-      deleteButton.onclick = async () => {
-        const confirmed = await showCustomPopup({ title: 'Konfirmasi', message: `Apakah Anda yakin ingin menghapus "${itemName}"? Tindakan ini disarankan setelah Anda menerima hadiah.`, type: 'confirm' });
-        if (confirmed) {
-          const phone = getUserPhone();
-          const storageKey = `rbm_unclaimed_rewards_${phone}`;
-          let unclaimed = JSON.parse(localStorage.getItem(storageKey) || '[]');
-          const updatedUnclaimed = unclaimed.filter(item => String(item.id) !== String(itemId));
-          localStorage.setItem(storageKey, JSON.stringify(updatedUnclaimed));
-          removeActiveClaim(itemId);
-          renderUnclaimedRewards(); // Perbarui daftar di tab klaim
-          renderUsedRewards(); // Perbarui daftar riwayat jika perlu (meski hapus biasanya hilang permanen)
-          popup.classList.remove('show');
-        }
-      };
     }
 </script>
 </body>
